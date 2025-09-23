@@ -1,1 +1,42 @@
 /* You can add global styles to this file, and also import other style files */
+*{
+  margin: 0px;
+  padding: 0px
+}
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+
+/* Layout principal */
+.container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Barra lateral a la izquierda */
+.barra-lateral {
+  color: white;
+}
+
+/* Sección derecha (header + contenido) */
+.main-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Contenido principal debajo del header */
+.contenido-principal {
+  flex: 1;
+  padding: 20px;
+  background: #f5f6fa;
+}
+
+/* Card */
+.card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+  padding: 20px;
+}

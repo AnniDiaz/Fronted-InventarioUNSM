@@ -1,0 +1,46 @@
+<div class="container">
+  <div class="barra-lateral">
+    <app-sidebar></app-sidebar>
+  </div>
+
+  <div class="main-section">
+    <app-header></app-header>
+
+    <div class="contenido-principal">
+      <div class="card">
+        <div class="card-header">
+          <h3>Listado de Tutores</h3>
+        </div>
+        <div class="card-body">
+
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Foto</th>
+                <th>Nombre</th>
+                <th>DNI</th>
+                <th>Escuela Profesional</th>
+                <th>Usuario</th>
+                <th>Opciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let tutor of tutores">
+                <td><img src="assets/user.png" alt="Foto" class="avatar"></td>
+                <td>{{ tutor.nombre }}</td>
+                <td>{{ tutor.dni }}</td>
+                <td>{{ tutor.escuelaProfesional }}</td>
+                <td>{{ tutor.usuario }}</td>
+                <td>
+                  <button class="btn-ver">
+                    <i class="fa fa-eye"></i> Ver Detalle
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,111 @@
+<div class="container">
+  <div class="barra-lateral">
+    <app-sidebar></app-sidebar>
+  </div>
+
+  <div class="main-section">
+    <app-header></app-header>
+
+    <div class="contenido-principal">
+      <div class="card">
+        <div class="cont-tit">
+          <h2>Registro de Artículos</h2>
+          <div class="cont-btns">
+
+            <div class="busqueda">
+              <input type="text" placeholder="Buscar artículo..." [(ngModel)]="filtro">
+              <button class="btn-buscar">
+                <i class="fa fa-search"></i>
+              </button>
+            </div>
+              <button class="btn-agregar" (click)="toggleFormulario()">
+              <i class="fa fa-plus"></i> Agregar Nuevo
+            </button>
+          </div>
+        </div>
+
+        <!-- Formulario como modal -->
+        <div class="overlay" *ngIf="mostrarFormulario">
+          <div class="formulario-articulo">
+          <h3>Registrar nuevo articulo</h3>
+
+            <button class="btn-cerrar" (click)="toggleFormulario()">&times;</button>
+
+           <form (ngSubmit)="guardarArticulo()" #articuloForm="ngForm" enctype="multipart/form-data">
+  <div>
+    <label>Nombre</label>
+    <input type="text" [(ngModel)]="nuevoArticulo.nombre" name="nombre" required>
+  </div>
+
+  <div>
+    <label>Descripción</label>
+    <textarea [(ngModel)]="nuevoArticulo.descripcion" name="descripcion" required></textarea>
+  </div>
+
+<!-- Campo para subir imagen -->
+<div>
+  <label>Imagen</label>
+
+  <!-- Input file (solo aparece si NO hay imagen cargada) -->
+  <input
+    type="file"
+    (change)="onFileSelected($event)"
+    accept="image/*"
+    *ngIf="!nuevoArticulo.imagenPreview">
+
+  <!-- Previsualización (si ya hay imagen cargada) -->
+  <div *ngIf="nuevoArticulo.imagenPreview" class="preview">
+    <img [src]="nuevoArticulo.imagenPreview" alt="Vista previa" />
+    <button type="button" (click)="quitarImagen()">Quitar</button>
+  </div>
+</div>
+
+  <!-- Campo oculto -->
+  <input type="hidden" [(ngModel)]="nuevoArticulo.estado" name="estado">
+
+  <div class="acciones-form">
+    <button type="submit" class="btn-guardar" [disabled]="articuloForm.invalid">Guardar</button>
+    <button type="button" class="btn-cancelar" (click)="toggleFormulario()">Cancelar</button>
+  </div>
+</form>
+
+          </div>
+        </div>
+
+        <!-- Grid de artículos -->
+        <div class="grid-articulos">
+          <div class="articulo-card" *ngFor="let articulo of articulos">
+            <img src="assets/articulo.png" alt="Imagen artículo" class="img-articulo">
+            <h3>{{ articulo.nombre }}</h3>
+            <p><strong>Código:</strong> {{ articulo.codigo }}</p>
+            <p><strong>Stock:</strong> {{ articulo.stock }}</p>
+            <div class="acciones">
+              <!-- Ver -->
+              <button class="btn-ver" (click)="verArticulosPorTipo(articulo.id)">
+                <i class="fa fa-eye"></i>
+              </button>
+
+              <!-- Editar -->
+              <button class="btn-editar">
+                <i class="fa fa-edit"></i>
+              </button>
+
+              <!-- Agregar campos -->
+              <button class="btn-agregar">
+                <i class="fa fa-plus"></i>
+              </button>
+
+              <!-- Eliminar -->
+              <button class="btn-eliminar">
+                <i class="fa fa-trash"></i>
+              </button>
+            </div>
+
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

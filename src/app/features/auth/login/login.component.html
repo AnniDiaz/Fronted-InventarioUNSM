@@ -1,0 +1,35 @@
+<div class="container">
+  <div class="left">
+    <!-- Logo -->
+    <img src="/assets/logo_fisi.png" alt="Logo" class="logo">
+
+    <h1>Inventario virtual</h1>
+
+    <!-- Input de usuario -->
+    <div class="form-group">
+      <input type="text" placeholder="Usuario" [(ngModel)]="loginData.username" name="username">
+      <i class="fa fa-user"></i>
+    </div>
+
+    <!-- Input de contraseña -->
+    <div class="form-group">
+      <input [type]="hide ? 'password' : 'text'" placeholder="Contraseña" [(ngModel)]="loginData.password" name="password">
+      <i class="fa fa-eye" (click)="hide = !hide" style="cursor:pointer"></i>
+    </div>
+
+    <!-- Botón login -->
+    <button class="btn" (click)="formSubmit()">INGRESAR</button>
+
+    <!-- Olvidó contraseña -->
+    <a href="#">¿Olvidaste tu contraseña?</a>
+
+    <!-- Decoraciones -->
+    <div class="green-shape shape1"></div>
+    <div class="green-shape shape2"></div>
+  </div>
+
+  <div class="right">
+    <div class="green-shape shape1"></div>
+    <div class="green-shape shape2"></div>
+  </div>
+</div>
