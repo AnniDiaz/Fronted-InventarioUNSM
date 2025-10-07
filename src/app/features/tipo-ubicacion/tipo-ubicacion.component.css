@@ -1,0 +1,282 @@
+
+.cont-tit {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  border-radius: 12px;
+  padding: 15px 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  margin-bottom: 20px;
+}
+
+.cont-tit h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.cont-btns {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+button {
+  font-family: inherit;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-agregar {
+  background: #28a745;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.btn-agregar:hover {
+  background: #218838;
+  transform: scale(1.03);
+}
+
+.busqueda {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.busqueda input {
+  flex: 1;
+  padding: 10px 12px;
+  border: none;
+  outline: none;
+  font-size: 14px;
+}
+
+.busqueda button {
+  padding: 10px 14px;
+  background: #007bff;
+  color: white;
+  transition: 0.3s;
+}
+
+.busqueda button:hover {
+  background: #0056b3;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  width: 450px;
+  max-width: 95%;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.modal-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.btn-cerrar {
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: #666;
+}
+
+.btn-cerrar:hover {
+  color: #000;
+}
+
+.modal-body .mb-3 {
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-body label {
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #444;
+}
+
+.modal-body input {
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+}
+
+.acciones-form {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.btn-guardar {
+  background: #28a745;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-guardar:hover {
+  background: #218838;
+}
+
+.btn-cancelar {
+  background: #dc3545;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-cancelar:hover {
+  background: #c82333;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+.tabla-ubicaciones {
+  margin-top: 20px;
+  overflow-x: auto;
+}
+
+.tabla-ubicaciones table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0px 3px 8px rgba(0,0,0,0.1);
+}
+
+.tabla-ubicaciones thead {
+  background: #eef1ee;
+  color: #0f0f0f;
+  text-align: left;
+}
+
+.tabla-ubicaciones th, 
+.tabla-ubicaciones td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #eee;
+  text-align: center;
+}
+
+.tabla-ubicaciones tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.acciones-col {
+  text-align: center;
+  width: 120px;
+}
+
+.acciones {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.btn-editar, 
+.btn-eliminar {
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-editar {
+  background: #ffc107;
+  color: #fff;
+}
+
+.btn-editar:hover {
+  background: #e0a800;
+}
+
+.btn-eliminar {
+  background: #dc3545;
+  color: #fff;
+}
+
+.btn-eliminar:hover {
+  background: #b02a37;
+}
+.paginacion {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 15px;
+  gap: 10px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.paginacion button {
+  background-color: #f0f0f0; 
+  border: 1px solid #d1d1d1; 
+  border-radius: 6px; 
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease-in-out;
+}
+
+.paginacion button:hover {
+  background-color: #e0e0e0; 
+  border-color: #c0c0c0;
+}
+
+.paginacion button:disabled {
+  background-color: #fafafa;
+  color: #aaa;
+  border-color: #eee;
+  cursor: not-allowed;
+}
+
+.paginacion span {
+  font-weight: 500;
+  color: #333;
+}

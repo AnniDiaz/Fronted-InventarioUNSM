@@ -2,35 +2,43 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Piso } from '../features/pisos/models/piso.model';
-import { environment } from '../../environments/environment';
+import baseUrl from '../shared/components/helper';
 
+export interface Piso {
+  id: number;
+  numero: number;
+  facultadId: number; // relación con la facultad
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class PisosService {
-  private apiUrl = `${environment.apiUrl}/pisos`; 
 
-  constructor(private http: HttpClient) {}
+  constructor(private httpClient: HttpClient) {}
 
-  getPisos(): Observable<Piso[]> {
-    return this.http.get<Piso[]>(this.apiUrl);
+  // GET -> Obtener todos los pisos
+  public getPisos(): Observable<Piso[]> {
+    return this.httpClient.get<Piso[]>(`${baseUrl}/pisos`);
   }
 
-  getPiso(id: number): Observable<Piso> {
-    return this.http.get<Piso>(`${this.apiUrl}/${id}`);
+  // GET -> Obtener un piso por ID
+  public getPiso(id: number): Observable<Piso> {
+    return this.httpClient.get<Piso>(`${baseUrl}/pisos/${id}`);
   }
 
-  createPiso(piso: Partial<Piso>): Observable<Piso> {
-    return this.http.post<Piso>(this.apiUrl, piso);
+  // POST -> Crear un piso
+  public createPiso(piso: Partial<Piso>): Observable<Piso> {
+    return this.httpClient.post<Piso>(`${baseUrl}/pisos`, piso);
   }
 
-  updatePiso(id: number, piso: Partial<Piso>): Observable<Piso> {
-    return this.http.put<Piso>(`${this.apiUrl}/${id}`, piso);
+  // PUT -> Actualizar un piso
+  public updatePiso(id: number, piso: Partial<Piso>): Observable<Piso> {
+    return this.httpClient.put<Piso>(`${baseUrl}/pisos/${id}`, piso);
   }
 
-  deletePiso(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  // DELETE -> Eliminar un piso
+  public deletePiso(id: number): Observable<void> {
+    return this.httpClient.delete<void>(`${baseUrl}/pisos/${id}`);
   }
 }

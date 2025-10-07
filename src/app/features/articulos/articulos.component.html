@@ -1,0 +1,89 @@
+<div class="container">
+  <app-header></app-header>
+
+  <div class="content-wrapper">
+    <div class="barra-lateral">
+      <app-sidebar></app-sidebar>
+    </div>
+
+    <div class="contenido-principal">
+      <div class="card">
+        <!-- Header -->
+        <div class="card-header flex-between">
+          <h2>Registro de Artículos</h2>
+          <button class="btn-agregar" (click)="toggleFormulario()">
+            <i class="fa fa-plus"></i> Agregar Nuevo
+          </button>
+        </div>
+<div class="modal-overlay" *ngIf="mostrarFormulario">
+  <div class="modal-contenido">
+    <form #articuloForm="ngForm" (ngSubmit)="guardarArticulo(articuloForm)">
+      <!-- Nombre -->
+      <div class="form-group">
+        <label for="nombre">Nombre</label>
+        <input id="nombre" type="text" name="nombre" ngModel required />
+      </div>
+
+      <!-- Descripción -->
+      <div class="form-group">
+        <label for="descripcion">Descripción</label>
+        <textarea id="descripcion" name="descripcion" ngModel required></textarea>
+      </div>
+
+      <!-- Ubicación -->
+      <div class="form-group">
+        <label for="ubicacion">Ubicación</label>
+        <select id="ubicacion" name="ubicacion" ngModel required>
+          <option value="" disabled selected>Seleccione ubicación</option>
+          <option *ngFor="let u of ubicaciones" [value]="u.id">
+            {{ u.nombre }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Campo oculto estado -->
+      <input type="hidden" name="estado" [ngModel]="1" />
+
+      <!-- Campo oculto tipoArticuloId -->
+      <input type="hidden" name="tipoArticuloId" [ngModel]="tipoArticuloId" />
+
+      <!-- Botones -->
+      <div class="acciones-form">
+        <button
+          type="submit"
+          class="btn-guardar"
+          [disabled]="articuloForm.invalid"
+        >
+          Guardar
+        </button>
+        <button type="button" class="btn-cancelar" (click)="cancelarFormulario()">
+          Cancelar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+        <!-- Barra de búsqueda -->
+        <div class="busqueda">
+          <input type="text" placeholder="Buscar artículo..." />
+          <button class="btn-buscar">
+            <i class="fa fa-search"></i>
+          </button>
+        </div>
+
+        <!-- Listado de artículos -->
+        <h2>Artículos del tipo: {{ tipoArticulo?.nombre }}</h2>
+
+        <div class="grid-articulos">
+          <div class="articulo-card" *ngFor="let articulo of articulos">
+            <h3>{{ articulo.nombre }}</h3>
+            <p><strong>Código:</strong> {{ articulo.codigo }}</p>
+            <p><strong>Stock:</strong> {{ articulo.stock }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

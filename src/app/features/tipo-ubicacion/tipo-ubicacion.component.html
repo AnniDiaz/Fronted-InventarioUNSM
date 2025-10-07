@@ -1,0 +1,95 @@
+<div class="container">
+  <div class="barra-lateral">
+    <app-sidebar></app-sidebar>
+  </div>
+
+  <div class="main-section">
+    <app-header></app-header>
+
+    <div class="contenido-principal">
+      <div class="card">
+        <!-- Encabezado -->
+        <div class="cont-tit">
+          <h2>Registro de Tipo de Ubicaciones</h2>
+          <div class="cont-btns">
+            <!-- Botón Agregar -->
+            <button class="btn-agregar" (click)="toggleFormulario()">
+              <i class="fa fa-plus"></i> Agregar Nuevo
+            </button>
+
+            <!-- Buscador -->
+            <div class="busqueda">
+              <input type="text" placeholder="Buscar ubicación..." [(ngModel)]="filtro" (input)="aplicarFiltro()">
+              <button class="btn-buscar">
+                <i class="fa fa-search"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal flotante -->
+        <div class="modal-overlay" *ngIf="mostrarFormulario">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3>{{ editando ? 'Editar ubicación' : 'Registrar nueva ubicación' }}</h3>
+              <button class="btn-cerrar" (click)="toggleFormulario()">&times;</button>
+            </div>
+
+            <div class="modal-body">
+              <form (ngSubmit)="guardarUbicacion()" #ubicacionForm="ngForm">
+                <div class="mb-3">
+                  <label>Nombre</label>
+                  <input type="text" [(ngModel)]="nuevaUbicacion.nombre" name="nombre" required>
+                </div>
+
+                <div class="acciones-form">
+                  <button type="submit" class="btn-guardar" [disabled]="ubicacionForm.invalid">
+                    {{ editando ? 'Actualizar' : 'Guardar' }}
+                  </button>
+                  <button type="button" class="btn-cancelar" (click)="toggleFormulario()">
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabla de ubicaciones -->
+        <div class="tabla-ubicaciones">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Nombre</th>
+                <th class="acciones-col">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let ubicacion of registrosPaginados; let i = index">
+                <td>{{ (paginaActual - 1) * registrosPorPagina + i + 1 }}</td>
+                <td>{{ ubicacion.nombre }}</td>
+                <td class="acciones">
+                  <button class="btn-editar" (click)="editarUbicacion(ubicacion)">
+                    <i class="fa fa-edit"></i>
+                  </button>
+                  <button class="btn-eliminar" (click)="eliminarUbicacion(ubicacion.id)">
+                    <i class="fa fa-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Paginación -->
+        <div class="paginacion" *ngIf="totalPaginas > 1">
+          <button (click)="cambiarPagina(paginaActual - 1)" [disabled]="paginaActual === 1">Anterior</button>
+          <span>Página {{ paginaActual }} de {{ totalPaginas }}</span>
+          <button (click)="cambiarPagina(paginaActual + 1)" [disabled]="paginaActual === totalPaginas">Siguiente</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

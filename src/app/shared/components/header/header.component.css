@@ -1,0 +1,142 @@
+.cont-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ffffff;
+  padding: 15px 20px;
+  border-bottom: 2px solid #e0e0e0;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  font-family: Arial, sans-serif;
+}
+
+/* Buscador */
+.buscador {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 82%;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid #d1d1d1;
+  background-color: #eeeeee;
+}
+
+.buscador input {
+  padding: 17px 13px;
+  width: 92%;
+  border: 0px !important;
+  outline: none;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  background: transparent;
+}
+
+.buscador input:focus {
+  box-shadow: 0 0 6px rgba(63,81,181,0.3);
+}
+
+.buscador button {
+  background: transparent;
+  border: none;
+  color: white;
+  padding: 8px ;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.buscador button:hover {
+  background: #2c3e9c;
+}
+
+/* Contenedor de perfil + campana */
+.acciones-usuario {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Icono de notificación */
+.notificacion {
+  position: relative;
+  font-size: 22px;
+  color: #3f51b5;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.notificacion:hover {
+  color: #2c3e9c;
+}
+
+/* Badge (contador de notificaciones) */
+.notificacion .badge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  background: red;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 2px 5px;
+  border-radius: 50%;
+}
+
+/* Perfil */
+.perfil {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  border-radius: 30px;
+  background: #f5f5f5;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.perfil:hover {
+  background: #e0e0e0;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.perfil img {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #3f51b5;
+}
+
+.perfil span {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap;
+}
+
+/* Responsivo */
+@media (max-width: 600px) {
+  .contenedor {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .buscador {
+    width: 100%;
+  }
+
+  .buscador input {
+    flex: 1;
+    width: 100%;
+  }
+
+  .acciones-usuario {
+    gap: 10px;
+  }
+
+  .perfil span {
+    display: none; /* Solo mostrar imagen en móviles */
+  }
+}

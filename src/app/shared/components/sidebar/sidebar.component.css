@@ -1,0 +1,82 @@
+.sidebar {
+  width: 250px;
+  background: linear-gradient(180deg, #328636, #25632a); /* degradado verde */
+  color: #fff;
+  font-size: 15px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 4px 0 12px rgba(0,0,0,0.2); /* sombra lateral */
+  transition: width 0.3s;
+}
+
+/* Contenedor logo */
+.sidebar .cont-logo {
+  display: flex;
+  align-items: center;
+  padding: 6px 10px!important;
+  gap: 10px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.3); /* línea separadora */
+  margin-bottom: 10px;
+}
+
+.sidebar .cont-logo img {
+  width: 70px;
+  height: auto;
+  border-radius: 10px;
+}
+
+.sidebar .cont-logo h1 {
+  font-size: 22px;
+  margin: 0;
+}
+.cont-logo p{font-size: 11px ;
+margin-top: 2px;}
+/* Menú */
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar ul li {
+  margin-bottom: 5px;
+}
+
+.sidebar ul li a {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.sidebar ul li a i {
+  margin-right: 15px;
+  width: 25px;
+  text-align: center;
+  font-size: 20px;
+}
+
+/* Hover */
+.sidebar ul li a:hover {
+  background-color: #1b5e20;
+  padding-left: 25px;
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+}
+
+/* Activo */
+.sidebar ul li a.active {
+  background-color: #225a1f;
+  box-shadow: inset 4px 0 0 #fff; /* barra lateral blanca */
+}
+
+/* Contenido principal */
+.main-content {
+  flex: 1;
+  padding: 40px;
+  background-color: #f4f4f9;
+}

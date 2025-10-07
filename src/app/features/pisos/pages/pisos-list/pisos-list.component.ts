@@ -1,35 +1,38 @@
-import {
-  Component,
-  OnInit,
-  ViewChild,
-  ElementRef,
-  HostListener,
-  OnDestroy,
-} from '@angular/core';
-import { Piso } from '../../models/piso.model';
+import { Component, ElementRef, ViewChild, HostListener } from '@angular/core';
 import { PisosService } from '../../../../services/pisos.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Facultades } from '../../models/facultades.model';
-import { FacultadesService } from '../../../../services/facultades.service';
 import { NgxPaginationModule } from 'ngx-pagination';
+import { HeaderComponent } from "../../../../shared/components/header/header.component";
+import { SidebarComponent } from "../../../../shared/components/sidebar/sidebar.component";
+import { FacultadesService } from '../../../../services/facultades.service';
+
+interface Piso {
+  id: number;
+  numero: number;
+  facultadId: number;
+}
+
+interface Facultad {
+  id: number;
+  nombre: string;
+}
 
 @Component({
   selector: 'app-pisos-list',
-  imports: [CommonModule, FormsModule, NgxPaginationModule],
+  imports: [HeaderComponent, SidebarComponent, FormsModule, CommonModule, NgxPaginationModule],
   templateUrl: './pisos-list.component.html',
   styleUrls: ['./pisos-list.component.css'],
 })
-export class PisosListComponent implements OnInit, OnDestroy {
+export class PisosComponent {
   pisos: Piso[] = [];
-  facultades: Facultades[] = [];
+  facultades: Facultad[] = [];
   searchTerm: string = '';
 
-  // Paginación
-  page: number = 1; // Página actual
-  itemsPerPage: number = 5; // Registros por página
+  page: number = 1;  
+  itemsPerPage: number = 5;
 
-  piso: Piso = { id: 0, numero: 0, facultadId: 0 } as Piso;
+  piso: Piso = { id: 0, numero: 0, facultadId: 0 };
 
   loading: boolean = false;
   error: string = '';
@@ -132,7 +135,7 @@ export class PisosListComponent implements OnInit, OnDestroy {
   }
 
   resetForm(): void {
-    this.piso = { id: 0, numero: 0, facultadId: 0 } as Piso;
+    this.piso = { id: 0, numero: 0, facultadId: 0 };
     this.isEdit = false;
   }
 
@@ -142,10 +145,7 @@ export class PisosListComponent implements OnInit, OnDestroy {
 
     if (this.searchTerm) {
       result = result.filter((p) =>
-        (p.numero ?? '')
-          .toString()
-          .toLowerCase()
-          .includes(this.searchTerm.toLowerCase())
+        p.numero.toString().toLowerCase().includes(this.searchTerm.toLowerCase())
       );
     }
 

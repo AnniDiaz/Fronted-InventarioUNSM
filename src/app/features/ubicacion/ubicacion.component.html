@@ -1,0 +1,95 @@
+<div class="container">
+  <div class="barra-lateral">
+    <app-sidebar></app-sidebar>
+  </div>
+
+  <div class="main-section">
+    <app-header></app-header>
+
+    <div class="contenido-principal">
+      <div class="card">
+        <div class="cont-tit">
+          <h2>Registro de Ubicaciones</h2>
+          <div class="cont-btns">
+            <button class="btn-agregar" (click)="toggleFormulario()">
+              <i class="fa fa-plus"></i> Agregar Nuevo
+            </button>
+
+            <div class="busqueda">
+              <input type="text" placeholder="Buscar ubicación..." [(ngModel)]="filtro" (input)="aplicarFiltro()">
+              <button class="btn-buscar">
+                <i class="fa fa-search"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-overlay" *ngIf="mostrarFormulario">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3>{{ editando ? 'Editar ubicación' : 'Registrar nueva ubicación' }}</h3>
+              <button class="btn-cerrar" (click)="toggleFormulario()">&times;</button>
+            </div>
+
+            <div class="modal-body">
+              <form (ngSubmit)="guardarUbicacion()" #ubicacionForm="ngForm">
+                <div class="mb-3">
+                  <label>Nombre</label>
+                  <input type="text" [(ngModel)]="nuevaUbicacion.nombre" name="nombre" required>
+                </div>
+                <div class="mb-3">
+                  <label>Descripción</label>
+                  <textarea [(ngModel)]="nuevaUbicacion.descripcion" name="descripcion" required></textarea>
+                </div>
+                <div class="mb-3">
+                  <label>Tipo de Ubicación</label>
+                  <select [(ngModel)]="nuevaUbicacion.tipoUbicacionId" name="tipoUbicacionId" required>
+                    <option value="" disabled selected>Seleccione un tipo</option>
+                    <option *ngFor="let tipo of tiposUbicacion" [value]="tipo.id">
+                      {{ tipo.nombre }}
+                    </option>
+                  </select>
+                </div>
+
+                <div class="acciones-form">
+                  <button type="submit" class="btn-guardar" [disabled]="ubicacionForm.invalid">
+                    {{ editando ? 'Actualizar' : 'Guardar' }}
+                  </button>
+                  <button type="button" class="btn-cancelar" (click)="toggleFormulario()">
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-ubicaciones">
+          <div class="ubicacion-card" *ngFor="let ubicacion of registrosPaginados">
+            <h3>{{ ubicacion.nombre }}</h3>
+            <p>{{ ubicacion.descripcion }}</p>
+            <div class="acciones">
+              <button class="btn-editar" (click)="editarUbicacion(ubicacion)">
+                <i class="fa fa-edit"></i>
+              </button>
+              <button class="btn-eliminar" (click)="eliminarUbicacion(ubicacion.id)">
+                <i class="fa fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="paginacion" *ngIf="totalPaginas > 1">
+          <button (click)="cambiarPagina(paginaActual - 1)" [disabled]="paginaActual === 1">&laquo;</button>
+          <button *ngFor="let n of [].constructor(totalPaginas); let i = index"
+                  (click)="cambiarPagina(i + 1)"
+                  [class.active]="paginaActual === i + 1">
+            {{ i + 1 }}
+          </button>
+          <button (click)="cambiarPagina(paginaActual + 1)" [disabled]="paginaActual === totalPaginas">&raquo;</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,22 +1,23 @@
-// src/app/services/pisos.service.ts
+// src/app/services/facultades.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Piso } from '../features/pisos/models/piso.model';
-import { environment } from '../../environments/environment';
-import { Facultades } from '../features/pisos/models/facultades.model';
+import baseUrl from '../shared/components/helper';
 
+export interface Facultad {
+  id: number;
+  nombre: string;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class FacultadesService {
-  private apiUrl = `${environment.apiUrl}/facultades`; 
 
-  constructor(private http: HttpClient) {}
+  constructor(private httpClient: HttpClient) {}
 
-  getFacultades(): Observable<Facultades[]> {
-    return this.http.get<Facultades[]>(this.apiUrl);
+  // GET -> Obtener todas las facultades
+  public getFacultades(): Observable<Facultad[]> {
+    return this.httpClient.get<Facultad[]>(`${baseUrl}/facultades`);
   }
-
 }

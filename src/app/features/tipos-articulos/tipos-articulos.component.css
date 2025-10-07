@@ -1,0 +1,325 @@
+
+.cont-tit {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  border-radius: 12px;
+  padding: 15px 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  margin-bottom: 20px;
+}
+
+.cont-tit h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.cont-btns {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* =========================
+   Botones Generales
+========================= */
+button {
+  font-family: inherit;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-agregar {
+  background: #28a745;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.btn-agregar:hover {
+  background: #218838;
+  transform: scale(1.03);
+}
+
+/* =========================
+   Buscador
+========================= */
+.busqueda {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.busqueda input {
+  flex: 1;
+  padding: 10px 12px;
+  border: none;
+  outline: none;
+  font-size: 14px;
+}
+
+.busqueda button {
+  padding: 10px 14px;
+  background: #007bff;
+  color: white;
+  transition: 0.3s;
+}
+
+.busqueda button:hover {
+  background: #0056b3;
+}
+
+/* =========================
+   Grid de artículos
+========================= */
+.grid-articulos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 24px;
+  margin-top: 20px;
+}
+
+.articulo-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.03);
+  transition: all 0.3s;
+}
+
+.articulo-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+}
+
+.img-articulo {
+  width: 90px;
+  height: 90px;
+  object-fit: contain;
+  margin-bottom: 12px;
+}
+
+.articulo-card h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 6px;
+}
+
+.articulo-card p {
+  font-size: 14px;
+  color: #4b5563;
+  margin: 2px 0;
+}
+
+/* =========================
+   Acciones
+========================= */
+.acciones {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.acciones button {
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.btn-ver {
+  background: #17a2b8;
+  color: #fff;
+}
+.btn-ver:hover { background: #138496; }
+
+.btn-editar {
+  background: #ffc107;
+  color: #333;
+}
+.btn-editar:hover { background: #e0a800; }
+
+.btn-agregar {
+  background: #28a745;
+  color: #fff;
+}
+.btn-agregar:hover { background: #218838; }
+
+.btn-eliminar {
+  background: #dc3545;
+  color: #fff;
+}
+.btn-eliminar:hover { background: #c82333; }
+
+/* =========================
+   Formulario
+========================= */
+.formulario-articulo {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.formulario-articulo form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.formulario-articulo label {
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: #374151;
+}
+
+.formulario-articulo input,
+.formulario-articulo textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.formulario-articulo input:focus,
+.formulario-articulo textarea:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 6px rgba(0,123,255,0.3);
+}
+
+.acciones-form {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn-guardar {
+  background: #28a745;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+}
+.btn-guardar:hover { background: #218838; }
+
+.btn-cancelar {
+  background: #6c757d;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+}
+.btn-cancelar:hover { background: #5a6268; }
+
+/* =========================
+   Animación
+========================= */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+/* Fondo semitransparente (overlay) */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5); /* oscurece el fondo */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999; /* encima de todo */
+}
+
+/* Formulario centrado */
+.formulario-articulo {
+  background: #fff;
+  border-radius: 12px;
+  padding: 25px;
+  padding-right: 50px !important;
+
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.25);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Botón cerrar en la esquina */
+.btn-cerrar {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #555;
+}
+.btn-cerrar:hover {
+  color: #000;
+}
+
+/* Animación */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+
+.preview {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.preview img {
+  max-width: 150px;
+  max-height: 150px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  object-fit: cover;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+.preview {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.preview img {
+  max-width: 150px;
+  max-height: 150px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  object-fit: cover;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  display: block;
+  margin: 0 auto 10px;
+}
+
+.preview button {
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.preview button:hover {
+  background: #c0392b;
+}
