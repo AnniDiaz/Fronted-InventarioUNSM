@@ -1,33 +1,4 @@
-/* ========== CONTENEDOR PRINCIPAL ========== */
-.container {
-  display: flex;
-  width: 100%;
-  min-height: 100vh;
-  background: #f3f4f6;
-}
-
-.barra-lateral {
-  width: 250px;
-}
-
-.main-section {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.contenido-principal {
-  padding: 25px;
-}
-
-.card {
-  background: #fff;
-  padding: 25px;
-  border-radius: 12px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.05);
-}
-
-/* ========== TÍTULO + BOTONES ========== */
+/* 🟩 Encabezado */
 .cont-tit {
   display: flex;
   flex-wrap: wrap;
@@ -54,7 +25,6 @@
   flex-wrap: wrap;
 }
 
-/* Botón agregar */
 .btn-agregar {
   background: #28a745;
   color: white;
@@ -81,6 +51,15 @@
   background: #fff;
   width: 220px;
 }
+.busqueda button {
+  padding: 10px 14px;
+  background: #007bff;
+  color: white;
+  transition: 0.3s;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
 
 .busqueda input {
   flex: 1;
@@ -90,20 +69,26 @@
   font-size: 14px;
 }
 
-.busqueda button {
-  padding: 10px 14px;
+.btn-buscar {
+  padding: 8px 12px;
   background: #007bff;
   color: white;
-  transition: 0.3s;
   border: none;
   cursor: pointer;
+  transition: 0.3s;
 }
 
-.busqueda button:hover {
+.btn-buscar:hover {
   background: #0056b3;
 }
 
-/* ========== MODAL GENERAL ========== */
+.btn-buscar i {
+  font-size: 15px;
+}
+
+/* =============================== */
+/*       MODAL FORM MEJORADO       */
+/* =============================== */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -117,10 +102,11 @@
 .modal-content {
   background: #fff;
   border-radius: 12px;
-  width: 450px;
-  max-width: 90%;
+  width: 750px;            /* ⬅️ MÁS ANCHO */
+  max-width: 95%;
   box-shadow: 0 6px 20px rgba(0,0,0,0.2);
   animation: aparecer 0.3s ease;
+  padding-bottom: 10px;
 }
 
 @keyframes aparecer {
@@ -128,7 +114,6 @@
   to { transform: scale(1); opacity: 1; }
 }
 
-/* Header del modal */
 .modal-header {
   background: #dfdfdf;
   padding: 15px;
@@ -151,24 +136,27 @@
   cursor: pointer;
 }
 
-/* Cuerpo modal */
 .modal-body {
   padding: 20px;
-  max-height: 400px;   /* Puedes ajustar este valor */
-  overflow-y: auto;    /* Hace que aparezca el scroll vertical */
 }
 
+/* ===== FORM EN DOS COLUMNAS ===== */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;   /* ⬅️ dos columnas equilibradas */
+  gap: 25px;
+}
 
-.modal-body label {
+/* Columna izquierda (Nombre + Estado) */
+.col-izq label {
   display: block;
   font-weight: 500;
   color: #333;
   margin-bottom: 6px;
 }
 
-.modal-body input,
-.modal-body textarea,
-.modal-body select {
+.col-izq input,
+.col-izq select {
   width: 100%;
   padding: 8px;
   border-radius: 8px;
@@ -178,25 +166,101 @@
   font-size: 14px;
 }
 
-.modal-body input:focus,
-.modal-body textarea:focus,
-.modal-body select:focus {
+.col-izq input:focus,
+.col-izq select:focus {
   border-color: #28a745;
 }
 
-/* Campos personalizados */
-.seccion-campos h3 {
+/* Columna derecha → Permisos */
+.col-der .permisos-container label {
+  font-weight: 600;
+  color: #333;
   margin-bottom: 10px;
-  font-size: 16px;
+  display: block;
+}
+
+.accordion {
+  background: #f9fafb;
+  border: 1px solid #dcdcdc;
+  padding: 12px;
+  border-radius: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* Módulo */
+.modulo {
+  background: #ffffff;
+  border: 1px solid #e4e4e4;
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  transition: 0.2s ease;
+}
+
+.modulo:hover {
+  background: #fdfdfd;
+  border-color: #b8e3c4;
+}
+
+.modulo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.modulo-header span {
+  font-size: 15px;
   font-weight: 600;
 }
 
-.campo-dinamico {
-  margin-bottom: 15px;
+.modulo-header i.fa-chevron-down,
+.modulo-header i.fa-chevron-up {
+  font-size: 14px;
 }
 
-/* Botones formulario */
+/* Submódulos */
+.submodulos {
+  padding: 10px 0 5px 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.submodulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.submodulo i {
+  font-size: 14px;
+  color: #4b5563;
+}
+
+.submodulo input {
+  transform: scale(1.1);
+}
+
+/* Scroll bonito */
+.accordion::-webkit-scrollbar {
+  width: 8px;
+}
+
+.accordion::-webkit-scrollbar-thumb {
+  background: #c4d7c7;
+  border-radius: 10px;
+}
+
+.accordion::-webkit-scrollbar-thumb:hover {
+  background: #9fc8a4;
+}
+
+/* Acciones */
 .acciones-form {
+  margin-top: 20px;
   display: flex;
   justify-content: space-between;
 }
@@ -229,8 +293,8 @@
   background-color: #b5b5b5;
 }
 
-/* ========== TABLA ========== */
-.tabla-ubicaciones {
+/* TABLA DE ROLES */
+.tabla-roles {
   width: 100%;
   border-collapse: collapse;
   margin-top: 25px;
@@ -240,11 +304,11 @@
   box-shadow: 0 4px 10px rgba(0,0,0,0.08);
 }
 
-.tabla-ubicaciones thead {
+.tabla-roles thead {
   background: #f4f4f4;
 }
 
-.tabla-ubicaciones thead th {
+.tabla-roles thead th {
   padding: 14px;
   text-align: left;
   font-size: 15px;
@@ -252,27 +316,27 @@
   color: #333;
 }
 
-.tabla-ubicaciones tbody tr {
+.tabla-roles tbody tr {
   border-bottom: 1px solid #e5e5e5;
   transition: 0.2s;
 }
 
-.tabla-ubicaciones tbody tr:hover {
+.tabla-roles tbody tr:hover {
   background: #f9f9f9;
   transform: scale(1.01);
 }
 
-.tabla-ubicaciones td {
+.tabla-roles td {
   padding: 13px 18px;
   font-size: 14px;
   color: #2b2b2b;
 }
 
-/* Acciones */
 .acciones {
   display: flex;
   justify-content: center;
   gap: 10px;
+  margin-top: 15px;
 }
 
 .acciones button {
@@ -290,7 +354,7 @@
 .btn-editar:hover { background: #d4ac0d; transform: scale(1.05); }
 .btn-eliminar:hover { background: #c0392b; transform: scale(1.05); }
 
-/* ========== Paginación ========== */
+/* 🩵 Paginación */
 .paginacion {
   margin-top: 25px;
   display: flex;
@@ -318,13 +382,21 @@
   cursor: not-allowed;
 }
 
-/* ========== RESPONSIVE ========== */
+/* 📌 Responsive */
 @media (max-width: 700px) {
-  .tabla-ubicaciones thead {
+  .modal-content {
+    width: 95%;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tabla-roles thead {
     display: none;
   }
 
-  .tabla-ubicaciones tr {
+  .tabla-roles tr {
     display: block;
     margin-bottom: 15px;
     background: #fff;
@@ -332,13 +404,13 @@
     padding: 12px;
   }
 
-  .tabla-ubicaciones td {
+  .tabla-roles td {
     display: flex;
     justify-content: space-between;
     padding: 8px 10px;
   }
 
-  .tabla-ubicaciones td::before {
+  .tabla-roles td::before {
     content: attr(data-label);
     font-weight: 600;
     color: #333;

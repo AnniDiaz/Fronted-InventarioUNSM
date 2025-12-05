@@ -28,5 +28,8 @@ export class UbicacionService {
   public deleteUbicacion(id: number) {
     return this.httpClient.delete(`${baseUrl}/ubicaciones/${id}`);
   }
-
+   public getUbicacionesPorTipo(tipoId: number) {
+    return this.httpClient.get<any[]>(`${baseUrl}/ubicaciones/por-tipo/${tipoId}`);
+  }
+  
 }

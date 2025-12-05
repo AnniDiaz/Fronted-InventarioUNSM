@@ -1,11 +1,24 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { LoginService } from '../../../core/services/login.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-header',
   imports: [],
   templateUrl: './header.component.html',
-  styleUrl: './header.component.css'
+  styleUrls: ['./header.component.css']
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit {
 
+  usuarioActual: any = null;
+
+  constructor(
+    private loginService: LoginService,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+    this.usuarioActual = this.loginService.getUser();
+  }
+  
 }

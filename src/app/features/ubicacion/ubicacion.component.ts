@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -8,7 +9,7 @@ import { UbicacionService } from '../../core/services/ubicacion.service';
 import { TipoUbicacionService } from '../../core/services/tipo-ubicacion.service';
 import Swal from 'sweetalert2';
 
-@Component({
+@Component({  
   selector: 'app-ubicaciones',
   imports: [HeaderComponent, SidebarComponent, FormsModule, CommonModule],
   templateUrl: './ubicacion.component.html',
@@ -21,10 +22,9 @@ export class UbicacionComponent {
   ubicacionesFiltradas: any[] = [];
   mostrarFormulario = false;
   editando = false;
-
-  // Paginación
   paginaActual: number = 1;
   registrosPorPagina: number = 12;
+  tipoSeleccionadoId: number | null = null;
 
   nuevaUbicacion = {
     id: 0,
@@ -36,14 +36,28 @@ export class UbicacionComponent {
   constructor(
     private ubicacionService: UbicacionService,
     private tipoUbicacionService: TipoUbicacionService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute 
   ) {}
 
   ngOnInit(): void {
-    this.cargarUbicaciones();
-    this.cargarTiposUbicacion();
-  }
+    this.route.queryParams.subscribe(params => {
+      const tipoId = params['tipo'];
 
+      if (tipoId) {
+        this.tipoSeleccionadoId = +tipoId;
+        this.cargarUbicacionesPorTipo(this.tipoSeleccionadoId);
+      } else {
+        this.cargarUbicaciones();
+      }
+
+      this.cargarTiposUbicacion();
+    });
+  }
+  obtenerTipo(id: number) {
+  const tipo = this.tiposUbicacion.find(t => t.id === id);
+  return tipo ? tipo.nombre : 'Sin tipo';
+}
   cargarUbicaciones() {
     this.ubicacionService.getUbicaciones().subscribe({
       next: (data: any[]) => {
@@ -52,6 +66,18 @@ export class UbicacionComponent {
       },
       error: (err: any) => {
         console.error("Error al obtener ubicaciones", err);
+      }
+    });
+  }
+
+  cargarUbicacionesPorTipo(tipoId: number) {
+    this.ubicacionService.getUbicacionesPorTipo(tipoId).subscribe({
+      next: (data: any[]) => {
+        this.ubicaciones = data;
+        this.aplicarFiltro();
+      },
+      error: (err: any) => {
+        console.error("Error al obtener ubicaciones por tipo", err);
       }
     });
   }
@@ -102,7 +128,11 @@ export class UbicacionComponent {
     if (this.editando) {
       this.ubicacionService.updateUbicacion(this.nuevaUbicacion.id, this.nuevaUbicacion).subscribe({
         next: () => {
-          this.cargarUbicaciones();
+          if (this.tipoSeleccionadoId) {
+            this.cargarUbicacionesPorTipo(this.tipoSeleccionadoId);
+          } else {
+            this.cargarUbicaciones();
+          }
           this.toggleFormulario();
           Swal.fire('¡Actualizado!', 'Ubicación actualizada correctamente.', 'success');
         },
@@ -114,7 +144,11 @@ export class UbicacionComponent {
     } else {
       this.ubicacionService.addUbicacion(this.nuevaUbicacion).subscribe({
         next: () => {
-          this.cargarUbicaciones();
+          if (this.tipoSeleccionadoId) {
+            this.cargarUbicacionesPorTipo(this.tipoSeleccionadoId);
+          } else {
+            this.cargarUbicaciones();
+          }
           this.toggleFormulario();
           Swal.fire('¡Agregado!', 'Ubicación agregada correctamente.', 'success');
         },
@@ -125,7 +159,6 @@ export class UbicacionComponent {
       });
     }
   }
-
   editarUbicacion(ubicacion: any) {
     this.nuevaUbicacion = { ...ubicacion };
     this.editando = true;

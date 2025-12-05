@@ -6,13 +6,46 @@
       <p>Facultad de Ingenieria de sistemas e informatica</p>
     </div>
   </div>
+
   <ul>
-    <li><a routerLink="/dashboard" routerLinkActive="active"><i class="fas fa-home"></i> Inicio</a></li>
-    <li><a routerLink="/articulos" routerLinkActive="active"><i class="fas fa-box-open"></i> Artículos</a></li>
-    <li><a routerLink="/tipo-ubicacion" routerLinkActive="active"><i class="fas fa-school"></i> Tipo Ubicación</a></li>
-    <li><a routerLink="/ubicaciones" routerLinkActive="active"><i class="fas fa-school"></i> Ubicaciones</a></li>
-    <li><a routerLink="/reportes" routerLinkActive="active"><i class="fas fa-chart-bar"></i> Reportes</a></li>
-    <li><a routerLink="/traslados" routerLinkActive="active"><i class="fas fa-exchange-alt"></i> Traslados</a></li>
-    <li><a routerLink="/inventario" routerLinkActive="active"><i class="fas fa-box"></i> Inventario</a></li>
+    <!-- Módulos dinámicos -->
+    <li *ngFor="let mod of modulos">
+
+      <!-- Si el módulo tiene submódulos -->
+      <ng-container *ngIf="mod.subModulos && mod.subModulos.length > 0; else moduloDirecto">
+        <div class="menu-head" (click)="toggle(mod.id)">
+          <i [class]="mod.icon ? mod.icon : 'fas fa-folder'"></i> 
+          {{ mod.nombre }}
+          <span>
+            {{ expanded[mod.id] ? '▾' : '▸' }}
+          </span>
+        </div>
+
+        <ul *ngIf="expanded[mod.id]" class="submenu">
+          <li *ngFor="let sub of mod.subModulos">
+            <a [routerLink]="sub.ruta" routerLinkActive="active">
+              <i [class]="sub.icon ? sub.icon : 'fas fa-circle'"></i> 
+              {{ sub.nombre }}
+            </a>
+          </li>
+        </ul>
+      </ng-container>
+
+      <!-- Si el módulo NO tiene submódulos -->
+      <ng-template #moduloDirecto>
+        <a [routerLink]="mod.ruta" routerLinkActive="active" class="menu-head">
+          <i [class]="mod.icon ? mod.icon : 'fas fa-folder'"></i> 
+          {{ mod.nombre }}
+        </a>
+      </ng-template>
+
+    </li>
   </ul>
+
+<!-- Botón Cerrar Sesión -->
+  <div class="logout-section">
+    <button class="btn-logout" (click)="logout()">
+      <i class="fa fa-sign-out"></i> Cerrar sesión
+    </button>
+  </div>
 </div>

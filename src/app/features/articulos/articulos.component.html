@@ -1,88 +1,169 @@
 <div class="container">
-  <app-header></app-header>
+  <div class="barra-lateral">
+    <app-sidebar></app-sidebar>
+  </div>
 
-  <div class="content-wrapper">
-    <div class="barra-lateral">
-      <app-sidebar></app-sidebar>
-    </div>
+  <div class="main-section">
+    <app-header></app-header>
 
     <div class="contenido-principal">
       <div class="card">
-        <!-- Header -->
-        <div class="card-header flex-between">
+
+        <!-- TÍTULO + BOTONES -->
+        <div class="cont-tit">
           <h2>Registro de Artículos</h2>
-          <button class="btn-agregar" (click)="toggleFormulario()">
-            <i class="fa fa-plus"></i> Agregar Nuevo
-          </button>
-        </div>
-<div class="modal-overlay" *ngIf="mostrarFormulario">
-  <div class="modal-contenido">
-    <form #articuloForm="ngForm" (ngSubmit)="guardarArticulo(articuloForm)">
-      <!-- Nombre -->
-      <div class="form-group">
-        <label for="nombre">Nombre</label>
-        <input id="nombre" type="text" name="nombre" ngModel required />
-      </div>
 
-      <!-- Descripción -->
-      <div class="form-group">
-        <label for="descripcion">Descripción</label>
-        <textarea id="descripcion" name="descripcion" ngModel required></textarea>
-      </div>
+          <div class="cont-btns">
+            <button class="btn-agregar" (click)="toggleFormulario()">
+              <i class="fa fa-plus"></i> Agregar Artículo
+            </button>
 
-      <!-- Ubicación -->
-      <div class="form-group">
-        <label for="ubicacion">Ubicación</label>
-        <select id="ubicacion" name="ubicacion" ngModel required>
-          <option value="" disabled selected>Seleccione ubicación</option>
-          <option *ngFor="let u of ubicaciones" [value]="u.id">
-            {{ u.nombre }}
-          </option>
-        </select>
-      </div>
-
-      <!-- Campo oculto estado -->
-      <input type="hidden" name="estado" [ngModel]="1" />
-
-      <!-- Campo oculto tipoArticuloId -->
-      <input type="hidden" name="tipoArticuloId" [ngModel]="tipoArticuloId" />
-
-      <!-- Botones -->
-      <div class="acciones-form">
-        <button
-          type="submit"
-          class="btn-guardar"
-          [disabled]="articuloForm.invalid"
-        >
-          Guardar
-        </button>
-        <button type="button" class="btn-cancelar" (click)="cancelarFormulario()">
-          Cancelar
-        </button>
-      </div>
-    </form>
-  </div>
-</div>
-
-
-        <!-- Barra de búsqueda -->
-        <div class="busqueda">
-          <input type="text" placeholder="Buscar artículo..." />
-          <button class="btn-buscar">
-            <i class="fa fa-search"></i>
-          </button>
-        </div>
-
-        <!-- Listado de artículos -->
-        <h2>Artículos del tipo: {{ tipoArticulo?.nombre }}</h2>
-
-        <div class="grid-articulos">
-          <div class="articulo-card" *ngFor="let articulo of articulos">
-            <h3>{{ articulo.nombre }}</h3>
-            <p><strong>Código:</strong> {{ articulo.codigo }}</p>
-            <p><strong>Stock:</strong> {{ articulo.stock }}</p>
+            <div class="busqueda">
+              <input type="text" placeholder="Buscar artículo..."
+                     [(ngModel)]="filtro" (input)="aplicarFiltro()">
+              <button class="btn-buscar">
+                <i class="fa fa-search"></i>
+              </button>
+            </div>
           </div>
         </div>
+
+        <!-- =============== MODAL =============== -->
+        <div class="modal-overlay" *ngIf="mostrarFormulario">
+          <div class="modal-content">
+
+            <div class="modal-header">
+              <h3>{{ editando ? 'Editar Artículo' : 'Registrar Artículo' }}</h3>
+              <button class="btn-cerrar" (click)="toggleFormulario()">&times;</button>
+            </div>
+
+            <div class="modal-body">
+
+              <!-- AQUI VA TU FORMULARIO TAL CUAL -->
+              <form (ngSubmit)="guardar()" #formArticulo="ngForm" class="form-articulo">
+
+                <!-- TIPO -->
+                <div class="form-group">
+                  <label>Tipo de artículo</label>
+                  <select name="tipoArticuloId" [(ngModel)]="articulo.tipoArticuloId"
+                          (change)="onTipoChange()" required>
+                    <option [ngValue]="0" disabled>Seleccione tipo</option>
+                    <option *ngFor="let t of tipos" [ngValue]="t.id">{{ t.nombre }}</option>
+                  </select>
+                </div>
+
+                <!-- UBICACIÓN -->
+                <div class="form-group">
+                  <label>Ubicación</label>
+                  <select name="ubicacionId" [(ngModel)]="articulo.ubicacionId" required>
+                    <option [ngValue]="0" disabled>Seleccione ubicación</option>
+                    <option *ngFor="let u of ubicaciones" [ngValue]="u.id">{{ u.nombre }}</option>
+                  </select>
+                </div>
+
+
+                <!-- STOCK -->
+                <div class="form-group">
+                  <label>Stock</label>
+                  <input type="number" name="stock" min="0" [(ngModel)]="articulo.stock" />
+                </div>
+
+                <!-- CAMPOS DINÁMICOS -->
+                <div class="seccion-campos" *ngIf="camposDelTipo && camposDelTipo.length > 0">
+                  <h3>Campos personalizados</h3>
+
+                  <div *ngFor="let campo of camposDelTipo; let i = index" class="campo-dinamico">
+                    <label>{{ campo.nombreCampo || campo.nombre }}</label>
+
+                    <input *ngIf="campo.tipo === 'texto' || campo.tipoDato === 'texto'"
+                           type="text"
+                           [(ngModel)]="articulo.camposValores[i].valor"
+                           [name]="'campo_' + campo.id" />
+
+                    <input *ngIf="campo.tipo === 'numero' || campo.tipoDato === 'numero'"
+                           type="number"
+                           [(ngModel)]="articulo.camposValores[i].valor"
+                           [name]="'campo_' + campo.id" />
+
+                    <input *ngIf="campo.tipo === 'fecha' || campo.tipoDato === 'fecha'"
+                           type="date"
+                           [(ngModel)]="articulo.camposValores[i].valor"
+                           [name]="'campo_' + campo.id" />
+                  </div>
+                </div>
+
+                <!-- ESTADO -->
+                <input type="hidden" name="estado" [(ngModel)]="articulo.estado" />
+
+                <!-- BOTONES -->
+                <div class="acciones-form">
+                  <button class="btn-guardar"
+                          type="submit"
+                          [disabled]="formArticulo.invalid">
+                    {{ editando ? 'Actualizar' : 'Guardar' }}
+                  </button>
+
+                  <button type="button" class="btn-cancelar" (click)="toggleFormulario()">
+                    Cancelar
+                  </button>
+                </div>
+
+              </form>
+              <!-- FIN FORM -->
+
+            </div>
+          </div>
+        </div>
+
+        <!-- =============== TABLA =============== -->
+        <table class="tabla-ubicaciones">
+          <thead>
+            <tr>
+              <th>Articulo</th>
+              <th>Tipo</th>
+              <th>Ubicación</th>
+              <th>Stock</th>
+              <th style="width: 120px;">Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let a of registrosPaginados">
+              <td>
+                <ul *ngIf="a.camposValores && a.camposValores.length > 0">
+                  <li *ngFor="let campo of a.camposValores">
+                    {{ campo.valor }}
+                  </li>
+                </ul>
+              </td>
+              <td>{{ obtenerTipoArticulo(a.tipoArticuloId) }}</td>
+              <td>{{ obtenerUbicacion(a.ubicacionId) }}</td>
+              <td>{{ a.stock }}</td>
+
+              <td class="acciones">
+                <button class="btn-editar" (click)="editarArticulo(a)">
+                  <i class="fa fa-edit"></i>
+                </button>
+
+                <button class="btn-eliminar" (click)="eliminarArticulo(a.id)">
+                  <i class="fa fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- PAGINACIÓN -->
+        <div class="paginacion" *ngIf="totalPaginas > 1">
+          <button (click)="cambiarPagina(paginaActual - 1)"
+                  [disabled]="paginaActual === 1">Anterior</button>
+
+          <span>Página {{ paginaActual }} de {{ totalPaginas }}</span>
+
+          <button (click)="cambiarPagina(paginaActual + 1)"
+                  [disabled]="paginaActual === totalPaginas">Siguiente</button>
+        </div>
+
       </div>
     </div>
   </div>

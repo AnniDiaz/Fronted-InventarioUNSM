@@ -1,48 +1,34 @@
-
 .cont-tit {
   display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
   justify-content: space-between;
   align-items: center;
-  background: #fff;
-  border-radius: 12px;
-  padding: 15px 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  margin-bottom: 20px;
+  margin-bottom: 25px;
 }
 
 .cont-tit h2 {
-  font-size: 20px;
+  color: #333;
   font-weight: 600;
-  color: #1f2937;
 }
 
 .cont-btns {
   display: flex;
-  gap: 12px;
   align-items: center;
-}
-
-button {
-  font-family: inherit;
-  font-size: 14px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  gap: 15px;
 }
 
 .btn-agregar {
-  background: #28a745;
+  background-color: #218838;
   color: white;
-  padding: 8px 16px;
+  border: none;
+  padding: 10px 18px;
   border-radius: 8px;
   font-weight: 500;
+  cursor: pointer;
+  transition: 0.3s ease;
 }
 
 .btn-agregar:hover {
-  background: #218838;
-  transform: scale(1.03);
+  background-color: #28a745;
 }
 
 .busqueda {
@@ -53,6 +39,15 @@ button {
   overflow: hidden;
   background: #fff;
 }
+.busqueda button {
+  padding: 10px 14px;
+  background: #007bff;
+  color: white;
+  transition: 0.3s;
+  border: none;       
+  outline: none;       
+  cursor: pointer;
+}
 
 .busqueda input {
   flex: 1;
@@ -61,222 +56,219 @@ button {
   outline: none;
   font-size: 14px;
 }
-
 .busqueda button {
   padding: 10px 14px;
   background: #007bff;
   color: white;
   transition: 0.3s;
 }
-
 .busqueda button:hover {
   background: #0056b3;
 }
 
-.modal-overlay {
+.modal-backdrop {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.6);
   display: flex;
-  justify-content: center;
   align-items: center;
-  z-index: 1000;
+  justify-content: center;
 }
 
-.modal-content {
+.modal-card {
   background: #fff;
-  padding: 20px;
-  border-radius: 12px;
-  width: 450px;
-  max-width: 95%;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-  animation: fadeIn 0.3s ease;
+  border-radius: 10px;
+  width: 400px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  animation: aparecer 0.3s ease;
+}
+
+@keyframes aparecer {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 
 .modal-header {
+  background-color: #f3f3f3f6;
+  color: white;
+  padding: 15px;
+  border-radius: 10px 10px 0 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
 }
 
 .modal-header h3 {
-  font-size: 18px;
-  font-weight: 600;
-  color: #333;
+  margin: 0;
 }
 
 .btn-cerrar {
-  background: transparent;
+  background: none;
   border: none;
-  font-size: 22px;
+  color: white;
+  font-size: 20px;
   cursor: pointer;
-  color: #666;
 }
 
-.btn-cerrar:hover {
-  color: #000;
+.modal-body {
+  padding: 20px;
 }
 
-.modal-body .mb-3 {
-  margin-bottom: 15px;
-  display: flex;
-  flex-direction: column;
-}
-
-.modal-body label {
-  margin-bottom: 6px;
+.modal-body form label {
   font-weight: 500;
   color: #444;
 }
 
 .modal-body input {
-  padding: 8px 10px;
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
   border: 1px solid #ccc;
   border-radius: 8px;
   outline: none;
+  transition: 0.2s;
 }
 
+.modal-body input:focus {
+  border-color: #ffffff;
+}
 .acciones-form {
+  margin-top: 20px;
   display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 15px;
+  justify-content: space-between;
 }
 
 .btn-guardar {
-  background: #28a745;
+  background-color: #218838;
   color: white;
+  border: none;
   padding: 8px 14px;
   border-radius: 8px;
-  border: none;
   cursor: pointer;
-}
-
-.btn-guardar:hover {
-  background: #218838;
 }
 
 .btn-cancelar {
-  background: #dc3545;
-  color: white;
+  background-color: #ccc;
+  color: #333;
+  border: none;
   padding: 8px 14px;
   border-radius: 8px;
-  border: none;
   cursor: pointer;
 }
 
-.btn-cancelar:hover {
-  background: #c82333;
+.grid-ubicaciones {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 25px;
+  margin-top: 30px;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
-}
-.tabla-ubicaciones {
-  margin-top: 20px;
-  overflow-x: auto;
-}
-
-.tabla-ubicaciones table {
-  width: 100%;
-  border-collapse: collapse;
-  background: #ffffff;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0px 3px 8px rgba(0,0,0,0.1);
+.ubicacion-card {
+  background-color: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
-.tabla-ubicaciones thead {
-  background: #eef1ee;
-  color: #0f0f0f;
-  text-align: left;
+.ubicacion-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+}
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.tabla-ubicaciones th, 
-.tabla-ubicaciones td {
-  padding: 12px 15px;
-  border-bottom: 1px solid #eee;
-  text-align: center;
+.card-num {
+  background-color: #28a745;
+  color: white;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
 }
-
-.tabla-ubicaciones tbody tr:hover {
-  background: #f8f9fa;
-}
-
-.acciones-col {
-  text-align: center;
-  width: 120px;
+.card-header h3 {
+  color: #333;
+  font-size: 16px;
 }
 
 .acciones {
   display: flex;
   justify-content: center;
   gap: 10px;
+  margin-top: 15px;
 }
-
-.btn-editar, 
-.btn-eliminar {
+.acciones button {
   border: none;
-  padding: 6px 10px;
   border-radius: 6px;
+  padding: 6px 10px;
   cursor: pointer;
-  transition: 0.3s;
+  transition: 0.2s;
+  color: white;
 }
 
-.btn-editar {
-  background: #ffc107;
-  color: #fff;
+.btn-ver { background-color: #00b894; }
+.btn-editar { background-color: #d4ac0d; }
+.btn-eliminar { background-color: #d63031; }
+
+.acciones button:hover {
+  opacity: 0.8;
 }
 
-.btn-editar:hover {
-  background: #e0a800;
+.sin-resultados {
+  text-align: center;
+  color: #777;
+  font-style: italic;
+  margin-top: 30px;
 }
 
-.btn-eliminar {
-  background: #dc3545;
-  color: #fff;
-}
-
-.btn-eliminar:hover {
-  background: #b02a37;
-}
 .paginacion {
+  margin-top: 25px;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 15px;
-  gap: 10px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  gap: 15px;
 }
 
 .paginacion button {
-  background-color: #f0f0f0; 
-  border: 1px solid #d1d1d1; 
-  border-radius: 6px; 
-  padding: 6px 12px;
+  color: rgb(23, 10, 10);
+  border: none;
+  padding: 8px 15px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s ease-in-out;
-}
-
-.paginacion button:hover {
-  background-color: #e0e0e0; 
-  border-color: #c0c0c0;
 }
 
 .paginacion button:disabled {
-  background-color: #fafafa;
-  color: #aaa;
-  border-color: #eee;
+  background-color: #ccc;
   cursor: not-allowed;
 }
 
-.paginacion span {
-  font-weight: 500;
-  color: #333;
+/*Responsive */
+@media (max-width: 992px) {
+  .grid-ubicaciones {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .grid-ubicaciones {
+    grid-template-columns: 1fr;
+  }
+
+  .cont-btns {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .busqueda {
+    width: 100%;
+  }
 }

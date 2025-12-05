@@ -6,41 +6,47 @@
   <div class="main-section">
     <app-header></app-header>
 
-    <div class="contenido-principal">
-      <div class="card">
-        <div class="card-header">
-          <h3>Listado de Tutores</h3>
-        </div>
-        <div class="card-body">
+    <div class="dashboard-container">
 
-          <table class="custom-table">
-            <thead>
-              <tr>
-                <th>Foto</th>
-                <th>Nombre</th>
-                <th>DNI</th>
-                <th>Escuela Profesional</th>
-                <th>Usuario</th>
-                <th>Opciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let tutor of tutores">
-                <td><img src="assets/user.png" alt="Foto" class="avatar"></td>
-                <td>{{ tutor.nombre }}</td>
-                <td>{{ tutor.dni }}</td>
-                <td>{{ tutor.escuelaProfesional }}</td>
-                <td>{{ tutor.usuario }}</td>
-                <td>
-                  <button class="btn-ver">
-                    <i class="fa fa-eye"></i> Ver Detalle
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      <!-- 🔹 TARJETAS -->
+      <div class="cards-row">
+        <div class="card-stats">
+          <h3>Computadoras</h3>
+          <p class="number" id="totalComputadoras">0</p>
+        </div>
+
+        <div class="card-stats">
+          <h3>Laptops</h3>
+          <p class="number" id="totalLaptops">0</p>
+        </div>
+
+        <div class="card-stats">
+          <h3>Mouses</h3>
+          <p class="number" id="totalMouses">0</p>
         </div>
       </div>
+
+      <!-- 🔹 FILA DE GRÁFICOS -->
+      <div class="charts-row">
+        <div class="chart-box">
+          <h3>Artículos por ubicación</h3>
+          <canvas id="barChart"></canvas>
+        </div>
+
+        <div class="chart-box">
+          <h3>Distribución de Ubicaciones</h3>
+          <canvas id="pieChart"></canvas>
+        </div>
+      </div>
+
+      <!-- 🔹 EXTRA BONITO AL FINAL -->
+      <div class="extra-box">
+      <h3>Top ubicaciones con más artículos</h3>
+
+      <div class="top-grid" id="topUbicaciones"></div>
     </div>
+
+    </div>
+
   </div>
 </div>

@@ -5,17 +5,30 @@ import baseUrl from '../../shared/components/helper';
 @Injectable({
   providedIn: 'root'
 })
-export class TipoArticulosService {
+export class TipoArticuloService {
 
-   constructor(private httpClient:HttpClient) { }
-  public addTipoArticulo(loginData: any) {
-    return this.httpClient.post(`${baseUrl}/tipo-articulo`, loginData);
+  constructor(private httpClient: HttpClient) { }
+
+  public addTipoArticulo(tipoArticulo: any) {
+    return this.httpClient.post(`${baseUrl}/tipo-articulo`, tipoArticulo);
   }
-   // GET -> Obtener todos los artículos
-  public getTipoArticulo() {
-    return this.httpClient.get(`${baseUrl}/tipo-articulo`);
+
+  public getTipoArticulos() {
+    return this.httpClient.get<any[]>(`${baseUrl}/tipo-articulo`);
   }
-  // GET -> Obtener todos los artículos de un tipo específico
+
+  public getTipoArticuloById(id: number) {
+    return this.httpClient.get(`${baseUrl}/tipo-articulo/${id}`);
+  }
+
+  public updateTipoArticulo(id: number, tipoArticulo: any) {
+    return this.httpClient.put(`${baseUrl}/tipo-articulo/${id}`, tipoArticulo);
+  }
+
+  public deleteTipoArticulo(id: number) {
+    return this.httpClient.delete(`${baseUrl}/tipo-articulo/${id}`);
+  }
+
   public getArticulosByTipo(id: number) {
     return this.httpClient.get(`${baseUrl}/tipo-articulo/${id}/articulo`);
   }

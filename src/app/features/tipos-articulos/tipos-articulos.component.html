@@ -1,111 +1,186 @@
-  <div class="container">
-    <div class="barra-lateral">
-      <app-sidebar></app-sidebar>
-    </div>
-
-    <div class="main-section">
-      <app-header></app-header>
-
-      <div class="contenido-principal">
-        <div class="card">
-          <div class="cont-tit">
-            <h2>Registro de Artículos</h2>
-            <div class="cont-btns">
-
-              <div class="busqueda">
-                <input type="text" placeholder="Buscar artículo..." [(ngModel)]="filtro">
-                <button class="btn-buscar">
-                  <i class="fa fa-search"></i>
-                </button>
-              </div>
-                <button class="btn-agregar" (click)="toggleFormulario()">
-                <i class="fa fa-plus"></i> Agregar Nuevo
-              </button>
-            </div>
-          </div>
-
-          <!-- Formulario como modal -->
-          <div class="overlay" *ngIf="mostrarFormulario">
-            <div class="formulario-articulo">
-            <h3>Registrar nuevo articulo</h3>
-
-              <button class="btn-cerrar" (click)="toggleFormulario()">&times;</button>
-
-            <form (ngSubmit)="guardarArticulo()" #articuloForm="ngForm" enctype="multipart/form-data">
-    <div>
-      <label>Nombre</label>
-      <input type="text" [(ngModel)]="nuevoArticulo.nombre" name="nombre" required>
-    </div>
-
-    <div>
-      <label>Descripción</label>
-      <textarea [(ngModel)]="nuevoArticulo.descripcion" name="descripcion" required></textarea>
-    </div>
-
-  <!-- Campo para subir imagen -->
-  <div>
-    <label>Imagen</label>
-
-    <!-- Input file (solo aparece si NO hay imagen cargada) -->
-    <input
-      type="file"
-      (change)="onFileSelected($event)"
-      accept="image/*"
-      *ngIf="!nuevoArticulo.imagenPreview">
-
-    <!-- Previsualización (si ya hay imagen cargada) -->
-    <div *ngIf="nuevoArticulo.imagenPreview" class="preview">
-      <img [src]="nuevoArticulo.imagenPreview" alt="Vista previa" />
-      <button type="button" (click)="quitarImagen()">Quitar</button>
-    </div>
+<div class="container">
+  <div class="barra-lateral">
+    <app-sidebar></app-sidebar>
   </div>
 
-    <!-- Campo oculto -->
-    <input type="hidden" [(ngModel)]="nuevoArticulo.estado" name="estado">
+  <div class="main-section">
+    <app-header></app-header>
 
-    <div class="acciones-form">
-      <button type="submit" class="btn-guardar" [disabled]="articuloForm.invalid">Guardar</button>
-      <button type="button" class="btn-cancelar" (click)="toggleFormulario()">Cancelar</button>
-    </div>
-  </form>
+    <div class="contenido-principal">
+      <div class="card">
+        
+        <!-- TITULO Y BOTONES -->
+        <div class="cont-tit">
+          <h2>Registro de Tipos de Artículos</h2>
 
+          <div class="cont-btns">
+
+            <!-- BUSCADOR -->
+            <div class="busqueda">
+              <input
+                type="text"
+                placeholder="Buscar tipo de artículo..."
+                [(ngModel)]="filtro"
+                (input)="aplicarFiltro()"
+              />
+              <button class="btn-buscar">
+                <i class="fa fa-search"></i>
+              </button>
             </div>
+
+            <!-- BOTÓN AGREGAR -->
+            <button class="btn-agregar" (click)="toggleFormulario()">
+              <i class="fa fa-plus"></i> Agregar Nuevo
+            </button>
+
           </div>
+        </div>
 
-          <!-- Grid de artículos -->
-          <div class="grid-articulos">
-            <div class="articulo-card" *ngFor="let articulo of articulos">
-              <img src="assets/articulo.png" alt="Imagen artículo" class="img-articulo">
-              <h3>{{ articulo.nombre }}</h3>
-              <p><strong>Código:</strong> {{ articulo.codigo }}</p>
-              <p><strong>Stock:</strong> {{ articulo.stock }}</p>
-              <div class="acciones">
-                <!-- Ver -->
-                <button class="btn-ver" (click)="verArticulosPorTipo(articulo.id)">
-                  <i class="fa fa-eye"></i>
-                </button>
+        <!-- MODAL FORMULARIO -->
+        <div class="overlay" *ngIf="mostrarFormulario">
+          <div class="formulario-articulo" tabindex="0">
 
-                <!-- Editar -->
-                <button class="btn-editar">
-                  <i class="fa fa-edit"></i>
-                </button>
+            <h3>{{ editando ? 'Editar tipo de artículo' : 'Registrar nuevo tipo de artículo' }}</h3>
+            <button class="btn-cerrar" (click)="toggleFormulario()">&times;</button>
 
-                <!-- Agregar campos -->
-                <button class="btn-agregar">
-                  <i class="fa fa-plus"></i>
-                </button>
+            <form (ngSubmit)="guardarArticulo()" #formTipoArticulo="ngForm" enctype="multipart/form-data">
 
-                <!-- Eliminar -->
-                <button class="btn-eliminar">
-                  <i class="fa fa-trash"></i>
-                </button>
+              <div>
+                <label>Nombre</label>
+                <input type="text" [(ngModel)]="nuevoArticulo.nombre" name="nombre" required />
               </div>
 
+              <div>
+                <label>Descripción</label>
+                <textarea [(ngModel)]="nuevoArticulo.descripcion" name="descripcion" required></textarea>
+              </div>
 
+              <div>
+                <label>Imagen</label>
+
+                <!-- INPUT FILE -->
+                <input
+                  type="file"
+                  accept="image/*"
+                  (change)="onFileSelected($event)"
+                  *ngIf="!nuevoArticulo.imagenPreview"
+                />
+
+                <!-- PREVIEW IMAGEN -->
+                <div *ngIf="nuevoArticulo.imagenPreview" class="preview">
+                  <img [src]="nuevoArticulo.imagenPreview" alt="Vista previa" />
+                  <button type="button" (click)="quitarImagen()">Quitar</button>
+                </div>
+              </div>
+
+              <input type="hidden" [(ngModel)]="nuevoArticulo.estado" name="estado"/>
+
+              <div class="acciones-form">
+                <button type="submit" class="btn-guardar" [disabled]="formTipoArticulo.invalid">
+                  {{ editando ? 'Actualizar' : 'Guardar' }}
+                </button>
+                <button type="button" class="btn-cancelar" (click)="toggleFormulario()">Cancelar</button>
+              </div>
+
+            </form>
+
+          </div>
+        </div>
+
+        <!-- GRID DE ARTÍCULOS -->
+        <div class="grid-articulos">
+
+          <div class="articulo-card" *ngFor="let articulo of registrosPaginados">
+
+            <img
+              *ngIf="articulo.imagen"
+              [src]="articulo.imagen"
+              alt="Imagen artículo"
+              class="img-articulo"
+            />
+            <img
+              *ngIf="!articulo.imagen"
+              src="assets/sin-imagen.jpg"
+              alt="Sin imagen"
+              class="img-articulo"
+            />
+
+            <h3>{{ articulo.nombre }}</h3>
+            <p><strong>Descripción:</strong> {{ articulo.descripcion }}</p>
+
+            <div class="acciones">
+              <button class="btn-ver" (click)="verArticulo(articulo)">
+                <i class="fa fa-eye"></i>
+              </button>
+              <button class="btn-editar" (click)="editarTipoArticulo(articulo)">
+                <i class="fa fa-edit"></i>
+              </button>
+              <button class="btn-agregar" (click)="abrirCampos(articulo)">
+                <i class="fa fa-plus"></i>
+              </button>
+              <button class="btn-eliminar" (click)="eliminarTipoArticulo(articulo.id)">
+                <i class="fa fa-trash"></i>
+              </button>
             </div>
+
+          </div>
+
+          <div class="sin-resultados" *ngIf="registrosPaginados.length === 0">
+            <p>No se encontraron tipos de artículos.</p>
           </div>
 
         </div>
+
+        <!-- PAGINACIÓN -->
+        <div class="paginacion" *ngIf="totalPaginas > 1">
+          <button (click)="cambiarPagina(paginaActual - 1)" [disabled]="paginaActual === 1">
+            Anterior
+          </button>
+
+          <span>Página {{ paginaActual }} de {{ totalPaginas }}</span>
+
+          <button (click)="cambiarPagina(paginaActual + 1)" [disabled]="paginaActual === totalPaginas">
+            Siguiente
+          </button>
+        </div>
+
       </div>
     </div>
   </div>
+</div>
+
+<!-- MODAL DE CAMPOS PERSONALIZADOS -->
+<div class="overlay" *ngIf="mostrarCampos">
+  <div class="formulario-articulo" tabindex="0">
+
+    <h3>Campos personalizados para: {{ tipoSeleccionado?.nombre }}</h3>
+    <button class="btn-cerrar" (click)="cerrarCampos()">&times;</button>
+
+    <div *ngFor="let campo of camposTemporales; let i = index" class="campo-item">
+      <input
+        type="text"
+        placeholder="Nombre del campo"
+        [(ngModel)]="campo.nombre"
+        name="campoNombre{{ i }}"
+      />
+
+      <select [(ngModel)]="campo.tipo" name="campoTipo{{ i }}">
+        <option value="texto">Texto</option>
+        <option value="numero">Número</option>
+        <option value="fecha">Fecha</option>
+      </select>
+
+      <button class="btn-eliminar" (click)="eliminarCampo(i)">
+        <i class="fa fa-trash"></i>
+      </button>
+    </div>
+
+    <button class="btn-agregar" (click)="agregarCampo()">+ Agregar campo</button>
+
+    <div class="acciones-form">
+      <button class="btn-guardar" (click)="guardarCampos()">Guardar</button>
+      <button class="btn-cancelar" (click)="cerrarCampos()">Cancelar</button>
+    </div>
+
+  </div>
+</div>

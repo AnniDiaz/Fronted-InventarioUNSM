@@ -1,20 +1,26 @@
 <div class="cont-header">
+
   <!-- Buscador -->
   <div class="buscador">
     <input type="text" placeholder="Buscar...">
     <button><i class="fa fa-search"></i></button>
   </div>
 
-  <!-- Campana + Perfil -->
+  <!-- Acciones -->
   <div class="acciones-usuario">
 
-    <div class="perfil">
-      <img src="/assets/perfil.png" alt="Perfil">
-      <span>Juan Pérez</span>
-        <div class="notificacion">
+    <!-- Notificaciones -->
+    <div class="notificacion">
       <i class="fa fa-bell"></i>
       <span class="badge">3</span>
     </div>
+
+    <!-- Perfil del usuario -->
+    <div class="perfil">
+      <img src="/assets/perfil.png" alt="Perfil">
+      <span>{{ usuarioActual?.username }}</span>
     </div>
+
+
   </div>
 </div>

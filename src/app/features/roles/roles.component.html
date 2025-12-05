@@ -1,0 +1,131 @@
+<div class="container">
+  <div class="barra-lateral">
+    <app-sidebar></app-sidebar>
+  </div>
+
+  <div class="main-section">
+    <app-header></app-header>
+
+    <div class="contenido-principal">
+      <div class="card">
+        <div class="cont-tit">
+          <h2>Gestión de Roles</h2>
+          <div class="cont-btns">
+            <button class="btn-agregar" (click)="toggleFormulario()">
+              <i class="fa fa-plus"></i> Agregar Nuevo Rol
+            </button>
+
+            <div class="busqueda">
+              <input type="text" placeholder="Buscar rol..."
+                     [(ngModel)]="filtro" (input)="aplicarFiltro()">
+              <button class="btn-buscar">
+                <i class="fa fa-search"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- MODAL -->
+        <div class="modal-overlay" *ngIf="mostrarFormulario">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3>{{ editando ? 'Editar Rol' : 'Registrar Nuevo Rol' }}</h3>
+              <button class="btn-cerrar" (click)="toggleFormulario()">&times;</button>
+            </div>
+
+            <div class="modal-body">
+              <form (ngSubmit)="guardarRol()" #rolForm="ngForm">
+
+                <!-- NOMBRE -->
+                <div class="mb-3">
+                  <label>Nombre del Rol</label>
+                  <input type="text" [(ngModel)]="nuevoRol.nombre" name="nombre" required>
+                </div>
+
+                <!-- ESTADO -->
+                <div class="mb-3">
+                  <label>Estado</label>
+                  <select [(ngModel)]="nuevoRol.estado" name="estado" required>
+                    <option [value]="1">Activo</option>
+                    <option [value]="0">Inactivo</option>
+                  </select>
+                </div>
+
+                <!-- MODULOS Y SUBMODULOS -->
+                <div class="mb-3 permisos-container">
+                  <label>Módulos y Submódulos</label>
+
+                  <div class="accordion">
+                    <div class="modulo" *ngFor="let modulo of modulos">
+
+                      <div class="modulo-header" (click)="modulo.expandido = !modulo.expandido">
+                        <input type="checkbox"
+                               [checked]="estaModuloCompleto(modulo)"
+                               (click)="$event.stopPropagation()"
+                               (change)="toggleModuloCompleto(modulo, $event)">
+                        <span><i class="{{ modulo.icon }}"></i> {{ modulo.nombre }}</span>
+                        <i class="fa" [ngClass]="modulo.expandido ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                      </div>
+
+                      <div class="submodulos" *ngIf="modulo.expandido">
+                        <div class="submodulo" *ngFor="let sub of modulo.subModulos">
+                          <input type="checkbox"
+                                 [checked]="subModulosSeleccionados.includes(sub.id)"
+                                 (change)="toggleSubModulo(sub.id, $event)">
+                          <span><i class="{{ sub.icon }}"></i> {{ sub.nombre }}</span>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+
+                <div class="acciones-form">
+                  <button type="submit" class="btn-guardar" [disabled]="rolForm.invalid">
+                    {{ editando ? 'Actualizar' : 'Guardar' }}
+                  </button>
+                  <button type="button" class="btn-cancelar" (click)="toggleFormulario()">
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- TABLA -->
+        <table class="tabla-roles">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Estado</th>
+              <th style="width: 120px;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let rol of registrosPaginados">
+              <td>{{ rol.nombre }}</td>
+              <td>{{ rol.estado === 1 ? 'Activo' : 'Inactivo' }}</td>
+              <td class="acciones">
+                <button class="btn-editar" (click)="editarRol(rol)">
+                  <i class="fa fa-edit"></i>
+                </button>
+                <button class="btn-eliminar" (click)="eliminarRol(rol.id)">
+                  <i class="fa fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Paginación -->
+        <div class="paginacion" *ngIf="totalPaginas > 1">
+          <button (click)="cambiarPagina(paginaActual - 1)" [disabled]="paginaActual === 1">Anterior</button>
+          <span>Página {{ paginaActual }} de {{ totalPaginas }}</span>
+          <button (click)="cambiarPagina(paginaActual + 1)" [disabled]="paginaActual === totalPaginas">Siguiente</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

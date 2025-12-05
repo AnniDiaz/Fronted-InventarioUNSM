@@ -1,0 +1,324 @@
+
+
+/* === CARD PRINCIPAL === */
+.card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 25px;
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+}
+
+/* === ENCABEZADO === */
+.cont-tit {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+}
+
+.cont-tit h2 {
+  font-size: 1.5rem;
+  color: #2a2a2a;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* === BOTONES Y BUSCADOR === */
+.cont-btns {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.btn-agregar {
+  background: linear-gradient(135deg, #43a047, #2e7d32);
+  color: #fff;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-agregar:hover {
+  background: linear-gradient(135deg, #43a047, #2e7d32);
+  transform: translateY(-2px);
+}
+
+.busqueda {
+  display: flex;
+  align-items: center;
+  background: #f1f3f6;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.busqueda input {
+  border: none;
+  padding: 8px 12px;
+  background: transparent;
+  outline: none;
+  width: 180px;
+}
+
+.btn-buscar {
+  background: transparent;
+  border: none;
+  color: #555;
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-buscar:hover {
+  color: #222;
+}
+
+/* === MODAL FLOTANTE === */
+.modal-overlay {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.45);
+  z-index: 9999;
+}
+
+.modal-content {
+  position: relative;
+  background: #fff;
+  border-radius: 15px;
+  width: 500px;
+  max-width: 90%;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  animation: aparecer 0.3s ease;
+}
+
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background: linear-gradient(135deg, #43a047, #2e7d32);
+  color: #fff;
+  border-radius: 15px 15px 0 0;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-weight: 500;
+}
+
+.btn-cerrar {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+/* === FORMULARIO === */
+.modal-body {
+  padding: 20px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.mb-3 {
+  display: flex;
+  flex-direction: column;
+}
+
+.mb-3 label {
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 6px;
+}
+
+.mb-3 input,
+.mb-3 select,
+.mb-3 textarea {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  outline: none;
+  transition: 0.2s;
+  background: #fafafa;
+}
+
+.mb-3 input:focus,
+.mb-3 select:focus,
+.mb-3 textarea:focus {
+  border-color: #218838;
+  background: #fff;
+}
+
+.full-width {
+  grid-column: span 2;
+}
+
+.acciones-form {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+  gap: 12px;
+}
+
+.btn-guardar {
+  background: linear-gradient(135deg, #43a047, #2e7d32);
+  color: #fff;
+  border: none;
+  padding: 9px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-guardar:hover {
+  background: linear-gradient(135deg, #66bb6a, #388e3c);
+}
+
+.btn-cancelar {
+  background: #e0e0e0;
+  border: none;
+  color: #333;
+  padding: 9px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-cancelar:hover {
+  background: #d6d6d6;
+}
+
+/* === TABLA DE TRASLADOS === */
+.tabla-traslados table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.tabla-traslados thead {
+  background: linear-gradient(135deg, #43a047, #2e7d32);
+  color: #fff;
+}
+
+.tabla-traslados th,
+.tabla-traslados td {
+  padding: 10px 12px;
+}
+
+.tabla-traslados tbody tr {
+  background: #fafafa;
+  border-bottom: 1px solid #e0e0e0;
+  transition: 0.3s;
+}
+
+.tabla-traslados tbody tr:hover {
+  background: #f1f3f9;
+}
+
+.acciones {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-editar,
+.btn-eliminar {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 18px;
+  transition: 0.2s;
+}
+
+.btn-editar {
+  color: #3949ab;
+}
+
+.btn-editar:hover {
+  color: #5c6bc0;
+}
+
+.btn-eliminar {
+  color: #d32f2f;
+}
+
+.btn-eliminar:hover {
+  color: #f44336;
+}
+
+/* === PAGINACIÓN === */
+.paginacion {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 18px;
+  gap: 15px;
+}
+
+.paginacion button {
+  background: #5c6bc0;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.paginacion button:hover {
+  background: #3949ab;
+}
+
+.paginacion button:disabled {
+  background: #bdbdbd;
+  cursor: not-allowed;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cont-tit {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .busqueda input {
+    width: 140px;
+  }
+}

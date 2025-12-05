@@ -69,7 +69,7 @@ public getCurrentUser() {
     throw new Error("No se encontró token. Usuario no autenticado.");
   }
 
-  return this.httpClient.get(`${baseUrl}/Usuarios/usuario-actual`, {
+  return this.httpClient.get(`${baseUrl}/usuarios/usuario-actual`, {
     headers: {
       'Authorization': `Bearer ${token}`
     }

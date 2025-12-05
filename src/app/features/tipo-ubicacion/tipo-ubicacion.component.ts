@@ -14,6 +14,7 @@ import Swal from 'sweetalert2';
   styleUrls: ['./tipo-ubicacion.component.css']
 })
 export class TipoUbicacionComponent {
+
   filtro: string = '';
   ubicaciones: any[] = [];
   ubicacionesFiltradas: any[] = [];
@@ -26,12 +27,16 @@ export class TipoUbicacionComponent {
   };
 
   paginaActual: number = 1;
-  registrosPorPagina: number = 5;
+  registrosPorPagina: number = 6; 
 
   constructor(
     private ubicacionService: TipoUbicacionService,
     private router: Router
   ) {}
+
+  verUbicaciones(tipoId: number) {
+    this.router.navigate(['/ubicaciones'], { queryParams: { tipo: tipoId } });
+  }
 
   ngOnInit(): void {
     this.cargarUbicaciones();
@@ -44,7 +49,7 @@ export class TipoUbicacionComponent {
         this.aplicarFiltro();
       },
       error: (err) => {
-        console.error("Error al obtener ubicaciones", err);
+        console.error('Error al obtener ubicaciones', err);
       }
     });
   }
@@ -52,10 +57,12 @@ export class TipoUbicacionComponent {
   aplicarFiltro() {
     const texto = this.filtro.trim().toLowerCase();
     this.ubicacionesFiltradas = texto
-      ? this.ubicaciones.filter(u => u.nombre.toLowerCase().includes(texto))
+      ? this.ubicaciones.filter(u =>
+          u.nombre.toLowerCase().includes(texto)
+        )
       : this.ubicaciones;
 
-    this.paginaActual = 1; 
+    this.paginaActual = 1;
   }
 
   get totalPaginas(): number {
@@ -84,7 +91,6 @@ export class TipoUbicacionComponent {
 
   guardarUbicacion() {
     if (this.editando) {
-      // Actualizar
       this.ubicacionService.updateTipoUbicacion(this.nuevaUbicacion.id, this.nuevaUbicacion).subscribe({
         next: () => {
           this.cargarUbicaciones();
@@ -92,12 +98,12 @@ export class TipoUbicacionComponent {
           Swal.fire('¡Actualizado!', 'Tipo de ubicación actualizada correctamente.', 'success');
         },
         error: (err) => {
-          console.error("Error al actualizar tipo de ubicación", err);
+          console.error('Error al actualizar tipo de ubicación', err);
           Swal.fire('Error', 'No se pudo actualizar el tipo de ubicación.', 'error');
         }
       });
     } else {
-      // Agregar nuevo
+      // Crear nuevo
       this.ubicacionService.addTipoUbicacion(this.nuevaUbicacion).subscribe({
         next: () => {
           this.cargarUbicaciones();
@@ -105,7 +111,7 @@ export class TipoUbicacionComponent {
           Swal.fire('¡Agregado!', 'Tipo de ubicación agregada correctamente.', 'success');
         },
         error: (err) => {
-          console.error("Error al guardar tipo de ubicación", err);
+          console.error('Error al guardar tipo de ubicación', err);
           Swal.fire('Error', 'No se puede guardar, ya existe un registro con ese nombre.', 'error');
         }
       });
@@ -121,7 +127,7 @@ export class TipoUbicacionComponent {
   eliminarUbicacion(id: number) {
     Swal.fire({
       title: '¿Estás seguro?',
-      text: "¡No podrás revertir esto!",
+      text: '¡No podrás revertir esto!',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Sí, eliminar',
@@ -135,11 +141,23 @@ export class TipoUbicacionComponent {
             Swal.fire('¡Eliminado!', 'El tipo de ubicación ha sido eliminada.', 'success');
           },
           error: (err) => {
-            console.error("Error al eliminar tipo de ubicación", err);
+            console.error('Error al eliminar tipo de ubicación', err);
             Swal.fire('Error', 'No se pudo eliminar el tipo de ubicación, porque tiene registros relacionados.', 'error');
           }
         });
       }
+    });
+  }
+
+  verUbicacion(ubicacion: any) {
+    Swal.fire({
+      title: 'Detalle de Ubicación',
+      html: `
+        <p><strong>ID:</strong> ${ubicacion.id}</p>
+        <p><strong>Nombre:</strong> ${ubicacion.nombre}</p>
+      `,
+      icon: 'info',
+      confirmButtonText: 'Cerrar'
     });
   }
 }

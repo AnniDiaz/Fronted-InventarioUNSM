@@ -1,88 +1,249 @@
 import { Component, OnInit } from '@angular/core';
-import { HeaderComponent } from "../../shared/components/header/header.component";
-import { SidebarComponent } from "../../shared/components/sidebar/sidebar.component";
+import Swal from 'sweetalert2';
+import { ArticuloService } from '../../core/services/articulos.service';
+import { CamposArticuloService } from '../../core/services/campos-articulo.service';
+import { TipoArticuloService } from '../../core/services/tipo-articulos.service';
+import { UbicacionService } from '../../core/services/ubicacion.service';
+import { HeaderComponent } from '../../shared/components/header/header.component';
+import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { TipoArticulosService } from '../../core/services/tipo-articulos.service';
-import { UbicacionService } from '../../core/services/ubicacion.service'; // 👈 importar
-import { ActivatedRoute } from '@angular/router';
-import { ArticulosService } from '../../core/services/articulos.service';
 
 @Component({
-  selector: 'app-articulos',
-  standalone: true,
+  selector: 'app-articulo-form',
   imports: [HeaderComponent, SidebarComponent, FormsModule, CommonModule],
   templateUrl: './articulos.component.html',
-  styleUrl: './articulos.component.css'
+  styleUrls: ['./articulos.component.css']
 })
-export class ArticulosComponent implements OnInit {
+export class ArticuloFormComponent implements OnInit {
+
+   mostrarFormulario: boolean = false;
+  filtro: string = '';
+  paginaActual: number = 1;
+  pageSize: number = 3;
+  totalPaginas: number = 1;
+  registrosPaginados: any[] = [];
+
    articulos: any[] = [];
-  tipoArticulo: any;
-  mostrarFormulario = false;
+  tipos: any[] = [];
   ubicaciones: any[] = [];
-  tipoArticuloId!: number; // 👈 guardamos el id del enlace
+  camposDelTipo: any[] = [];
+
+   articulo: any = {
+    id: 0,
+    tipoArticuloId: 0,
+    ubicacionId: 0,
+    estado: 1,
+    camposValores: [],
+    stock: 0,
+  };
+
+  editando: boolean = false;
 
   constructor(
-    private route: ActivatedRoute,
-    private tipoArticuloService: TipoArticulosService,
-    private ubicacionService: UbicacionService,
-    private articuloService:ArticulosService
+    private articuloService: ArticuloService,
+    private campoService: CamposArticuloService,
+    private tipoService: TipoArticuloService,
+    private ubicService: UbicacionService
   ) {}
 
-  ngOnInit(): void {
-    this.tipoArticuloId = Number(this.route.snapshot.paramMap.get('id')); // 👈 guardamos el id
-    this.cargarArticulos(this.tipoArticuloId);
+   ngOnInit(): void {
+    this.cargarTipos();
     this.cargarUbicaciones();
+    this.listarArticulos();
   }
 
-  cargarArticulos(idTipo: number) {
-    this.tipoArticuloService.getArticulosByTipo(idTipo).subscribe({
-      next: (data: any) => {
-        this.tipoArticulo = data;
-        this.articulos = data.articulos;
-      },
-      error: (err) => console.error(err),
+   toggleFormulario() {
+    this.mostrarFormulario = !this.mostrarFormulario;
+
+    if (!this.mostrarFormulario) this.resetForm();
+  }
+
+   aplicarFiltro() {
+    this.paginaActual = 1;
+    this.listarArticulos();
+  }
+
+   listarArticulos() {
+    this.articuloService.getArticulos().subscribe({
+      next: (data: any[]) => {
+        let lista = data;
+
+        // FILTRO
+        if (this.filtro.trim().length > 0) {
+          lista = lista.filter(a =>
+            a.nombre.toLowerCase().includes(this.filtro.toLowerCase()) ||
+            a.descripcion?.toLowerCase().includes(this.filtro.toLowerCase())
+          );
+        }
+        this.totalPaginas = Math.ceil(lista.length / this.pageSize);
+        const inicio = (this.paginaActual - 1) * this.pageSize;
+        const fin = inicio + this.pageSize;
+
+        this.registrosPaginados = lista.slice(inicio, fin);
+      }
+    });
+  }
+
+  cambiarPagina(nueva: number) {
+    if (nueva < 1 || nueva > this.totalPaginas) return;
+
+    this.paginaActual = nueva;
+    this.listarArticulos();
+  }
+
+   cargarTipos() {
+    this.tipoService.getTipoArticulos().subscribe({
+      next: data => this.tipos = data,
+      error: () => Swal.fire('Error', 'No se pudieron cargar los tipos', 'error')
     });
   }
 
   cargarUbicaciones() {
-    this.ubicacionService.getUbicaciones().subscribe({
-      next: (data: any) => {
-        this.ubicaciones = data;
-      },
-      error: (err) => console.error(err),
+    this.ubicService.getUbicaciones().subscribe({
+      next: data => this.ubicaciones = data,
+      error: () => this.ubicaciones = []
     });
   }
 
-  toggleFormulario() {
-    this.mostrarFormulario = !this.mostrarFormulario;
+   obtenerTipoArticulo(id: number) {
+    return this.tipos.find(t => t.id === id)?.nombre || '-';
   }
 
-  cancelarFormulario() {
-    this.mostrarFormulario = false;
+  obtenerUbicacion(id: number) {
+    return this.ubicaciones.find(u => u.id === id)?.nombre || '-';
   }
 
-  // 👇 Enviar formulario
-  guardarArticulo(form: any) {
-    if (form.invalid) return;
+   onTipoChange() {
+    if (this.editando && this.articulo.camposValores.length > 0) {
+      return;
+    }
 
-    const articulo = {
-      nombre: form.value.nombre,
-      tipoArticuloId: this.tipoArticuloId, // 👈 viene del enlace
-      ubicacionId: form.value.ubicacion,   // 👈 lo que se seleccionó en el select
-      estado: 1                            // 👈 campo oculto, siempre activo
+    this.camposDelTipo = [];
+    this.articulo.camposValores = [];
+
+    if (!this.articulo.tipoArticuloId) return;
+
+    this.campoService.getCamposByTipoArticulo(this.articulo.tipoArticuloId).subscribe({
+      next: (res: any) => {
+        let campos = Array.isArray(res) ? res : (res.campos ?? []);
+
+        this.camposDelTipo = campos.map((c: any) => ({
+          id: c.id,
+          nombreCampo: c.nombreCampo ?? c.nombre,
+          tipoDato: c.tipoDato ?? c.tipo ?? 'texto'
+        }));
+
+        if (this.articulo.camposValores.length === 0) {
+          this.articulo.camposValores = this.camposDelTipo.map((c: any) => ({
+            id: 0,
+            articuloId: 0,
+            campoArticuloId: c.id,
+            valor: ''
+          }));
+        }
+      }
+    });
+  }
+
+  guardar() {
+    const payload = {
+      id: this.articulo.id,
+      tipoArticuloId: this.articulo.tipoArticuloId,
+      ubicacionId: this.articulo.ubicacionId,
+      estado: this.articulo.estado,
+      camposValores: this.articulo.camposValores,
+      stock: this.articulo.stock,
     };
 
-    console.log("Payload:", articulo);
+    if (this.editando) {
+      this.articuloService.updateArticuloConCampos(payload).subscribe({
+        next: () => {
+          Swal.fire('Éxito', 'Artículo actualizado correctamente', 'success');
+          this.toggleFormulario();
+          this.listarArticulos();
+          this.resetForm();
+        },
+        error: () => Swal.fire('Error', 'No se pudo actualizar', 'error')
+      });
+    } else {
+      this.articuloService.addArticuloConCampos(payload).subscribe({
+        next: () => {
+          Swal.fire('Éxito', 'Artículo guardado correctamente', 'success');
+          this.toggleFormulario();
+          this.listarArticulos();
+          this.resetForm();
+        },
+        error: () => Swal.fire('Error', 'No se pudo guardar', 'error')
+      });
+    }
+  }
 
-    // Aquí llamas al servicio para guardar
-    this.articuloService.addArticulo(articulo).subscribe({
-      next: (res) => {
-        console.log("Artículo guardado:", res);
-        this.cancelarFormulario(); // cerrar modal
-        this.cargarArticulos(this.tipoArticuloId); // recargar lista
-      },
-      error: (err) => console.error(err)
+   editarArticulo(a: any) {
+    this.cargarParaEditar(a);
+    this.mostrarFormulario = true;
+  }
+
+  cargarParaEditar(art: any) {
+    this.editando = true;
+    this.articulo = { ...art };
+    this.camposDelTipo = [];
+
+    if (!this.articulo.tipoArticuloId) return;
+    this.campoService.getCamposByTipoArticulo(this.articulo.tipoArticuloId).subscribe({
+      next: (res: any) => {
+        let campos = Array.isArray(res) ? res : (res.campos ?? []);
+        
+        this.camposDelTipo = campos.map((c: any) => ({
+          id: c.id,
+          nombreCampo: c.nombreCampo ?? c.nombre,
+          tipoDato: c.tipoDato ?? c.tipo ?? 'texto'
+        }));
+
+        this.articulo.camposValores = this.camposDelTipo.map((c: any) => {
+          const valorExistente = art.camposValores?.find((cv: any) => cv.campoArticuloId === c.id);
+          return {
+            id: valorExistente?.id ?? 0,
+            articuloId: art.id,
+            campoArticuloId: c.id,
+            valor: valorExistente?.valor ?? ''
+          };
+        });
+      }
     });
+  }
+
+  eliminarArticulo(id: number) {
+    this.eliminar(id);
+  }
+
+  eliminar(id: number) {
+    Swal.fire({
+      title: '¿Eliminar artículo?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar'
+    }).then(r => {
+      if (r.isConfirmed) {
+        this.articuloService.deleteArticulo(id).subscribe({
+          next: () => {
+            Swal.fire('Eliminado', 'Artículo eliminado', 'success');
+            this.listarArticulos();
+          }
+        });
+      }
+    });
+  }
+  resetForm() {
+    this.editando = false;
+    this.articulo = {
+      id: 0,
+      tipoArticuloId: 0,
+      ubicacionId: 0,
+      estado: 1,
+      camposValores: [],
+      stock: 0,
+    };
+    this.camposDelTipo = [];
   }
 }

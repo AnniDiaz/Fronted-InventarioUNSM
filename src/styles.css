@@ -158,125 +158,173 @@
 }
 
 /* === Modal === */
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.45);
+.busqueda {
   display: flex;
   align-items: center;
-  justify-content: center;
-  z-index: 2000;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
 }
 
-.modal-card {
-  width: 500px;
-  max-width: 95%;
+.busqueda input {
+  flex: 1;
+  padding: 10px 12px;
+  border: none;
+  outline: none;
+  font-size: 14px;
+}
+
+.busqueda button {
+  padding: 10px 14px;
+  background: #007bff;
+  color: white;
+  transition: 0.3s;
+}
+
+.busqueda button:hover {
+  background: #0056b3;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
   background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-  animation: modalEnter 0.2s ease;
-  overflow: hidden;
+  padding: 20px;
+  border-radius: 12px;
+  width: 450px;
+  max-width: 95%;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  animation: fadeIn 0.3s ease;
 }
 
 .modal-header {
-  padding: 1rem;
-  border-bottom: 1px solid #eee;
-  background: #f9fafb;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 15px;
 }
 
 .modal-header h3 {
-  margin: 0;
-  font-size: 1.2rem;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
 }
 
-.modal-body {
-  padding: 1rem;
+.btn-cerrar {
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: #666;
 }
 
-.modal-actions {
+.btn-cerrar:hover {
+  color: #000;
+}
+
+.modal-body .mb-3 {
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-body label {
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #444;
+}
+
+.modal-body input {
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+}
+
+.acciones-form {
   display: flex;
   justify-content: flex-end;
-  padding: 1rem;
   gap: 10px;
-  border-top: 1px solid #eee;
+  margin-top: 15px;
 }
 
-@keyframes modalEnter {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.pagination-controls {
-  display: flex;
-  justify-content: center;
-  margin-top: 1.5rem;
-  font-family: "Segoe UI", sans-serif;
-}
-
-.ngx-pagination {
-  display: flex;
-  gap: 6px;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-/* Estilo base */
-.ngx-pagination li {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 34px;       
-  height: 34px;             
-  padding: 0 12px;           
-  border-radius: 18px;
-  background: #fff;
-  border: 1px solid #ddd;
+.btn-guardar {
+  background: #28a745;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
   cursor: pointer;
-  font-size: 0.85rem;
-  line-height: 1;         
-  color: #444;
-  transition: all 0.25s ease-in-out;
-  user-select: none;        
 }
 
-.ngx-pagination li:hover {
-  background: #eef4ff;
-  border-color: #4a90e2;
-  color: #4a90e2;
+.btn-guardar:hover {
+  background: #218838;
 }
 
-.ngx-pagination .current {
-  background: #4a90e2;
-  color: #fff;
-  border-color: #4a90e2;
-  font-weight: 600;
-  box-shadow: 0 2px 6px rgba(74, 144, 226, 0.3);
+.btn-cancelar {
+  background: #dc3545;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
 }
 
-.ngx-pagination .disabled {
-  opacity: 0.5;
+.btn-cancelar:hover {
+  background: #c82333;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+.paginacion {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 15px;
+  gap: 10px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.paginacion button {
+  background-color: #f0f0f0; 
+  border: 1px solid #d1d1d1; 
+  border-radius: 6px; 
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease-in-out;
+}
+
+.paginacion button:hover {
+  background-color: #e0e0e0; 
+  border-color: #c0c0c0;
+}
+
+.paginacion button:disabled {
+  background-color: #fafafa;
+  color: #aaa;
+  border-color: #eee;
   cursor: not-allowed;
 }
 
-.ngx-pagination .pagination-previous,
-.ngx-pagination .pagination-next {
-  min-width: 70px;         
-  height: 34px;
-  padding: 0 14px;
-  border-radius: 18px;
+.paginacion span {
   font-weight: 500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  color: #333;
 }
-
-.ngx-pagination li:active {
-  transform: none !important;
-}
-
 
 /* You can add global styles to this file, and also import other style files */
 *{
@@ -290,9 +338,14 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 /* Layout principal */
 .container {
-  display: flex;
-  min-height: 100vh;
+  display: flex !important;
+  min-height: 100vh !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
+
 
 /* Barra lateral a la izquierda */
 .barra-lateral {
@@ -312,6 +365,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   padding: 20px;
   background: #f5f6fa;
 }
+
 
 /* Card */
 .card {
