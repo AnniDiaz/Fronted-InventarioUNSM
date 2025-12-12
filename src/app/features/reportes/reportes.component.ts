@@ -1,101 +1,153 @@
-import { Component, OnInit } from '@angular/core';
-import { HeaderComponent } from '../../shared/components/header/header.component';
-import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
-import { FormsModule } from '@angular/forms';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import Chart from 'chart.js/auto';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+
+import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
+import { HeaderComponent } from '../../shared/components/header/header.component';
+import { ReportesService } from '../../core/services/reportes.service';
 
 @Component({
   selector: 'app-reportes',
-  imports: [HeaderComponent, SidebarComponent, FormsModule, CommonModule],
+  imports: [CommonModule, FormsModule, SidebarComponent, HeaderComponent],
   templateUrl: './reportes.component.html',
-  styleUrl: './reportes.component.css'
+  styleUrls: ['./reportes.component.css']
 })
+export class ReportesComponent {
+  reporteSeleccionado: string = '';
 
-export class ReportesComponent implements OnInit {
+  mostrarGrafico = false;
+  mostrarTabla = false;
 
-  tiposReportes = [
-    { id: 'ubicacion', nombre: 'Bienes por Ubicación' },
-    { id: 'responsable', nombre: 'Bienes por Responsable' },
-    { id: 'movimientos', nombre: 'Movimientos de Inventario' }
-  ];
+  columna1 = '';
+  columna2 = '';
 
-  tipoSeleccionado: string = '';
+  tablaDatos: any[] = [];
 
-  filtros: any = {
-    ubicacion: '',
-    responsable: '',
-    fechaInicio: '',
-    fechaFin: ''
-  };
+  chart: any;
 
-  resultados: any[] = [];
+  constructor(private reportesService: ReportesService) {}
 
-  objectKeys = Object.keys;
+  generarReporte() {
+    if (!this.reporteSeleccionado) return;
 
-  constructor() {}
+    if (this.chart) this.chart.destroy();
 
-  ngOnInit(): void {}
-
-  generarReporte(): void {
-    this.resultados = []; 
-
-    if (!this.tipoSeleccionado) {
-      alert('Por favor, seleccione un tipo de reporte.');
-      return;
-    }
-
-    switch (this.tipoSeleccionado) {
-      case 'ubicacion':
-        this.resultados = [
-          { codigo: 'LAB-001', nombre: 'CPU Dell Optiplex', categoria: 'Equipo', estado: 'Operativo', ubicacion: this.filtros.ubicacion || 'Laboratorio Redes' },
-          { codigo: 'LAB-002', nombre: 'Monitor HP', categoria: 'Periférico', estado: 'En reparación', ubicacion: this.filtros.ubicacion || 'Laboratorio Redes' }
-        ];
-        break;
-
-      case 'responsable':
-        this.resultados = [
-          { codigo: 'OF-001', nombre: 'Laptop Lenovo', categoria: 'Portátil', estado: 'Operativo', responsable: this.filtros.responsable || 'Ing. Pérez' },
-          { codigo: 'OF-002', nombre: 'Proyector Epson', categoria: 'Multimedia', estado: 'Operativo', responsable: this.filtros.responsable || 'Ing. Pérez' }
-        ];
-        break;
-
-      case 'movimientos':
-        this.resultados = [
-          { codigo: 'M-001', tipo: 'Alta', fecha: this.filtros.fechaInicio || '2025-01-15', descripcion: 'Ingreso nuevo equipo de cómputo' },
-          { codigo: 'M-002', tipo: 'Traslado', fecha: this.filtros.fechaFin || '2025-02-20', descripcion: 'Equipo trasladado a laboratorio de Redes' }
-        ];
-        break;
-
-      default:
-        this.resultados = [];
-        break;
-    }
-    if (this.resultados.length === 0) {
-      alert('No se encontraron resultados para los filtros aplicados.');
+    if (this.reporteSeleccionado === 'articulos-ubicacion') {
+      this.cargarArticulosPorUbicacion();
+    } else if (this.reporteSeleccionado === 'articulos-tipo') {
+      this.cargarArticulosPorTipo();
     }
   }
 
-  limpiarFiltros(): void {
-    this.filtros = {
-      ubicacion: '',
-      responsable: '',
-      fechaInicio: '',
-      fechaFin: ''
-    };
-    this.tipoSeleccionado = '';
-    this.resultados = [];
+  cargarArticulosPorUbicacion() {
+    this.reportesService.getArticulosPorUbicacion().subscribe(data => {
+      const labels = data.map((d: any) => d.ubicacion);
+      const valores = data.map((d: any) => d.cantidad);
+
+      this.tablaDatos = data.map((d: any) => ({
+        label: d.ubicacion,
+        valor: d.cantidad
+      }));
+
+      this.columna1 = "Ubicación";
+      this.columna2 = "Cantidad";
+
+      this.renderChart(labels, valores);
+    });
   }
 
-  // --- Exportar funciones (a completar luego) ---
-  exportarPDF(): void {
-    alert('Función de exportar a PDF próximamente disponible.');
+  cargarArticulosPorTipo() {
+    this.reportesService.getArticulosPorTipo().subscribe(data => {
+      const labels = data.map((d: any) => d.tipo);
+      const valores = data.map((d: any) => d.cantidad);
+
+      this.tablaDatos = data.map((d: any) => ({
+        label: d.tipo,
+        valor: d.cantidad
+      }));
+
+      this.columna1 = "Tipo de Artículo";
+      this.columna2 = "Cantidad";
+
+      this.renderChart(labels, valores);
+    });
   }
 
-  exportarExcel(): void {
-    alert('Función de exportar a Excel próximamente disponible.');
+  renderChart(labels: any[], valores: any[]) {
+    this.mostrarGrafico = true;
+    this.mostrarTabla = true;
+
+    const ctx = document.getElementById('graficoReporte') as HTMLCanvasElement;
+
+    this.chart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Cantidad',
+          data: valores,
+          backgroundColor: '#28a745cc',
+          borderColor: '#1e7e34',
+          borderWidth: 2
+        }]
+      }
+    });
   }
 
-  imprimirReporte(): void {
-    window.print();
-  }
+  descargarPDF() {
+  const grafico: any = document.getElementById('graficoReporte');
+  const tabla: any = document.querySelector('.tabla-reportes');
+
+  if (!grafico || !tabla) return;
+
+  html2canvas(grafico).then(canvasGrafico => {
+
+    html2canvas(tabla).then(canvasTabla => {
+
+      const pdf = new jsPDF('p', 'mm', 'a4');
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const margin = 15;
+      const fullWidth = pageWidth - margin * 2;
+
+      // Logos
+      const logoUni = '/assets/logo_unsm.png';
+      const logoFacu = '/assets/logo_fisi.png';
+
+      // Header
+      pdf.addImage(logoUni, 'PNG', margin, 10, 25, 25);  
+      pdf.addImage(logoFacu, 'PNG', pageWidth - margin - 25, 10, 25, 25); 
+
+      // Título
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(16);
+      pdf.text('Reporte del Sistema de Inventario', pageWidth / 2, 25, { align: 'center' });
+
+      // --- Insertar gráfico ---
+      const imgGraficoData = canvasGrafico.toDataURL('image/png');
+      const graficoHeight = (canvasGrafico.height * fullWidth) / canvasGrafico.width;
+
+      let y = 45; 
+      pdf.addImage(imgGraficoData, 'PNG', margin, y, fullWidth, graficoHeight);
+
+      // --- Insertar tabla ---
+      y += graficoHeight + 10;
+
+      const imgTablaData = canvasTabla.toDataURL('image/png');
+      const tablaHeight = (canvasTabla.height * fullWidth) / canvasTabla.width;
+
+      if (y + tablaHeight > pdf.internal.pageSize.getHeight() - 15) {
+        pdf.addPage();
+        y = 20;
+      }
+
+      pdf.addImage(imgTablaData, 'PNG', margin, y, fullWidth, tablaHeight);
+
+      pdf.save('reporte.pdf');
+    });
+  });
+}
 }

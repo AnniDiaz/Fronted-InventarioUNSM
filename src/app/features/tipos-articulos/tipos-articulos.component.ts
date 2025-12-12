@@ -31,10 +31,13 @@ export class TipoArticulosComponent implements OnInit {
 
   mostrarFormulario: boolean = false;
   editando: boolean = false;
+
+  /* ───────── CAMPOS PERSONALIZADOS ───────── */
   mostrarCampos: boolean = false;
   editandoCampos: boolean = false;
   tipoSeleccionado: any = null;
   camposTemporales: any[] = [];
+
   nuevoCampo = { nombre: "", tipo: "texto" };
 
   filtro: string = "";
@@ -51,6 +54,8 @@ export class TipoArticulosComponent implements OnInit {
   ngOnInit() {
     this.cargarTipos();
   }
+
+  /* ───────── LISTADO Y FILTRO ───────── */
   cargarTipos() {
     this.tipoArticuloService.getTipoArticulos().subscribe({
       next: (data) => {
@@ -86,6 +91,7 @@ export class TipoArticulosComponent implements OnInit {
     this.aplicarFiltro();
   }
 
+  /* ───────── FORMULARIO ───────── */
   toggleFormulario() {
     this.mostrarFormulario = !this.mostrarFormulario;
     if (!this.mostrarFormulario) this.resetArticulo();
@@ -206,6 +212,7 @@ export class TipoArticulosComponent implements OnInit {
 
     this.campoArticuloService.getCamposByTipoArticulo(tipo.id).subscribe({
       next: (data) => {
+
         this.camposTemporales = data.map((c: any) => ({
           id: c.id,
           nombre: c.nombreCampo,

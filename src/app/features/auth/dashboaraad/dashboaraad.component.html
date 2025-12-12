@@ -6,6 +6,8 @@
   <div class="main-section">
     <app-header></app-header>
 
+
+    
     <div class="dashboard-container">
 
       <!-- 🔹 TARJETAS -->
@@ -41,10 +43,18 @@
 
       <!-- 🔹 EXTRA BONITO AL FINAL -->
       <div class="extra-box">
-      <h3>Top ubicaciones con más artículos</h3>
+  <h3>Top 3 de ubicaciones con más artículos</h3>
 
-      <div class="top-grid" id="topUbicaciones"></div>
+  <div class="top-grid">
+    <div class="top-item" *ngFor="let u of topUbicaciones">
+      <div class="top-item-inner">
+        <div class="top-title">{{ u.ubicacion }}</div>
+        <div class="top-subtitle">{{ u.cantidad }} artículos</div>
+      </div>
     </div>
+  </div>
+</div>
+
 
     </div>
 

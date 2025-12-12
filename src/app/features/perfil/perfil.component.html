@@ -1,0 +1,84 @@
+<div class="container">
+  <div class="barra-lateral">
+    <app-sidebar></app-sidebar>
+  </div>
+
+  <div class="main-section">
+    <app-header></app-header>
+
+    <div class="contenido-principal">
+      <div class="card-perfil">
+        
+        <h2 class="titulo-principal">Mi perfil</h2>
+
+        <!-- FOTO DE PERFIL -->
+        <div class="perfil-foto">
+          <img [src]="usuario?.imagenPreview || '/assets/perfil.png'" alt="Foto de usuario" />
+
+          <input type="file" #inputImagen (change)="onFileSelected($event)" hidden />
+<button class="btn-subir-foto" (click)="inputImagen.click()">
+  Cambiar foto
+</button>
+        </div>
+
+        <!-- GRIDS -->
+        <div class="grids-container">
+
+          <!-- INFORMACIÓN BÁSICA -->
+          <div class="grid-box">
+            <h3 class="titulo-grid">Información básica</h3>
+            <div class="perfil-info">
+              <div>
+                <label>Nombre</label>
+                <input type="text" [value]="usuario?.nombre" disabled />
+              </div>
+              <div>
+                <label>Email</label>
+                <input type="text" [value]="usuario?.email" disabled />
+              </div>
+              <div>
+                <label>Rol</label>
+                <input type="text" [value]="usuario?.rol" disabled />
+              </div>
+              <div>
+                <label>Usuario</label>
+                <input type="text" [value]="usuario?.username" disabled />
+              </div>
+            </div>
+
+            <!-- BOTÓN GUARDAR FOTO -->
+            <div *ngIf="imagenSeleccionada">
+              <button class="btn-guardar-perfil" (click)="guardarImagen()">Guardar foto</button>
+              <button class="btn-quitar-foto" (click)="quitarImagen()">Quitar foto</button>
+            </div>
+          </div>
+
+          <!-- CAMBIAR CONTRASEÑA -->
+          <div class="grid-box">
+            <h3 class="titulo-grid">Cambiar contraseña</h3>
+            <form (ngSubmit)="cambiarPassword()" #formPass="ngForm">
+              <div class="password-grid">
+                <div>
+                  <label>Contraseña actual</label>
+                  <input type="password" name="actual" [(ngModel)]="password.actual" required />
+                </div>
+                <div>
+                  <label>Nueva contraseña</label>
+                  <input type="password" name="nueva" [(ngModel)]="password.nueva" required minlength="6" />
+                </div>
+                <div>
+                  <label>Confirmar nueva contraseña</label>
+                  <input type="password" name="confirmar" [(ngModel)]="password.confirmar" required minlength="6" />
+                </div>
+              </div>
+              <button type="submit" class="btn-guardar-perfil" [disabled]="formPass.invalid">
+                Guardar cambios
+              </button>
+            </form>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

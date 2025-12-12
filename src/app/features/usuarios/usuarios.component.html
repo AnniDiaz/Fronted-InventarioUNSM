@@ -35,7 +35,7 @@
             </div>
 
             <div class="modal-body">
-              <form (ngSubmit)="guardarUsuario()" #usuarioForm="ngForm">
+              <form (ngSubmit)="guardarUsuario()" #usuarioForm="ngForm" enctype="multipart/form-data">
 
                 <div class="mb-3">
                   <label>Nombres</label>
@@ -48,7 +48,7 @@
                 </div>
 
                 <div class="mb-3">
-                  <label>Correo</label>
+                  <label>Email</label>
                   <input type="email" [(ngModel)]="nuevoUsuario.email" name="email" required>
                 </div>
 
@@ -70,6 +70,20 @@
                   </select>
                 </div>
 
+                <!-- NUEVO: Imagen del usuario -->
+                <div class="mb-3">
+                  <label>Imagen</label>
+
+                  <!-- INPUT FILE -->
+                  <input type="file" accept="image/*" (change)="onFileSelected($event)" *ngIf="!nuevoUsuario.imagenPreview">
+
+                  <!-- PREVIEW IMAGEN -->
+                  <div *ngIf="nuevoUsuario.imagenPreview" class="preview-imagen">
+                    <img [src]="nuevoUsuario.imagenPreview" alt="Vista previa" />
+                    <button type="button" (click)="quitarImagen()">Quitar</button>
+                  </div>
+                </div>
+
                 <div class="acciones-form">
                   <button type="submit" class="btn-guardar" [disabled]="usuarioForm.invalid">
                     {{ editando ? 'Actualizar' : 'Guardar' }}
@@ -89,9 +103,10 @@
         <table class="tabla-usuarios">
           <thead>
             <tr>
+              <th>Imagen</th>
               <th>Nombres</th>
               <th>Username</th>
-              <th>Correo</th>
+              <th>Email</th>
               <th>Rol</th>
               <th style="width: 120px;">Acciones</th>
             </tr>
@@ -99,9 +114,13 @@
 
           <tbody>
             <tr *ngFor="let u of usuariosPaginados">
+              <td>
+                <img *ngIf="u.imagenPath" [src]="'http://localhost:7000/' + u.imagenPath" alt="Imagen usuario" class="img-usuario">
+                <img *ngIf="!u.imagenPath" src="assets/sin-imagen.jpg" alt="Sin imagen" class="img-usuario">
+              </td>
               <td>{{ u.nombres }} {{ u.apellidos }}</td>
               <td>{{ u.username }}</td>
-              <td>{{ u.correo }}</td>
+              <td>{{ u.email }}</td>
               <td>{{ u.rolNombre }}</td>
 
               <td class="acciones">

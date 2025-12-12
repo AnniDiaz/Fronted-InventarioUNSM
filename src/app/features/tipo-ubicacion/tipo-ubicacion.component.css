@@ -12,8 +12,18 @@
 
 .cont-btns {
   display: flex;
+  gap: 12px;
   align-items: center;
-  gap: 15px;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.btn-agregar {
+  order: 2;
+}
+
+.busqueda {
+  order: 1; 
 }
 
 .btn-agregar {

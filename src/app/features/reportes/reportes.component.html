@@ -6,91 +6,57 @@
   <div class="main-section">
     <app-header></app-header>
 
-    <div class="contenedor-reportes">
-      <h2>📊 Módulo de Reportes del Inventario FISI - UNSM</h2>
-      <p>
-        Seleccione el tipo de reporte y los filtros correspondientes para
-        visualizar o exportar los datos.
-      </p>
+    <div class="contenido-principal">
 
-      <!-- 🔹 Barra de filtros en una sola fila -->
-      <div class="filtros-linea">
-        <!-- Tipo de reporte -->
-        <label for="tipoReporte">Tipo de Reporte:</label>
-        <select id="tipoReporte" [(ngModel)]="tipoSeleccionado">
-          <option value="">-- Seleccionar --</option>
-          <option *ngFor="let t of tiposReportes" [value]="t.id">
-            {{ t.nombre }}
-          </option>
+      <!-- TÍTULO -->
+      <h2 class="titulo">Gestión de Reportes del Sistema</h2>
+
+      <!-- FILA DE OPCIONES -->
+      <div class="filtros">
+        <select [(ngModel)]="reporteSeleccionado" class="select-reporte">
+          <option value="" disabled selected>Seleccione un reporte</option>
+          <option value="articulos-ubicacion">Artículos por Ubicación</option>
+          <option value="articulos-tipo">Artículos por Tipo</option>
         </select>
 
-        <!-- Filtros dinámicos en la misma línea -->
-        <ng-container *ngIf="tipoSeleccionado === 'ubicacion'">
-          <label>Ubicación:</label>
-          <input
-            type="text"
-            [(ngModel)]="filtros.ubicacion"
-            placeholder="Ej: Laboratorio de Redes"
-          />
-        </ng-container>
-
-        <ng-container *ngIf="tipoSeleccionado === 'responsable'">
-          <label>Responsable:</label>
-          <input
-            type="text"
-            [(ngModel)]="filtros.responsable"
-            placeholder="Ej: Ing. Pérez"
-          />
-        </ng-container>
-
-        <ng-container *ngIf="tipoSeleccionado === 'movimientos'">
-          <label>Fecha inicio:</label>
-          <input type="date" [(ngModel)]="filtros.fechaInicio" />
-          <label>Fecha fin:</label>
-          <input type="date" [(ngModel)]="filtros.fechaFin" />
-        </ng-container>
-
-        <!-- Botones -->
-        <button (click)="generarReporte()" class="btn-generar">
-          Generar
+        <button class="btn-generar" (click)="generarReporte()">
+          <i class="fa fa-chart-bar"></i> Generar Reporte
         </button>
-        <button (click)="limpiarFiltros()" class="btn-limpiar">Limpiar</button>
+
+        <!-- Botón PDF arriba -->
+        <button *ngIf="mostrarGrafico"
+                class="btn-pdf"
+                (click)="descargarPDF()">
+          <i class="fa fa-file-pdf"></i> Descargar PDF
+        </button>
       </div>
 
-      <!-- 🔹 Resultados -->
-      <div class="resultados" *ngIf="resultados.length > 0">
-        <h4>📋 Resultados del reporte</h4>
+      <!-- CONTENIDO DEL REPORTE (sin scroll) -->
+      <div class="reportes-contenido">
 
-        <table>
+        <!-- GRÁFICO -->
+        <div class="grafico-contenedor" *ngIf="mostrarGrafico">
+          <canvas id="graficoReporte"></canvas>
+        </div>
+
+        <!-- TABLA -->
+        <table class="tabla-reportes" *ngIf="mostrarTabla">
           <thead>
             <tr>
-              <th *ngFor="let col of objectKeys(resultados[0])">
-                {{ col | titlecase }}
-              </th>
+              <th>{{ columna1 }}</th>
+              <th>{{ columna2 }}</th>
             </tr>
           </thead>
+
           <tbody>
-            <tr *ngFor="let item of resultados">
-              <td *ngFor="let col of objectKeys(resultados[0])">
-                {{ item[col] }}
-              </td>
+            <tr *ngFor="let item of tablaDatos">
+              <td>{{ item.label }}</td>
+              <td>{{ item.valor }}</td>
             </tr>
           </tbody>
         </table>
-
-        <div class="botones-exportar">
-          <button (click)="exportarPDF()">⬇ Exportar PDF</button>
-          <button (click)="exportarExcel()">⬇ Exportar Excel</button>
-          <button (click)="imprimirReporte()">🖨️ Imprimir</button>
-        </div>
       </div>
 
-      <div
-        *ngIf="resultados.length === 0 && tipoSeleccionado"
-        class="no-resultados"
-      >
-        <p>No hay datos para mostrar.</p>
-      </div>
-    </div>
+
   </div>
 </div>

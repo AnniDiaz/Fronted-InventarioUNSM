@@ -11,6 +11,7 @@ import { PermisosComponent } from './features/permisos/permisos.component';
 import { UsuariosComponent } from './features/usuarios/usuarios.component';
 import { ModulosComponent } from './features/modulos/modulos.component';
 import { ArticuloFormComponent } from './features/articulos/articulos.component';
+import { PerfilComponent } from './features/perfil/perfil.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -26,6 +27,7 @@ export const routes: Routes = [
   { path: 'usuarios', component: UsuariosComponent },
   { path: 'modulos', component: ModulosComponent },
   { path: 'articulos', component: ArticuloFormComponent },
+  { path: 'perfil', component: PerfilComponent },
 
 
   { path: '**', redirectTo: 'login' },

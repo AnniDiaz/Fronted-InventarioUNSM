@@ -90,16 +90,17 @@
         <!-- GRID DE ARTÍCULOS -->
         <div class="grid-articulos">
 
-          <div class="articulo-card" *ngFor="let articulo of registrosPaginados">
+              <div class="articulo-card" *ngFor="let articulo of registrosPaginados">
 
+            <!-- Imagen del artículo -->
             <img
-              *ngIf="articulo.imagen"
-              [src]="articulo.imagen"
+              *ngIf="articulo.imagenPath"
+              [src]="'http://localhost:7000/' + articulo.imagenPath"
               alt="Imagen artículo"
               class="img-articulo"
             />
             <img
-              *ngIf="!articulo.imagen"
+              *ngIf="!articulo.imagenPath"
               src="assets/sin-imagen.jpg"
               alt="Sin imagen"
               class="img-articulo"

@@ -12,15 +12,19 @@ export class UsuariosService {
   public getUsuarios() {
     return this.http.get<any[]>(`${baseUrl}/usuarios`);
   }
+
   public getUsuarioById(id: number) {
     return this.http.get(`${baseUrl}/usuarios/${id}`);
   }
+
   public addUsuario(usuario: any) {
     return this.http.post(`${baseUrl}/usuarios`, usuario);
   }
+
   public updateUsuario(id: number, usuario: any) {
     return this.http.put(`${baseUrl}/usuarios/${id}`, usuario);
   }
+
   public deleteUsuario(id: number) {
     return this.http.delete(`${baseUrl}/usuarios/${id}`);
   }
@@ -28,4 +32,15 @@ export class UsuariosService {
   public getUsuarioActual() {
     return this.http.get(`${baseUrl}/usuarios/usuario-actual`);
   }
+
+  public cambiarPassword(data: any) {
+    return this.http.post(`${baseUrl}/usuarios/cambiar-password`, data);
+  }
+  // UsuariosService
+public actualizarImagen(imagen: File) {
+  const formData = new FormData();
+  formData.append('imagen', imagen);
+  return this.http.patch(`${baseUrl}/usuarios/actualizar-imagen`, formData);
+}
+
 }
