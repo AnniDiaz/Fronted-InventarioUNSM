@@ -12,6 +12,9 @@ export class ArticuloService {
   public getArticulos() {
     return this.http.get<any[]>(`${baseUrl}/articulos`);
   }
+getArticuloPorQR(qr: string) {
+  return this.http.get<any >(`${baseUrl}/articulos/qr/${qr}`);
+}
 
   public getArticuloById(id: number) {
     return this.http.get<any>(`${baseUrl}/articulos/${id}`);
@@ -23,14 +26,23 @@ export class ArticuloService {
 
   public getArticulosByUbicacion(ubicacionId: number) {
     return this.http.get<any[]>(`${baseUrl}/articulos/ubicacion/${ubicacionId}`);
+  }  // 🔹 Método para traer los campos dinámicos de un tipo de artículo
+  public getCamposPorTipo(tipoArticuloId: number) {
+    return this.http.get<{id: number, nombre: string}[]>(`${baseUrl}/articulos/campos/${tipoArticuloId}`);
   }
 
   public addArticulo(articulo: any) {
     return this.http.post(`${baseUrl}/articulos`, articulo);
   }
+public addArticuloConCampos(articuloCompleto: any) {
+  return this.http.post(`${baseUrl}/articulos/guardar-con-campos`, articuloCompleto);
+}
+public getArticulosConCampos() {
+  return this.http.get<any[]>(`${baseUrl}/articulos/con-campos`);
+}
 
-  public addArticuloConCampos(articuloCompleto: any) {
-    return this.http.post(`${baseUrl}/articulos/crear-con-campos`, articuloCompleto);
+  public verArticulosPorTipoArticulo(idTipoArticulo: number){
+        return this.http.get<any[]>(`${baseUrl}/articulos/tipo/${idTipoArticulo}`);
   }
 
   public updateArticuloConCampos(articuloCompleto: any) {

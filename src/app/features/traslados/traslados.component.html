@@ -1,6 +1,6 @@
 <div class="container">
   <!-- Barra lateral -->
-  <div class="barraateral">
+  <div class="barra-lateral">
     <app-sidebar></app-sidebar>
   </div>
 
@@ -10,18 +10,21 @@
 
     <div class="contenido-principal">
       <div class="card">
-        <!-- Encabezado -->
+
+        <!-- TÍTULO + BOTONES -->
         <div class="cont-tit">
-          <h2>Gestión de Traslados de Artículos</h2>
+          <h2>Gestión de Traslados</h2>
+
           <div class="cont-btns">
-            <!-- Botón Agregar -->
             <button class="btn-agregar" (click)="toggleFormulario()">
               <i class="fa fa-exchange-alt"></i> Nuevo Traslado
             </button>
 
-            <!-- Buscador -->
             <div class="busqueda">
-              <input type="text" placeholder="Buscar traslado..." [(ngModel)]="filtro" (input)="aplicarFiltro()">
+              <input type="text"
+                     placeholder="Buscar traslado..."
+                     [(ngModel)]="filtro"
+                     (input)="aplicarFiltro()">
               <button class="btn-buscar">
                 <i class="fa fa-search"></i>
               </button>
@@ -29,117 +32,132 @@
           </div>
         </div>
 
-        <!-- Tabla de traslados -->
-        <div class="tabla-traslados">
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Artículo</th>
-                <th>Cantidad</th>
-                <th>Origen</th>
-                <th>Destino</th>
-                <th>Fecha</th>
-                <th>Observaciones</th>
-                <th class="acciones-col">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let traslado of registrosPaginados; let i = index">
-                <td>{{ (paginaActual - 1) * registrosPorPagina + i + 1 }}</td>
-                <td>{{ traslado.articuloNombre }}</td>
-                <td>{{ traslado.cantidad }}</td>
-                <td>{{ traslado.origenNombre }}</td>
-                <td>{{ traslado.destinoNombre }}</td>
-                <td>{{ traslado.fecha | date:'dd/MM/yyyy' }}</td>
-                <td>{{ traslado.observaciones || '-' }}</td>
-                <td class="acciones">
-                  <button class="btn-editar" (click)="editarTraslado(traslado)">
-                    <i class="fa fa-edit"></i>
-                  </button>
-                  <button class="btn-eliminar" (click)="eliminarTraslado(traslado.id)">
-                    <i class="fa fa-trash"></i>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <!-- ================= TABLA ================= -->
+        <table class="tabla-ubicaciones">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Artículo</th>
+              <th>Origen</th>
+              <th>Destino</th>
+              <th>Fecha</th>
+              <th>Observaciones</th>
+              <th style="width:120px">Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let t of registrosPaginados; let i = index">
+              <td>{{ (paginaActual - 1) * registrosPorPagina + i + 1 }}</td>
+              <td>{{ t.articulo?.nombre }}</td>
+              <td>{{ t.ubicacionOrigen?.nombre }}</td>
+              <td>{{ t.ubicacionDestino?.nombre }}</td>
+              <td>{{ t.fechaTraslado | date:'dd/MM/yyyy' }}</td>
+              <td>{{ t.observaciones || '-' }}</td>
+              <td class="acciones">
+                <button class="btn-eliminar" (click)="eliminarTraslado(t.id)">
+                  <i class="fa fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- PAGINACIÓN -->
+        <div class="paginacion" *ngIf="totalPaginas > 1">
+          <button (click)="cambiarPagina(paginaActual - 1)"
+                  [disabled]="paginaActual === 1">
+            Anterior
+          </button>
+
+          <span>Página {{ paginaActual }} de {{ totalPaginas }}</span>
+
+          <button (click)="cambiarPagina(paginaActual + 1)"
+                  [disabled]="paginaActual === totalPaginas">
+            Siguiente
+          </button>
         </div>
 
-        <!-- Paginación -->
-        <div class="paginacion" *ngIf="totalPaginas > 1">
-          <button (click)="cambiarPagina(paginaActual - 1)" [disabled]="paginaActual === 1">Anterior</button>
-          <span>Página {{ paginaActual }} de {{ totalPaginas }}</span>
-          <button (click)="cambiarPagina(paginaActual + 1)" [disabled]="paginaActual === totalPaginas">Siguiente</button>
-        </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- 🚀 Modal flotante (ahora fuera del card) -->
+<!-- ================= MODAL ================= -->
 <div class="modal-overlay" *ngIf="mostrarFormulario">
   <div class="modal-content">
+
     <div class="modal-header">
-      <h3>{{ editando ? 'Editar traslado' : 'Registrar nuevo traslado' }}</h3>
+      <h3>Registrar traslado</h3>
       <button class="btn-cerrar" (click)="toggleFormulario()">&times;</button>
     </div>
 
     <div class="modal-body">
-      <form (ngSubmit)="guardarTraslado()" #trasladoForm="ngForm">
-        <div class="form-grid">
-          <!-- Artículo -->
-          <div class="mb-3">
-            <label>Artículo</label>
-            <select [(ngModel)]="nuevoTraslado.articulo" name="articulo" required>
-              <option value="" disabled selected>Seleccione un artículo</option>
-              <option *ngFor="let art of listaArticulos" [value]="art.id">{{ art.nombre }}</option>
-            </select>
-          </div>
+      <form (ngSubmit)="guardarTraslado()" #formTraslado="ngForm">
 
-          <!-- Cantidad -->
-          <div class="mb-3">
-            <label>Cantidad</label>
-            <input type="number" min="1" [(ngModel)]="nuevoTraslado.cantidad" name="cantidad" required>
-          </div>
-
-          <!-- Origen -->
-          <div class="mb-3">
-            <label>Ubicación Origen</label>
-            <select [(ngModel)]="nuevoTraslado.origen" name="origen" required>
-              <option value="" disabled selected>Seleccione origen</option>
-              <option *ngFor="let ubi of listaUbicaciones" [value]="ubi.id">{{ ubi.nombre }}</option>
-            </select>
-          </div>
-
-          <!-- Destino -->
-          <div class="mb-3">
-            <label>Ubicación Destino</label>
-            <select [(ngModel)]="nuevoTraslado.destino" name="destino" required>
-              <option value="" disabled selected>Seleccione destino</option>
-              <option *ngFor="let ubi of listaUbicaciones" [value]="ubi.id">{{ ubi.nombre }}</option>
-            </select>
-          </div>
-
-          <!-- Fecha -->
-          <div class="mb-3">
-            <label>Fecha de Traslado</label>
-            <input type="date" [(ngModel)]="nuevoTraslado.fecha" name="fecha" required>
-          </div>
-
-          <!-- Observaciones -->
-          <div class="mb-3 full-width">
-            <label>Observaciones</label>
-            <textarea [(ngModel)]="nuevoTraslado.observaciones" name="observaciones" rows="2"></textarea>
-          </div>
+        <!-- ARTÍCULO -->
+        <div class="form-group">
+          <label>Artículo</label>
+          <select [(ngModel)]="nuevoTraslado.articulo"
+                  name="articulo"
+                  required
+                  (change)="onArticuloChange(nuevoTraslado.articulo)">
+            <option value="" disabled>Seleccione artículo</option>
+            <option *ngFor="let a of listaArticulos" [value]="a.id">
+              {{ a.nombre }}
+            </option>
+          </select>
         </div>
 
+        <!-- ORIGEN (AUTOLLENADO) -->
+        <div class="form-group">
+          <label>Ubicación origen</label>
+          <select [(ngModel)]="nuevoTraslado.origen"
+                  name="origen"
+                  required
+                  disabled>
+            <option *ngFor="let u of listaUbicaciones" [value]="u.id">
+              {{ u.nombre }}
+            </option>
+          </select>
+        </div>
+
+        <!-- DESTINO -->
+        <div class="form-group">
+          <label>Ubicación destino</label>
+          <select [(ngModel)]="nuevoTraslado.destino"
+                  name="destino"
+                  required>
+            <option value="" disabled>Seleccione destino</option>
+            <option *ngFor="let u of listaUbicaciones" [value]="u.id">
+              {{ u.nombre }}
+            </option>
+          </select>
+        </div>
+
+        <!-- OBSERVACIONES -->
+        <div class="form-group">
+          <label>Observaciones</label>
+          <textarea [(ngModel)]="nuevoTraslado.observaciones"
+                    name="observaciones"
+                    rows="3"></textarea>
+        </div>
+
+        <!-- BOTONES -->
         <div class="acciones-form">
-          <button type="submit" class="btn-guardar" [disabled]="trasladoForm.invalid">
-            {{ editando ? 'Actualizar' : 'Guardar' }}
+          <button type="submit"
+                  class="btn-guardar"
+                  [disabled]="formTraslado.invalid">
+            Guardar
           </button>
-          <button type="button" class="btn-cancelar" (click)="toggleFormulario()">Cancelar</button>
+
+          <button type="button"
+                  class="btn-cancelar"
+                  (click)="toggleFormulario()">
+            Cancelar
+          </button>
         </div>
+
       </form>
     </div>
   </div>

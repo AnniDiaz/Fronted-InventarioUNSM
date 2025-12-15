@@ -32,4 +32,7 @@ export class TipoArticuloService {
   public getArticulosByTipo(id: number) {
     return this.httpClient.get(`${baseUrl}/tipo-articulo/${id}/articulo`);
   }
+  public getEncabezadoArticulos(id: number) {
+  return this.httpClient.get<string[]>(`${baseUrl}/tipo-articulo/${id}/encabezado`);
+}
 }

@@ -9,6 +9,9 @@
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
   font-family: 'Segoe UI', Arial, sans-serif;
 }
+.swal2-container {
+  z-index: 20000 !important;
+}
 
 .crud-header {
   display: flex;
@@ -98,7 +101,7 @@
 .btn-action {
   display: inline-flex;
   align-items: center;
-  gap: 6px;                
+  gap: 6px;
   padding: 6px 14px;
   font-size: 14px;
   font-weight: 500;
@@ -111,14 +114,14 @@
 }
 
 .btn-action.edit {
-  background-color: #1976d2;  
+  background-color: #1976d2;
 }
 .btn-action.edit:hover {
   background-color: #125a9c;
 }
 
 .btn-action.delete {
-  background-color: #d32f2f;  
+  background-color: #d32f2f;
 }
 .btn-action.delete:hover {
   background-color: #a52727;
@@ -300,9 +303,9 @@
 }
 
 .paginacion button {
-  background-color: #f0f0f0; 
-  border: 1px solid #d1d1d1; 
-  border-radius: 6px; 
+  background-color: #f0f0f0;
+  border: 1px solid #d1d1d1;
+  border-radius: 6px;
   padding: 6px 12px;
   cursor: pointer;
   font-size: 14px;
@@ -310,7 +313,7 @@
 }
 
 .paginacion button:hover {
-  background-color: #e0e0e0; 
+  background-color: #e0e0e0;
   border-color: #c0c0c0;
 }
 

@@ -31,5 +31,5 @@ export class UbicacionService {
    public getUbicacionesPorTipo(tipoId: number) {
     return this.httpClient.get<any[]>(`${baseUrl}/ubicaciones/por-tipo/${tipoId}`);
   }
-  
+
 }

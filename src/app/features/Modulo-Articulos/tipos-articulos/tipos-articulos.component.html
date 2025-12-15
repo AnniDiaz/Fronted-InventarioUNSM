@@ -8,7 +8,7 @@
 
     <div class="contenido-principal">
       <div class="card">
-        
+
         <!-- TITULO Y BOTONES -->
         <div class="cont-tit">
           <h2>Registro de Tipos de Artículos</h2>
@@ -66,9 +66,10 @@
                   *ngIf="!nuevoArticulo.imagenPreview"
                 />
 
+
                 <!-- PREVIEW IMAGEN -->
                 <div *ngIf="nuevoArticulo.imagenPreview" class="preview">
-                  <img [src]="nuevoArticulo.imagenPreview" alt="Vista previa" />
+                  <img [src]= "'http://localhost:7000/' + nuevoArticulo.imagenPath" alt="Vista previa" />
                   <button type="button" (click)="quitarImagen()">Quitar</button>
                 </div>
               </div>
@@ -90,40 +91,39 @@
         <!-- GRID DE ARTÍCULOS -->
         <div class="grid-articulos">
 
-          <div class="articulo-card" *ngFor="let articulo of registrosPaginados">
+    <div class="articulo-card" *ngFor="let articulo of registrosPaginados" >
 
-            <img
-              *ngIf="articulo.imagen"
-              [src]="articulo.imagen"
-              alt="Imagen artículo"
-              class="img-articulo"
-            />
-            <img
-              *ngIf="!articulo.imagen"
-              src="assets/sin-imagen.jpg"
-              alt="Sin imagen"
-              class="img-articulo"
-            />
+  <!-- Imagen del artículo -->
+  <img
+    *ngIf="articulo.imagenPath"
+    [src]="'http://localhost:7000/' + articulo.imagenPath"
+    alt="Imagen artículo"
+    class="img-articulo" (click)="verArticulosTipoArticulo(articulo)"
+  />
+  <img
+    *ngIf="!articulo.imagenPath"
+    src="assets/sin-imagen.jpg"
+    alt="Sin imagen"
+    class="img-articulo" (click)="verArticulosTipoArticulo(articulo)"
+  />
 
-            <h3>{{ articulo.nombre }}</h3>
-            <p><strong>Descripción:</strong> {{ articulo.descripcion }}</p>
+  <h3 (click)="verArticulosTipoArticulo(articulo)">{{ articulo.nombre }}</h3>
+  <p><strong>Descripción:</strong> {{ articulo.descripcion }}</p>
 
-            <div class="acciones">
-              <button class="btn-ver" (click)="verArticulo(articulo)">
-                <i class="fa fa-eye"></i>
-              </button>
-              <button class="btn-editar" (click)="editarTipoArticulo(articulo)">
-                <i class="fa fa-edit"></i>
-              </button>
-              <button class="btn-agregar" (click)="abrirCampos(articulo)">
-                <i class="fa fa-plus"></i>
-              </button>
-              <button class="btn-eliminar" (click)="eliminarTipoArticulo(articulo.id)">
-                <i class="fa fa-trash"></i>
-              </button>
-            </div>
+  <div class="acciones">
 
-          </div>
+    <button class="btn-editar" (click)="editarTipoArticulo(articulo)">
+      <i class="fa fa-edit"></i>
+    </button>
+    <button class="btn-agregar" (click)="abrirCampos(articulo)">
+      <i class="fa fa-plus"></i>
+    </button>
+    <button class="btn-eliminar" (click)="eliminarTipoArticulo(articulo.id)">
+      <i class="fa fa-trash"></i>
+    </button>
+  </div>
+
+</div>
 
           <div class="sin-resultados" *ngIf="registrosPaginados.length === 0">
             <p>No se encontraron tipos de artículos.</p>
