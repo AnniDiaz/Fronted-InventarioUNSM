@@ -112,11 +112,29 @@
 }
 
 /* =============== BOTÓN =============== */
+.container-btn {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+}
+
 .btn-guardar-perfil {
   margin-top: 25px;
   padding: 14px 18px;
   border: none;
   background: linear-gradient(90deg, #10b981, #059669);
+  color: white;
+  font-size: 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.btn-quitar-foto {
+  margin-top: 25px;
+  padding: 14px 18px;
+  border: none;
+  background: linear-gradient(90deg, #d82252, #960505);
   color: white;
   font-size: 16px;
   border-radius: 12px;

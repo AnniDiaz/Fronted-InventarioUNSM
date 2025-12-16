@@ -3,19 +3,28 @@
     <!-- Logo -->
     <img src="/assets/logo_fisi.png" alt="Logo" class="logo">
 
-    <h1>Inventario virtual</h1>
+    <h1>SIGAFISI</h1>
 
     <!-- Input de usuario -->
     <div class="form-group">
       <input type="text" placeholder="Usuario" [(ngModel)]="loginData.username" name="username">
-      <i class="fa fa-user"></i>
+      <i class="fa-solid fa-user"></i>
     </div>
 
     <!-- Input de contraseña -->
-    <div class="form-group">
-      <input [type]="hide ? 'password' : 'text'" placeholder="Contraseña" [(ngModel)]="loginData.password" name="password">
-      <i class="fa fa-eye" (click)="hide = !hide" style="cursor:pointer"></i>
-    </div>
+<div class="form-group">
+  <input [type]="hide ? 'password' : 'text'"
+         placeholder="Contraseña"
+         [(ngModel)]="loginData.password"
+         name="password">
+
+  <i
+    [ngClass]="hide ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash'"
+    (click)="hide = !hide"
+    style="cursor:pointer">
+  </i>
+</div>
+
 
     <!-- Botón login -->
     <button class="btn" (click)="formSubmit()">INGRESAR</button>

@@ -1,66 +1,87 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { HeaderComponent } from '../../shared/components/header/header.component';
 import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import Swal from 'sweetalert2';
+import { TrasladosService } from '../../core/services/traslados.service';
+import { ArticuloService } from '../../core/services/articulos.service';
+import { UbicacionService } from '../../core/services/ubicacion.service';
 
 @Component({
   selector: 'app-traslados',
+  standalone: true,
   imports: [HeaderComponent, SidebarComponent, FormsModule, CommonModule],
   templateUrl: './traslados.component.html',
   styleUrls: ['./traslados.component.css']
 })
-export class TrasladosComponent {
-  mostrarFormulario: boolean = false;
-  editando: boolean = false;
-  filtro: string = '';
+export class TrasladosComponent implements OnInit {
 
-  listaArticulos = [
-    { id: 1, nombre: 'Laptop Lenovo' },
-    { id: 2, nombre: 'Mouse Inalámbrico' },
-    { id: 3, nombre: 'Teclado Mecánico' }
-  ];
+  mostrarFormulario = false;
+  filtro = '';
 
-  listaUbicaciones = [
-    { id: 1, nombre: 'Almacén Central' },
-    { id: 2, nombre: 'Sucursal Norte' },
-    { id: 3, nombre: 'Sucursal Sur' }
-  ];
+  listaArticulos: any[] = [];
+  listaUbicaciones: any[] = [];
+  traslados: any[] = [];
 
-  traslados: any[] = [
-    {
-      id: 1,
-      articuloNombre: 'Laptop Lenovo',
-      cantidad: 5,
-      origenNombre: 'Almacén Central',
-      destinoNombre: 'Sucursal Norte',
-      fecha: '2025-10-15',
-      observaciones: 'Entrega urgente'
-    },
-    {
-      id: 2,
-      articuloNombre: 'Mouse Inalámbrico',
-      cantidad: 10,
-      origenNombre: 'Sucursal Sur',
-      destinoNombre: 'Almacén Central',
-      fecha: '2025-10-20',
-      observaciones: ''
-    }
-  ];
-
+  // 🔥 SIN FECHA
   nuevoTraslado: any = {
     articulo: '',
-    cantidad: null,
     origen: '',
     destino: '',
-    fecha: '',
     observaciones: ''
   };
 
-  trasladoSeleccionado: any = null;
-  paginaActual: number = 1;
-  registrosPorPagina: number = 5;
+  paginaActual = 1;
+  registrosPorPagina = 5;
+
+  constructor(
+    private trasladoService: TrasladosService,
+    private articuloService: ArticuloService,
+    private ubicacionService: UbicacionService
+  ) {}
+
+  ngOnInit(): void {
+    this.cargarTraslados();
+    this.cargarArticulos();
+    this.cargarUbicaciones();
+  }
+
+  cargarTraslados(): void {
+    this.trasladoService.getTraslados().subscribe({
+      next: data => this.traslados = data,
+      error: () => Swal.fire('Error', 'No se pudieron cargar los traslados', 'error')
+    });
+  }
+
+  cargarArticulos(): void {
+    this.articuloService.getArticulos().subscribe({
+      next: data => this.listaArticulos = data,
+      error: () => Swal.fire('Error', 'No se pudieron cargar los artículos', 'error')
+    });
+  }
+
+  cargarUbicaciones(): void {
+    this.ubicacionService.getUbicaciones().subscribe({
+      next: data => this.listaUbicaciones = data,
+      error: () => Swal.fire('Error', 'No se pudieron cargar las ubicaciones', 'error')
+    });
+  }
+
+  onArticuloChange(articuloId: number): void {
+    if (!articuloId) {
+      this.nuevoTraslado.origen = '';
+      return;
+    }
+
+    this.articuloService.getArticuloById(articuloId).subscribe({
+      next: articulo => this.nuevoTraslado.origen = articulo.ubicacionId,
+      error: () => {
+        Swal.fire('Error', 'No se pudo obtener la ubicación del artículo', 'error');
+        this.nuevoTraslado.origen = '';
+      }
+    });
+  }
 
   get totalPaginas(): number {
     return Math.ceil(this.filtrarTraslados().length / this.registrosPorPagina);
@@ -71,24 +92,17 @@ export class TrasladosComponent {
     return this.filtrarTraslados().slice(inicio, inicio + this.registrosPorPagina);
   }
 
-  toggleFormulario(): void {
-    this.mostrarFormulario = !this.mostrarFormulario;
-    if (!this.mostrarFormulario) {
-      this.limpiarFormulario();
-    }
+  filtrarTraslados(): any[] {
+    const texto = this.filtro.toLowerCase();
+    return this.traslados.filter(t =>
+      t.articulo?.nombre?.toLowerCase().includes(texto) ||
+      t.ubicacionOrigen?.nombre?.toLowerCase().includes(texto) ||
+      t.ubicacionDestino?.nombre?.toLowerCase().includes(texto)
+    );
   }
 
   aplicarFiltro(): void {
     this.paginaActual = 1;
-  }
-
-  filtrarTraslados(): any[] {
-    const texto = this.filtro.toLowerCase();
-    return this.traslados.filter(t =>
-      t.articuloNombre.toLowerCase().includes(texto) ||
-      t.origenNombre.toLowerCase().includes(texto) ||
-      t.destinoNombre.toLowerCase().includes(texto)
-    );
   }
 
   cambiarPagina(pagina: number): void {
@@ -97,85 +111,55 @@ export class TrasladosComponent {
     }
   }
 
-  guardarTraslado(): void {
-    if (this.editando) {
-      this.actualizarTraslado();
-      Swal.fire('¡Actualizado!', 'El traslado fue actualizado correctamente.', 'success');
-    } else {
-      this.registrarTraslado();
-      Swal.fire('¡Agregado!', 'El traslado fue registrado correctamente.', 'success');
+  toggleFormulario(): void {
+    this.mostrarFormulario = !this.mostrarFormulario;
+    if (!this.mostrarFormulario) this.limpiarFormulario();
+  }
+
+  // 🔥 FECHA ACTUAL AUTOMÁTICA
+guardarTraslado(): void {
+  if (this.nuevoTraslado.origen === this.nuevoTraslado.destino) {
+    Swal.fire('Error', 'La ubicación origen y destino no pueden ser iguales', 'warning');
+    return;
+  }
+
+  const payload = {
+    articuloId: this.nuevoTraslado.articulo,
+    ubicacionOrigenId: this.nuevoTraslado.origen,
+    ubicacionDestinoId: this.nuevoTraslado.destino,
+    fechaTraslado: new Date().toISOString(), // ✅ fecha actual automática
+    usuarioId: 1,
+    observaciones: this.nuevoTraslado.observaciones
+  };
+
+  this.trasladoService.realizarTraslado(payload).subscribe({
+    next: () => {
+      Swal.fire('Éxito', 'Traslado realizado correctamente', 'success');
+      this.toggleFormulario();
+      this.cargarTraslados();
+    },
+    error: err => {
+      Swal.fire('Error', err.error || 'No se pudo realizar el traslado', 'error');
     }
-    this.toggleFormulario();
-  }
-
-  registrarTraslado(): void {
-    const articulo = this.listaArticulos.find(a => a.id == this.nuevoTraslado.articulo);
-    const origen = this.listaUbicaciones.find(u => u.id == this.nuevoTraslado.origen);
-    const destino = this.listaUbicaciones.find(u => u.id == this.nuevoTraslado.destino);
-
-    const nuevo = {
-      id: this.traslados.length + 1,
-      articuloNombre: articulo?.nombre || '',
-      cantidad: this.nuevoTraslado.cantidad,
-      origenNombre: origen?.nombre || '',
-      destinoNombre: destino?.nombre || '',
-      fecha: this.nuevoTraslado.fecha,
-      observaciones: this.nuevoTraslado.observaciones || ''
-    };
-
-    this.traslados.push(nuevo);
-    this.limpiarFormulario();
-  }
-
-  editarTraslado(traslado: any): void {
-    this.editando = true;
-    this.mostrarFormulario = true;
-    this.trasladoSeleccionado = traslado;
-
-    const articulo = this.listaArticulos.find(a => a.nombre === traslado.articuloNombre);
-    const origen = this.listaUbicaciones.find(u => u.nombre === traslado.origenNombre);
-    const destino = this.listaUbicaciones.find(u => u.nombre === traslado.destinoNombre);
-
-    this.nuevoTraslado = {
-      articulo: articulo?.id,
-      cantidad: traslado.cantidad,
-      origen: origen?.id,
-      destino: destino?.id,
-      fecha: traslado.fecha,
-      observaciones: traslado.observaciones
-    };
-  }
-
-  actualizarTraslado(): void {
-    if (!this.trasladoSeleccionado) return;
-
-    const articulo = this.listaArticulos.find(a => a.id == this.nuevoTraslado.articulo);
-    const origen = this.listaUbicaciones.find(u => u.id == this.nuevoTraslado.origen);
-    const destino = this.listaUbicaciones.find(u => u.id == this.nuevoTraslado.destino);
-
-    this.trasladoSeleccionado.articuloNombre = articulo?.nombre || '';
-    this.trasladoSeleccionado.cantidad = this.nuevoTraslado.cantidad;
-    this.trasladoSeleccionado.origenNombre = origen?.nombre || '';
-    this.trasladoSeleccionado.destinoNombre = destino?.nombre || '';
-    this.trasladoSeleccionado.fecha = this.nuevoTraslado.fecha;
-    this.trasladoSeleccionado.observaciones = this.nuevoTraslado.observaciones || '';
-
-    this.editando = false;
-    this.limpiarFormulario();
-  }
+  });
+}
 
   eliminarTraslado(id: number): void {
     Swal.fire({
-      title: '¿Estás seguro?',
-      text: "¡No podrás revertir esta acción!",
+      title: '¿Eliminar traslado?',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Sí, eliminar',
+      confirmButtonText: 'Sí',
       cancelButtonText: 'Cancelar'
-    }).then((result) => {
+    }).then(result => {
       if (result.isConfirmed) {
-        this.traslados = this.traslados.filter(t => t.id !== id);
-        Swal.fire('¡Eliminado!', 'El traslado ha sido eliminado.', 'success');
+        this.trasladoService.deleteTraslado(id).subscribe({
+          next: () => {
+            Swal.fire('Eliminado', 'Traslado eliminado', 'success');
+            this.cargarTraslados();
+          },
+          error: () => Swal.fire('Error', 'No se pudo eliminar', 'error')
+        });
       }
     });
   }
@@ -183,13 +167,9 @@ export class TrasladosComponent {
   limpiarFormulario(): void {
     this.nuevoTraslado = {
       articulo: '',
-      cantidad: null,
       origen: '',
       destino: '',
-      fecha: '',
       observaciones: ''
     };
-    this.trasladoSeleccionado = null;
-    this.editando = false;
   }
 }

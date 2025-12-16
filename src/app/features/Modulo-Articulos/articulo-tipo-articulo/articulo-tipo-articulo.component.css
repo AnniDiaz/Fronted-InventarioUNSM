@@ -1,0 +1,307 @@
+/* ================= Contenedor general ================= */
+.container {
+  display: flex;
+  min-height: 100vh;
+  background: #f5f6fa;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.main-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.contenido-principal {
+  padding: 20px;
+}
+
+/* ================= Card ================= */
+.card {
+  background: #fff;
+  padding: 25px;
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+}
+
+/* ================= Título y botones ================= */
+.cont-tit {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.cont-tit h2 {
+  font-size: 1.7rem;
+  color: #333;
+  margin: 0;
+}
+
+.cont-btns {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ================= Buscador ================= */
+.busqueda {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.busqueda input {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  outline: none;
+  transition: .2s;
+}
+
+.busqueda input:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 4px rgba(52,152,219,0.4);
+}
+
+.btn-buscar {
+  padding: 8px 10px;
+  border: none;
+  background: #3498db;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.btn-buscar:hover {
+  background: #2d80b8;
+}
+
+/* ================= Botones ================= */
+.btn-agregar,
+.btn-editar,
+.btn-eliminar,
+.btn-detalles {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: .2s all;
+}
+
+.btn-agregar {
+  background: #2ecc71;
+  color: white;
+}
+.btn-agregar:hover {
+  background: #27ae60;
+}
+
+.btn-editar {
+  background: #f1c40f;
+  color: #fff;
+}
+.btn-editar:hover {
+  background: #d4ac0d;
+}
+
+.btn-eliminar {
+  background: #e74c3c;
+  color: #fff;
+}
+.btn-eliminar:hover {
+  background: #c0392b;
+}
+
+.btn-detalles {
+  background: #8e44ad;
+  color: white;
+}
+.btn-detalles:hover {
+  background: #732d91;
+}
+
+/* ================= Tabla ================= */
+.tabla-articulos {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.tabla-articulos th {
+  background: #f2f3f5;
+  font-weight: bold;
+  padding: 12px;
+  border-bottom: 2px solid #eee;
+}
+
+.tabla-articulos td {
+  padding: 12px;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.tabla-articulos tbody tr:hover {
+  background: #fafafa;
+}
+
+.img-qr,
+.img-qr-form {
+  width: 35px;
+  height: 35px;
+  object-fit: cover;
+}
+/* ============================================================
+   FORMULARIO DINÁMICO (3 COLUMNAS, PERO MÁS PEQUEÑO)
+   ============================================================ */
+.formulario-dinamico {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 720px;                /* antes 950 → más compacto */
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #ffffff;
+  padding: 22px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+  z-index: 999;
+  animation: fadeIn .25s ease-out;
+}
+
+/* Fondo oscuro */
+.overlay-form {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.30);
+  z-index: 998;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* GRID COMPACTO EN 3 COLUMNAS */
+.formulario-dinamico form {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;     /* antes 18px → más compacto */
+}
+
+/* Título del formulario */
+.formulario-dinamico h3 {
+  grid-column: span 3;
+  margin: 0 0 12px 0;
+  font-size: 1.25rem;    /* más pequeño */
+  color: #333;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ececec;
+}
+
+/* Campos */
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #444;
+  font-size: 0.9rem;   /* más pequeño */
+}
+
+.form-group input,
+.form-group select {
+  padding: 7px 9px;     /* más compacto */
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.88rem;
+  outline: none;
+  transition: .2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 3px rgba(52,152,219,0.4);
+}
+
+/* Botones */
+.btn-guardar,
+.btn-cancelar {
+  grid-column: span 3;
+  width: 100%;
+  padding: 10px;
+  border-radius: 7px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.92rem;  /* más pequeño */
+  margin-top: 6px;
+}
+
+.btn-guardar {
+  background: #27ae60;
+  color: white;
+}
+.btn-guardar:hover {
+  background: #1e8449;
+}
+
+.btn-cancelar {
+  background: #dcdcdc;
+  color: #333;
+}
+.btn-cancelar:hover {
+  background: #c7c7c7;
+}
+
+/* ================= Responsive ================= */
+@media(max-width: 768px) {
+  .formulario-dinamico {
+    width: 95%;
+  }
+
+  .formulario-dinamico form {
+    grid-template-columns: 1fr;
+  }
+
+  .btn-guardar,
+  .btn-cancelar,
+  .formulario-dinamico h3 {
+    grid-column: span 1;
+  }
+}
+
+
+/* ================= Sin resultados ================= */
+.sin-resultados {
+  text-align: center;
+  padding: 25px;
+  color: #777;
+  font-style: italic;
+}
+
+/* ================= Responsive ================= */
+@media(max-width: 768px) {
+  .formulario-dinamico {
+    width: 95%;
+  }
+
+  .formulario-dinamico form {
+    grid-template-columns: 1fr;
+  }
+
+  .btn-guardar,
+  .btn-cancelar {
+    grid-column: span 1;
+  }
+}

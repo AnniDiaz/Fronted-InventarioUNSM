@@ -1,0 +1,140 @@
+<div class="container">
+  <div class="barra-lateral">
+    <app-sidebar></app-sidebar>
+  </div>
+
+  <div class="main-section">
+    <app-header></app-header>
+
+    <div class="contenido-principal">
+      <div class="card">
+
+        <!-- TÍTULO + BUSCADOR + BOTONES -->
+        <div class="cont-tit">
+          <h3>Artículos de la categoria {{ nombreTipoArticulo }}</h3>
+
+          <div class="cont-btns">
+            <div class="busqueda">
+              <input type="text" placeholder="Buscar artículo..." [(ngModel)]="filtro" (input)="aplicarFiltro()" />
+              <button class="btn-buscar"><i class="fa fa-search"></i></button>
+            </div>
+
+            <button class="btn-agregar" (click)="abrirFormularioCrear()">
+              <i class="fa fa-plus"></i> Nuevo
+            </button>
+          </div>
+        </div>
+
+        <!-- TABLA -->
+        <table class="tabla-articulos" *ngIf="articulosFiltrados.length > 0">
+          <thead>
+            <tr>
+              <th *ngFor="let campo of encabezados"
+                  [hidden]="campo.toLowerCase() === 'estado' || campo.toLowerCase() === 'tipo'">
+                {{ campo }}
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let articulo of articulosFiltrados">
+              <td *ngFor="let campo of encabezados"
+                  [hidden]="campo.toLowerCase() === 'estado' || campo.toLowerCase() === 'tipo'">
+
+                <!-- QR -->
+                <ng-container *ngIf="isQRCode(campo)">
+                  <img *ngIf="getValue(articulo, campo)"
+                       [src]="'data:image/png;base64,' + getValue(articulo, campo)"
+                       class="img-qr" />
+                </ng-container>
+
+                <!-- Fecha -->
+                <ng-container *ngIf="!isQRCode(campo)">
+                  <span *ngIf="isFecha(campo); else normal">
+                    {{ getValue(articulo, campo) | date:'dd/MM/yyyy' }}
+                  </span>
+                  <ng-template #normal>
+                    {{ getValue(articulo, campo) }}
+                  </ng-template>
+                </ng-container>
+
+              </td>
+
+            </tr>
+          </tbody>
+        </table>
+
+        <div *ngIf="articulosFiltrados.length === 0" class="sin-resultados">
+          <p>No hay artículos para este tipo.</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= OVERLAY OSCURO ================= -->
+<div *ngIf="mostrarFormulario"
+     class="overlay-form"
+     [class.mostrar-overlay]="mostrarFormulario"
+     (click)="cerrarFormulario()">
+</div>
+
+<!-- ================= FORMULARIO ================= -->
+<div *ngIf="mostrarFormulario"
+     class="formulario-dinamico"
+     [class.mostrar-formulario]="mostrarFormulario">
+
+  <h3>{{ modoFormulario === 'crear' ? 'Registrar Artículo' : 'Editar Artículo' }}</h3>
+
+  <form (ngSubmit)="guardarArticulo()">
+
+    <!-- Campos fijos -->
+    <div class="form-group">
+      <label>Código Patrimonial</label>
+      <input type="text" [(ngModel)]="formulario['CodigoPatrimonial']" name="CodigoPatrimonial" required />
+    </div>
+
+    <div class="form-group">
+      <label>Nombre</label>
+      <input type="text" [(ngModel)]="formulario['Nombre']" name="Nombre" required />
+    </div>
+
+    <div class="form-group">
+      <label>Fecha</label>
+      <input type="date" [(ngModel)]="formulario['FechaAdquision']" name="FechaAdquision" required />
+    </div>
+
+    <div class="form-group">
+      <label>Valor Adquisitivo</label>
+      <input type="number" [(ngModel)]="formulario['ValorAdquisitivo']" name="ValorAdquisitivo" />
+    </div>
+
+    <div class="form-group">
+      <label>Condición</label>
+      <select [(ngModel)]="formulario['Condicion']" name="Condicion">
+        <option value="Bueno">Bueno</option>
+        <option value="Regular">Regular</option>
+        <option value="Malo">Malo</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Ubicación</label>
+      <select [(ngModel)]="formulario['UbicacionId']" name="UbicacionId">
+        <option *ngFor="let u of ubicaciones" [value]="u.id">{{ u.nombre }}</option>
+      </select>
+    </div>
+
+    <!-- Campos dinámicos -->
+    <div *ngFor="let c of camposDefinidos" class="form-group">
+      <label>{{ c.nombreCampo }}</label>
+      <input type="text" [(ngModel)]="formulario[c.nombreCampo]" name="{{ c.nombreCampo }}" />
+    </div>
+
+    <!-- Botones -->
+    <button type="submit" class="btn-guardar">Guardar</button>
+    <button type="button" class="btn-cancelar" (click)="cerrarFormulario()">Cancelar</button>
+
+  </form>
+</div>

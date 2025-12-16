@@ -1,0 +1,88 @@
+<div class="container">
+  <div class="barra-lateral">
+    <app-sidebar></app-sidebar>
+  </div>
+
+  <div class="main-section">
+    <app-header></app-header>
+
+    <div class="contenido-principal">
+
+      <!-- Detalles del Artículo -->
+      <div class="card">
+        <h2>Detalles del Artículo</h2>
+        <div *ngIf="articulo; else cargando" class="detalle-articulo-grid">
+          <div class="detalle-item">
+            <span class="label">ID</span>
+            <span class="value">{{ articulo.id }}</span>
+          </div>
+          <div class="detalle-item">
+            <span class="label">Nombre</span>
+            <span class="value">{{ articulo.nombre }}</span>
+          </div>
+          <div class="detalle-item">
+            <span class="label">Código Patrimonial</span>
+            <span class="value">{{ articulo.codigoPatrimonial }}</span>
+          </div>
+          <div class="detalle-item">
+            <span class="label">Fecha de Adquisición</span>
+            <span class="value">{{ articulo.fechaAdquision | date:'mediumDate' }}</span>
+          </div>
+          <div class="detalle-item">
+            <span class="label">Valor Adquisitivo</span>
+            <span class="value">{{ articulo.valorAdquisitivo }}</span>
+          </div>
+          <div class="detalle-item">
+            <span class="label">Condición</span>
+            <span class="value">{{ articulo.condicion }}</span>
+          </div>
+          <div class="detalle-item">
+            <span class="label">Tipo de Artículo ID</span>
+            <span class="value">{{ articulo.tipoArticuloId }}</span>
+          </div>
+          <div class="detalle-item">
+            <span class="label">Ubicación ID</span>
+            <span class="value">{{ articulo.ubicacionId }}</span>
+          </div>
+          <div class="detalle-item">
+            <span class="label">Vida útil</span>
+            <span class="value">{{ articulo.vidaUtil }}</span>
+          </div>
+          <div class="detalle-item">
+            <span class="label">Estado</span>
+            <span class="value">{{ articulo.estado }}</span>
+          </div>
+        </div>
+
+        <ng-template #cargando>
+          <p>Cargando artículo...</p>
+        </ng-template>
+      </div>
+
+      <!-- Botón para mostrar el formulario -->
+      <div class="card">
+        <button class="btn-reporte" (click)="mostrarReporte = !mostrarReporte">
+          {{ mostrarReporte ? 'Ocultar Formulario' : 'Generar Reporte' }}
+        </button>
+
+        <!-- Formulario Generar Reporte -->
+        <form *ngIf="mostrarReporte" (ngSubmit)="guardarReporte()" #reporteForm="ngForm" class="form-reporte">
+          <div class="form-group">
+            <label>Grado de Dificultad</label>
+            <input type="text" name="gradoDificultad" [(ngModel)]="reporte.gradoDificultad" required>
+          </div>
+
+          <div class="form-group">
+            <label>Descripción</label>
+            <textarea name="descripcion" [(ngModel)]="reporte.descripcion" rows="4" required></textarea>
+          </div>
+
+          <button type="submit" [disabled]="!reporteForm.form.valid" class="btn-reporte">
+            Guardar Reporte
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
