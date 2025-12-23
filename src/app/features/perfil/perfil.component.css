@@ -6,14 +6,12 @@
   color: #374151;
 }
 
-/* =============== CONTENEDOR GENERAL =============== */
 .contenido-principal {
   display: flex;
   justify-content: center;
   padding: 5px 20px;
 }
 
-/* =============== TARJETA =============== */
 .card-perfil {
   background: #fff;
   padding: 20px 20px;
@@ -26,10 +24,9 @@
   gap: 35px;
 }
 
-/* =============== FOTO CENTRADA ARRIBA =============== */
 .perfil-foto {
   text-align: center;
-  margin-bottom: -10px; /* 👈 reduce la separación con los grids */
+  margin-bottom: -10px;
 }
 
 .perfil-foto img {
@@ -51,17 +48,12 @@
   cursor: pointer;
 }
 
-
-/* ========================================================= */
-/* 🔥 GRID CONTENEDOR (DOS CUADROS LADO A LADO) */
-/* ========================================================= */
 .grids-container {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 30px;
 }
 
-/* BOX DE CADA GRID */
 .grid-box {
   background: #ffffff;
   padding: 25px;
@@ -69,7 +61,6 @@
   box-shadow: 0 6px 20px rgba(0,0,0,0.07);
 }
 
-/* TITULO DE CADA GRID CENTRADO */
 .titulo-grid {
   text-align: center;
   font-size: 20px;
@@ -77,7 +68,6 @@
   margin-bottom: 20px;
 }
 
-/* =============== GRID INFORMACIÓN BÁSICA =============== */
 .perfil-info {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -97,7 +87,6 @@
   background: #f3f4f6;
 }
 
-/* =============== GRID PASSWORD =============== */
 .password-grid {
   display: grid;
   grid-template-columns: repeat(1, 1fr);
@@ -108,10 +97,9 @@
   padding: 13px;
   border-radius: 10px;
   border: 1px solid #d1d5db;
-  margin-left: 10px; 
+  margin-left: 10px;
 }
 
-/* =============== BOTÓN =============== */
 .container-btn {
   display: flex;
   justify-content: space-between;
@@ -142,7 +130,6 @@
   width: 100%;
 }
 
-/* =============== RESPONSIVE =============== */
 @media (max-width: 950px) {
   .grids-container {
     grid-template-columns: 1fr;

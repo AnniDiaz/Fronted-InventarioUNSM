@@ -137,7 +137,7 @@
     const formData = new FormData();
 
     // Campos obligatorios según tu DTO
-    formData.append("Nombre", this.nuevoUsuario.nombres);
+    formData.append("Nombres", this.nuevoUsuario.nombres);
     formData.append("Apellido", this.nuevoUsuario.apellidos || '');
     formData.append("Email", this.nuevoUsuario.email);
     formData.append("Username", this.nuevoUsuario.username);

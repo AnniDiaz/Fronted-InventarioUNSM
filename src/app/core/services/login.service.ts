@@ -9,10 +9,16 @@ import { HttpClient } from '@angular/common/http';
 export class LoginService {
 
   // BehaviorSubject para mantener y emitir el usuario actual
-  private usuarioSubject = new BehaviorSubject<any | null>(this.getUser());
+  private usuarioSubject = new BehaviorSubject<any | null>(null);
   public usuario$ = this.usuarioSubject.asObservable();
 
-  constructor(private httpClient: HttpClient) { }
+  constructor(private httpClient: HttpClient) {
+    // Cargar usuario del localStorage si existe
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      this.usuarioSubject.next(JSON.parse(userStr));
+    }
+  }
 
   // -----------------------------------
   // Autenticación y login
@@ -42,25 +48,21 @@ export class LoginService {
     const userStr = localStorage.getItem('user');
     if (userStr) {
       return JSON.parse(userStr);
-    } else {
-      this.logout();
-      return null;
     }
+    return null;
   }
 
-  // Actualiza solo la imagen o cualquier cambio del usuario
   public actualizarUsuario(usuario: any): void {
-    this.setUser(usuario); // Actualiza localStorage y notifica al header
+    this.setUser(usuario);
   }
 
   // -----------------------------------
   // Logout
   // -----------------------------------
-  public logout(): boolean {
+  public logout(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     this.usuarioSubject.next(null); // Notifica que no hay usuario
-    return true;
   }
 
   // -----------------------------------
@@ -75,10 +77,12 @@ export class LoginService {
   // -----------------------------------
   public getUserRole(): string | null {
     const user = this.getUser();
-    if (user?.rol?.nombreRol) {
-      return user.rol.nombreRol;
-    }
-    return null;
+    return user?.rol?.nombreRol || null;
+  }
+
+  public getUserRoleId(): number | null {
+    const user = this.getUser();
+    return user?.rol?.id || null;
   }
 
   // -----------------------------------

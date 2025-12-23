@@ -7,7 +7,7 @@ export interface SubModulo {
   id: number;
   nombre: string;
   ruta: string;
-  icon?: string;  
+  icon?: string;
   moduloId: number;
 }
 
@@ -15,7 +15,7 @@ export interface Modulo {
   id: number;
   nombre: string;
   ruta: string;
-  icon?: string;  
+  icon?: string;
   estado: number;
   subModulos: SubModulo[];
 }

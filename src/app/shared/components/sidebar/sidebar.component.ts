@@ -23,17 +23,51 @@ export class SidebarComponent implements OnInit {
     private router: Router
   ) {}
 
-  ngOnInit(): void {
-    this.cargarModulos();
-    this.usuarioActual = this.loginService.getUser();
+ngOnInit(): void {
+  this.usuarioActual = this.loginService.getUser();
+  console.log('Usuario actual:', this.usuarioActual);
+
+  if (!this.usuarioActual) {
+    console.error('No hay usuario logueado');
+    return;
   }
 
-  cargarModulos() {
-    this.modulosService.getModulos().subscribe({
-      next: (data) => this.modulos = data,
-      error: (err) => console.error('Error cargando módulos:', err)
-    });
+  if (!this.usuarioActual.rolId) {
+    console.error('El usuario no tiene rol asignado');
+    return;
   }
+
+  console.log('Cargando módulos para rolId:', this.usuarioActual.rolId);
+  this.cargarModulosPorRol(this.usuarioActual.rolId);
+}
+
+cargarModulosPorRol(rolId: number) {
+  this.modulosService.getSubModulosByRol(rolId).subscribe({
+    next: (data) => {
+      console.log('Datos recibidos del backend:', data);
+
+      if (!data || data.length === 0) {
+        console.warn('No se encontraron módulos para este rol');
+        return;
+      }
+
+      // Simplemente asignamos lo que viene del backend
+      this.modulos = data.map((mod: any) => ({
+        id: mod.id,
+        nombre: mod.nombre,
+        ruta: mod.ruta,
+        icon: mod.icon || 'fas fa-folder',
+        estado: mod.estado,
+        subModulos: mod.subModulos || []
+      }));
+
+      console.log('Módulos listos para render:', this.modulos);
+    },
+    error: (err) => console.error('Error cargando módulos por rol:', err)
+  });
+}
+
+
 
   toggle(id: number) {
     this.expanded[id] = !this.expanded[id];
