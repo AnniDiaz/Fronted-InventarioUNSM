@@ -7,77 +7,97 @@
     <app-header></app-header>
 
     <div class="contenido-principal">
-      <div class="card-perfil">
-        
-        <h2 class="titulo-principal">Mi perfil</h2>
+      <div class="perfil-layout">
 
-        <!-- FOTO DE PERFIL -->
-        <div class="perfil-foto">
-          <img [src]="usuario?.imagenPreview || '/assets/perfil.png'" alt="Foto de usuario" />
-
-          <input type="file" #inputImagen (change)="onFileSelected($event)" hidden />
-<button class="btn-subir-foto" (click)="inputImagen.click()">
-  Cambiar foto
-</button>
-        </div>
-
-        <!-- GRIDS -->
-        <div class="grids-container">
-
-          <!-- INFORMACIÓN BÁSICA -->
-          <div class="grid-box">
-            <h3 class="titulo-grid">Información básica</h3>
-            <div class="perfil-info">
-              <div>
-                <label>Nombre</label>
-                <input type="text" [value]="usuario?.nombre" disabled />
-              </div>
-              <div>
-                <label>Email</label>
-                <input type="text" [value]="usuario?.email" disabled />
-              </div>
-              <div>
-                <label>Rol</label>
-                <input type="text" [value]="usuario?.rol" disabled />
-              </div>
-              <div>
-                <label>Usuario</label>
-                <input type="text" [value]="usuario?.username" disabled />
-              </div>
+        <!-- Menú Lateral del Perfil -->
+        <div class="perfil-sidebar">
+          <div class="perfil-sidebar-header">
+            <div class="perfil-foto">
+              <img [src]="usuario?.imagenPreview || '/assets/perfil.png'" alt="Foto de usuario" />
+              <input type="file" #inputImagen (change)="onFileSelected($event)" hidden />
+              <button class="btn-subir-foto-icon" (click)="inputImagen.click()" title="Cambiar foto">
+                📷
+              </button>
             </div>
+            <h3 class="perfil-name">{{ usuario?.data.nombre || 'Usuario' }}</h3>
+            <span class="perfil-role">{{ rol?.nombre }}</span>
 
-            <!-- BOTÓN GUARDAR FOTO -->
-            <div *ngIf="imagenSeleccionada" class="container-btn">
-              <button class="btn-guardar-perfil" (click)="guardarImagen()">Guardar foto</button>
-              <button class="btn-quitar-foto" (click)="quitarImagen()">Quitar foto</button>
+            <div *ngIf="imagenSeleccionada" class="container-btn-foto">
+              <button class="btn-guardar-foto" (click)="guardarImagen()">Guardar</button>
+              <button class="btn-quitar-foto" (click)="quitarImagen()">Cancelar</button>
             </div>
           </div>
 
-          <!-- CAMBIAR CONTRASEÑA -->
-          <div class="grid-box">
-            <h3 class="titulo-grid">Cambiar contraseña</h3>
-            <form (ngSubmit)="cambiarPassword()" #formPass="ngForm">
-              <div class="password-grid">
-                <div>
-                  <label>Contraseña actual</label>
-                  <input type="password" name="actual" [(ngModel)]="password.actual" required />
-                </div>
-                <div>
-                  <label>Nueva contraseña</label>
-                  <input type="password" name="nueva" [(ngModel)]="password.nueva" required minlength="6" />
-                </div>
-                <div>
-                  <label>Confirmar nueva contraseña</label>
-                  <input type="password" name="confirmar" [(ngModel)]="password.confirmar" required minlength="6" />
-                </div>
+          <div class="perfil-menu">
+            <button class="menu-item" [class.active]="activeTab === 'datos'" (click)="activeTab = 'datos'">
+              <span class="icon">👤</span> Datos personales
+            </button>
+            <button class="menu-item" [class.active]="activeTab === 'seguridad'" (click)="activeTab = 'seguridad'">
+              <span class="icon">🔒</span> Seguridad
+            </button>
+          </div>
+        </div>
+
+        <!-- Contenido Central del Perfil -->
+        <div class="perfil-content">
+
+          <!-- PESTAÑA DATOS -->
+          <div class="tab-content" *ngIf="activeTab === 'datos'">
+            <h2 class="tab-title">Información Básica</h2>
+            <p class="tab-subtitle">Visualiza los datos personales de tu cuenta.</p>
+
+            <div class="perfil-info-grid">
+              <div class="input-group">
+                <label>Nombre completo</label>
+                <input type="text" [value]="usuario?.data.nombre" disabled />
               </div>
-              <button type="submit" class="btn-guardar-perfil" [disabled]="formPass.invalid">
-                Guardar cambios
-              </button>
+              <div class="input-group">
+                <label>Correo electrónico</label>
+                <input type="text" [value]="usuario?.data.email" disabled />
+              </div>
+              <div class="input-group">
+                <label>Usuario</label>
+                <input type="text" [value]="usuario?.data.username" disabled />
+              </div>
+              <div class="input-group">
+                <label>Rol asignado</label>
+                <input type="text" [value]="rol?.nombre" disabled />
+              </div>
+            </div>
+          </div>
+
+          <!-- PESTAÑA SEGURIDAD -->
+          <div class="tab-content" *ngIf="activeTab === 'seguridad'">
+            <h2 class="tab-title">Seguridad</h2>
+            <p class="tab-subtitle">Actualiza tu contraseña para mantener tu cuenta segura.</p>
+
+            <form (ngSubmit)="cambiarPassword()" #formPass="ngForm" class="password-form">
+              <div class="input-group">
+                <label>Contraseña actual</label>
+                <input type="password" name="actual" [(ngModel)]="password.actual" required
+                  placeholder="Ingresa tu contraseña actual" />
+              </div>
+              <div class="input-group">
+                <label>Nueva contraseña</label>
+                <input type="password" name="nueva" [(ngModel)]="password.nueva" required minlength="6"
+                  placeholder="Mínimo 6 caracteres" />
+              </div>
+              <div class="input-group">
+                <label>Confirmar nueva contraseña</label>
+                <input type="password" name="confirmar" [(ngModel)]="password.confirmar" required minlength="6"
+                  placeholder="Repite tu nueva contraseña" />
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="btn-guardar" [disabled]="formPass.invalid">
+                  Guardar cambios
+                </button>
+              </div>
             </form>
           </div>
 
         </div>
+
       </div>
     </div>
   </div>

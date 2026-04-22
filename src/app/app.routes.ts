@@ -14,18 +14,20 @@ import { ArticuloFormComponent } from './features/Modulo-Articulos/articulos/art
 import { ArticuloTipoArticuloComponent } from './features/Modulo-Articulos/articulo-tipo-articulo/articulo-tipo-articulo.component';
 import { DetallesArticuloComponent } from './features/Modulo-Articulos/detalles-articulo/detalles-articulo.component';
 import { PerfilComponent } from './features/perfil/perfil.component';
+import { PrestamoComponent } from './features/prestamos/prestamos.component';
+import { MantenimientoComponent } from './features/mantenimiento/mantenimiento.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'dashboard', component: DashboardComponent },
   { path: 'tipos-articulos', component: TipoArticulosComponent },
-  { path: 'tipos-articulos/:id', component: ArticuloTipoArticuloComponent},
+  { path: 'tipos-articulos/:id', component: ArticuloTipoArticuloComponent },
 
   { path: 'tipo-ubicacion', component: TipoUbicacionComponent },
-  { path: 'ubicaciones', component: UbicacionComponent},
-  { path: 'reportes', component:ReportesComponent},
-  {path:'traslados', component:TrasladosComponent},
+  { path: 'ubicaciones', component: UbicacionComponent },
+  { path: 'reportes', component: ReportesComponent },
+  { path: 'traslados', component: TrasladosComponent },
   { path: 'roles', component: RolesComponent },
   { path: 'permisos', component: PermisosComponent },
   { path: 'usuarios', component: UsuariosComponent },
@@ -34,6 +36,8 @@ export const routes: Routes = [
   { path: 'perfil', component: PerfilComponent },
 
   { path: 'tipos-articulos/articulo/:id', component: DetallesArticuloComponent },
+  { path: 'prestamos', component: PrestamoComponent },
+  { path: 'mantenimiento', component: MantenimientoComponent },
 
   { path: '**', redirectTo: 'login' },
 ];

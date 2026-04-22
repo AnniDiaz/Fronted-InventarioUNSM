@@ -6,6 +6,7 @@ import { HeaderComponent } from '../../shared/components/header/header.component
 import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { RolesService } from '../../core/services/roles.service';
 
 @Component({
   selector: 'app-perfil',
@@ -16,6 +17,9 @@ import { CommonModule } from '@angular/common';
 export class PerfilComponent implements OnInit {
 
   usuario: any = null;
+  rol: any
+
+  activeTab: string = 'datos'; // 'datos' | 'seguridad'
 
   password = {
     actual: '',
@@ -26,8 +30,9 @@ export class PerfilComponent implements OnInit {
   imagenSeleccionada: File | null = null;
 
   constructor(private usuariosService: UsuariosService,
-    private loginService: LoginService
-  ) {}
+    private loginService: LoginService,
+    private rolService: RolesService
+  ) { }
 
   ngOnInit(): void {
     this.cargarUsuario();
@@ -38,11 +43,32 @@ export class PerfilComponent implements OnInit {
       next: (data: any) => {
         this.usuario = data;
         // Previsualización de la imagen
-        this.usuario.imagenPreview = data.imagenPath 
-          ? `http://localhost:7000/${data.imagenPath}` 
+        this.usuario.imagenPreview = data.imagenPath
+          ? `http://localhost:7000/${data.imagenPath}`
           : '/assets/perfil.png';
+        this.cargarRol();
       },
       error: () => Swal.fire("Error", "No se pudo cargar el usuario", "error"),
+    });
+  }
+
+  cargarRol() {
+    // 1. Validamos que el objeto usuario tenga la estructura esperada
+    if (!this.usuario || !this.usuario.data || !this.usuario.data.rolId) {
+      console.warn("No se puede cargar el rol: Información de usuario no disponible aún.");
+      return; // Salimos de la función para evitar el error
+    }
+
+    // 2. Si llegamos aquí, ya es seguro acceder a rolId
+    const rolId = this.usuario.data.rolId;
+
+    this.rolService.getRolById(rolId).subscribe({
+      next: (res: any) => {
+        // 3. Basado en tus logs anteriores, la data real está en res.data
+        this.rol = res.data || res;
+        console.log("Rol cargado con éxito:", this.rol);
+      },
+      error: () => Swal.fire("Error", "No se pudo cargar el rol", "error"),
     });
   }
 
@@ -59,35 +85,35 @@ export class PerfilComponent implements OnInit {
 
   quitarImagen() {
     this.imagenSeleccionada = null;
-    this.usuario.imagenPreview = this.usuario.imagenPath 
-      ? `http://localhost:7000/${this.usuario.imagenPath}` 
+    this.usuario.imagenPreview = this.usuario.imagenPath
+      ? `http://localhost:7000/${this.usuario.imagenPath}`
       : '/assets/perfil.png';
   }
 
- // ------------------- CAMBIO DE FOTO -------------------
-guardarImagen() {
-  if (!this.imagenSeleccionada) return;
+  // ------------------- CAMBIO DE FOTO -------------------
+  guardarImagen() {
+    if (!this.imagenSeleccionada) return;
 
-  this.usuariosService.actualizarImagen(this.imagenSeleccionada).subscribe({
-    next: (res: any) => {
-      Swal.fire("¡Éxito!", "Imagen actualizada correctamente", "success");
+    this.usuariosService.actualizarImagen(this.imagenSeleccionada).subscribe({
+      next: (res: any) => {
+        Swal.fire("¡Éxito!", "Imagen actualizada correctamente", "success");
 
-      // Actualizar la previsualización en PerfilComponent
-      this.usuario.imagenPreview = `http://localhost:7000/${res.imagenPath}`;
+        // Actualizar la previsualización en PerfilComponent
+        this.usuario.imagenPreview = `http://localhost:7000/${res.imagenPath}`;
 
-      // Actualizar el usuario en LoginService para que el Header se refresque
-      const usuarioActualizado = { ...this.usuario, imagenPath: res.imagenPath };
-      this.loginService.actualizarUsuario(usuarioActualizado);
+        // Actualizar el usuario en LoginService para que el Header se refresque
+        const usuarioActualizado = { ...this.usuario, imagenPath: res.imagenPath };
+        this.loginService.actualizarUsuario(usuarioActualizado);
 
-      // Limpiar selección
-      this.imagenSeleccionada = null;
-    },
-    error: (err) => {
-      console.error(err);
-      Swal.fire("Error", "No se pudo actualizar la imagen", "error");
-    }
-  });
-}
+        // Limpiar selección
+        this.imagenSeleccionada = null;
+      },
+      error: (err) => {
+        console.error(err);
+        Swal.fire("Error", "No se pudo actualizar la imagen", "error");
+      }
+    });
+  }
 
 
 

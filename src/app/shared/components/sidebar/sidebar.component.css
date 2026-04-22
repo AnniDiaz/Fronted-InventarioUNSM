@@ -1,80 +1,122 @@
-/* Sidebar */
+/* Sidebar Light Theme Redesign */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
 .sidebar {
-  width: 250px;
-  background: linear-gradient(180deg, #328636, #25632a);
-  color: #fff;
-  font-size: 15px;
+  width: 260px;
+  background: #ffffff;
+  color: #64748b;
+  /* slate-500 */
+  font-family: 'Inter', sans-serif;
   height: 100vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 4px 0 12px rgba(0,0,0,0.2);
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.03);
+  /* Extremely subtle shadow */
   transition: width 0.3s;
   overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.sidebar::-webkit-scrollbar {
+  display: none;
 }
 
 /* Contenedor logo */
 .sidebar .cont-logo {
   display: flex;
   align-items: center;
-  padding: 10px 15px;
-  gap: 10px;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.3);
-  margin-bottom: 15px;
+  padding: 30px 24px;
+  gap: 16px;
+  margin-bottom: 8px;
 }
 
 .sidebar .cont-logo img {
-  width: 60px;
-  height: 60px;
-  border-radius: 10px;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  /* Glow verdoso de la imagen */
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+}
+
+.sidebar .cont-logo .cont-text {
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar .cont-logo h1 {
   font-size: 22px;
   margin: 0;
+  color: #065f46;
+  /* text-emerald-800 */
+  font-weight: 800;
+  letter-spacing: -0.5px;
 }
 
 .cont-logo p {
-  font-size: 11px;
+  font-size: 10px;
   margin: 2px 0 0 0;
+  color: #94a3b8;
+  /* text-slate-400 */
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
   line-height: 1.2;
 }
 
 /* Menú principal */
 .sidebar ul {
   list-style: none;
-  padding: 0;
+  padding: 0 166px; /* Wait, looking at previous view_file, it was 0 16px. I'll check again. */
   margin: 0;
+  flex: 1;
+}
+/* Re-checking padding 0 16px in my previous view_file output */
+/* Line 64: padding: 0 16px; */
+
+.sidebar ul {
+  list-style: none;
+  padding: 0 16px;
+  margin: 0;
+  flex: 1;
 }
 
 .sidebar ul li {
-  margin-bottom: 5px;
+  margin-bottom: 6px;
 }
 
-/* Cabecera de módulo (clickable) */
-.sidebar ul li .menu-head {
+/* Cabecera de módulo y enlace directo */
+.sidebar ul li .menu-head,
+.sidebar ul li>a {
   display: flex;
-  justify-content: flex-start;
   align-items: center;
-  cursor: pointer;
-  padding: 14px 20px;
-  border-radius: 8px;
-  transition: all 0.3s ease;
+  text-decoration: none;
+  color: #64748b;
+  padding: 12px 20px;
+  border-radius: 12px;
   font-weight: 600;
-  font-size: 16px; /* más grande */
+  font-size: 15px;
+  transition: all 0.2s ease;
+  cursor: pointer;
 }
 
-.sidebar ul li .menu-head i {
-  margin-right: 12px;
+.sidebar ul li .menu-head i,
+.sidebar ul li>a i {
+  margin-right: 14px;
   font-size: 20px;
-  width: auto;
-  text-align: left;
-  color: #fff;
+  width: 24px;
+  color: #94a3b8;
+  /* icon color */
+  text-align: center;
+  transition: color 0.2s ease;
 }
 
 .sidebar ul li .menu-head span {
   margin-left: auto;
   font-size: 12px;
   transition: transform 0.3s ease;
+  color: #cbd5e1;
 }
 
 /* Flecha girando al expandir */
@@ -83,125 +125,133 @@
 }
 
 /* Hover efecto */
-.sidebar ul li .menu-head:hover {
-  background-color: #1b5e20;
-  padding-left: 24px;
-  box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+.sidebar ul li>a:hover:not(.active),
+.sidebar ul li .menu-head:hover:not(.active) {
+  background-color: #f8fafc;
+  /* slate-50 */
+  color: #334155;
+  /* slate-700 */
+}
+
+.sidebar ul li>a:hover:not(.active) i,
+.sidebar ul li .menu-head:hover:not(.active) i {
+  color: #059669;
+  /* emerald-600 */
+}
+
+/* Estado Activo */
+.sidebar ul li>a.active,
+.sidebar ul li .menu-head.active {
+  background-color: #059669;
+  /* emerald-600 */
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+}
+
+.sidebar ul li>a.active i,
+.sidebar ul li .menu-head.active i {
+  color: #ffffff;
+}
+
+/* Punto blanco en elemento activo (como en la imagen para "Dashboard") */
+.sidebar ul li>a.active::after {
+  content: '';
+  margin-left: auto;
+  width: 6px;
+  height: 6px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  display: block;
 }
 
 /* Submenú */
 .sidebar ul li .submenu {
   list-style: none;
   padding: 0;
-  margin: 0;
+  margin: 4px 0 8px 0;
 }
 
 .sidebar ul li .submenu li a {
   display: flex;
   align-items: center;
-  padding: 10px 40px; /* más a la derecha */
-  color: #fff;
+  padding: 10px 20px 10px 54px;
+  /* Sangría visual para hijos */
+  color: #64748b;
   text-decoration: none;
-  border-radius: 6px;
+  border-radius: 12px;
   font-size: 14px;
   font-weight: 500;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .sidebar ul li .submenu li a i {
-  margin-right: 10px;
+  margin-right: 12px;
   font-size: 16px;
   width: auto;
-  color: #fff;
+  color: #94a3b8;
 }
 
-.sidebar ul li .submenu li a:hover {
-  background-color: #1b5e20;
-  padding-left: 45px; /* efecto hover más desplazado */
-  box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+.sidebar ul li .submenu li a:hover:not(.active) {
+  background-color: #f8fafc;
+  color: #334155;
+}
+
+.sidebar ul li .submenu li a:hover:not(.active) i {
+  color: #059669;
 }
 
 .sidebar ul li .submenu li a.active {
-  background-color: #225a1f;
-  box-shadow: inset 4px 0 0 #fff;
+  background-color: #059669;
+  color: #ffffff;
+  box-shadow: 0 4px 6px rgba(5, 150, 105, 0.15);
 }
 
-/* Enlace directo si no tiene submódulos */
-.sidebar ul li > a {
-  display: flex;
-  align-items: center;
-  text-decoration: none;
-  color: #fff;
-  padding: 14px 20px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 16px; /* más grande */
-  transition: all 0.3s ease;
+.sidebar ul li .submenu li a.active i {
+  color: #ffffff;
 }
 
-.sidebar ul li > a i {
-  margin-right: 12px;
-  font-size: 20px;
-  width: auto;
-  color: #fff;
-}
-
-.sidebar ul li > a:hover {
-  background-color: #1b5e20;
-  padding-left: 24px;
-  box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
-}
-
-.sidebar ul li > a.active {
-  background-color: #225a1f;
-  box-shadow: inset 4px 0 0 #fff;
-}
-
-/* Scrollbar personalizado */
-.sidebar::-webkit-scrollbar {
-  width: 6px;
-}
-
-.sidebar::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.2);
-  border-radius: 3px;
-}
 /* Sección del logout */
 .logout-section {
-  margin-top: 20px;
-  padding: 15px 20px;
+  margin-top: auto;
+  padding: 20px 16px;
+  border-top: 1px solid #f1f5f9;
+  /* Línea tenue */
 }
 
 /* Botón de cerrar sesión */
 .btn-logout {
   width: 100%;
-  background: #25632a;
-  color: #fff;
+  background: transparent;
+  color: #64748b;
   border: none;
   padding: 12px 20px;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 12px;
-  transition: all 0.3s ease;
-  box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+  transition: all 0.2s ease;
 }
 
 .btn-logout i {
+  margin-right: 14px;
   font-size: 20px;
-  color: #fff;
+  width: 24px;
+  text-align: center;
+  color: #94a3b8;
+  transition: color 0.2s ease;
 }
 
-/* Hover */
+/* Hover logout */
 .btn-logout:hover {
-  background-color: #1b5e20;
-  padding-left: 24px;
+  background-color: #fef2f2;
+  /* red-50 */
+  color: #ef4444;
+  /* red-500 */
 }
-.logout-section {
-  margin-top: auto !important;
-  padding: 20px;
+
+.btn-logout:hover i {
+  color: #ef4444;
 }

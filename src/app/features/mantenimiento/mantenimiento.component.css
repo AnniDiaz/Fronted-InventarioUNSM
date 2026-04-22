@@ -1,0 +1,293 @@
+/* Layout Base */
+.container {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    background: #f8fafc;
+    font-family: 'Inter', sans-serif;
+}
+
+.barra-lateral {
+    width: 250px;
+    flex-shrink: 0;
+}
+
+.main-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.contenido-principal {
+    flex: 1;
+    padding: 40px;
+    overflow-y: auto;
+}
+
+.page-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Header */
+.header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.titulos-header h2 {
+    font-size: 26px;
+    font-weight: 800;
+    color: #0d1e3a;
+    margin: 0;
+}
+
+.titulos-header p {
+    color: #64748b;
+    margin-top: 4px;
+    font-size: 14px;
+}
+
+.btn-principal {
+    background: #00a468;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(0, 164, 104, 0.3);
+    transition: 0.2s;
+}
+
+.btn-principal:hover {
+    transform: translateY(-2px);
+    background: #008f5a;
+}
+
+/* Tabla */
+.tabla-container {
+    background: white;
+    border-radius: 20px;
+    padding: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+    border: 1px solid #f1f5f9;
+}
+
+.tabla-moderna {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabla-moderna th {
+    text-align: left;
+    padding: 18px 20px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: #94a3b8;
+    border-bottom: 1px solid #f1f5f9;
+    text-transform: uppercase;
+}
+
+.tabla-moderna td {
+    padding: 20px;
+    font-size: 14px;
+    color: #475569;
+    border-bottom: 1px solid #f8fafc;
+    white-space: nowrap;
+}
+
+.text-right {
+    text-align: right;
+}
+
+/* Badges de Estado */
+.badge {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.badge-completado {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.badge-pendiente {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.btn-action-done {
+    background: transparent;
+    border: none;
+    color: #00a468;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+.modal-modern {
+    background: white;
+    width: 550px;
+    max-width: 90%;
+    border-radius: 24px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+}
+
+.modal-header {
+    padding: 25px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    font-size: 18px;
+    color: #1e293b;
+    margin: 0;
+}
+
+.btn-cerrar {
+    background: none;
+    border: none;
+    font-size: 22px;
+    color: #94a3b8;
+    cursor: pointer;
+}
+
+.modal-body {
+    padding: 0 30px 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-size: 11px;
+    font-weight: 800;
+    color: #94a3b8;
+}
+
+.form-group input,
+.form-group select {
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    font-size: 14px;
+    outline: none;
+    transition: 0.2s;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: #00a468;
+    background: #fff;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.modal-footer-btns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.btn-cancelar {
+    padding: 15px;
+    border-radius: 12px;
+    border: none;
+    font-weight: 700;
+    background: #f1f5f9;
+    color: #475569;
+    cursor: pointer;
+}
+
+.btn-registrar {
+    padding: 15px;
+    border-radius: 12px;
+    border: none;
+    font-weight: 700;
+    background: #00a468;
+    color: white;
+    cursor: pointer;
+}
+
+/* =========================================
+   RESPONSIVIDAD (Móviles y Tablets)
+========================================= */
+
+@media (max-width: 768px) {
+
+    /* 1. Ajustes de espacio principal */
+    .contenido-principal {
+        padding: 20px;
+    }
+
+    /* 2. Ajustes del Header */
+    .header-section {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .btn-principal {
+        width: 100%;
+    }
+
+    /* 3. Magia para la Tabla (Scroll Horizontal) */
+    .tabla-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 0;
+        /* Quitamos el padding interno para aprovechar el ancho */
+    }
+
+    .tabla-moderna {
+        min-width: 700px;
+        /* Forzamos un ancho mínimo para que las columnas tengan buen espacio */
+    }
+
+    /* 4. Formulario Modal a una columna */
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+}

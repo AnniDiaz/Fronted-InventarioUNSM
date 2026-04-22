@@ -1,99 +1,124 @@
-<div class="container">
-  <!-- Sidebar -->
+<div class="dashboard-layout" [class.menu-activo]="menuAbierto">
+
+  <div class="sidebar-overlay" (click)="toggleMenu()"></div>
+
   <div class="barra-lateral">
     <app-sidebar></app-sidebar>
   </div>
 
-  <!-- Contenido principal -->
-  <div class="main-section">
+  <div class="main-content">
     <app-header></app-header>
 
-    <div class="contenido-principal">
-      <div class="card">
+    <div class="page-content">
 
-        <div class="cont-tit">
-          <h2>Registro de Ubicaciones</h2>
-          <div class="cont-btns">
-            <button class="btn-agregar" (click)="toggleFormulario()">
-              <i class="fa fa-plus"></i> Agregar Nuevo
-            </button>
+      <div class="page-header">
+        <div class="header-titulo-wrapper" style="display: flex; align-items: center; gap: 15px;">
+          <button class="menu-toggle" (click)="toggleMenu()">
+            <i class="fa fa-bars"></i>
+          </button>
 
-            <div class="busqueda">
-              <input type="text" placeholder="Buscar ubicación..." [(ngModel)]="filtro" (input)="aplicarFiltro()">
-              <button class="btn-buscar">
-                <i class="fa fa-search"></i>
-              </button>
-            </div>
+          <div class="header-titles">
+            <h2 style="margin: 0;">Tipos de Ubicación</h2>
+            <p style="margin: 4px 0 0;">Clasifica los diferentes espacios de la facultad.</p>
           </div>
         </div>
 
-        <div class="modal-backdrop" *ngIf="mostrarFormulario">
-          <div class="modal-card">
-            <div class="modal-header">
-              <h3>{{ editando ? 'Editar Tipo de Ubicación' : 'Registrar Tipo de Ubicación' }}</h3>
-              <button class="btn-cerrar" (click)="toggleFormulario()">&times;</button>
-            </div>
+        <div class="header-actions">
+          <div class="search-container">
+            <i class="fa fa-search"></i>
+            <input type="text" placeholder="Buscar ubicación..." [(ngModel)]="filtro" (input)="aplicarFiltro()">
+          </div>
+          <button class="btn-primary" (click)="toggleFormulario()">
+            <i class="fa fa-plus"></i> Nuevo Tipo de Ubicación
+          </button>
+        </div>
+      </div>
 
-            <div class="modal-body">
-              <form (ngSubmit)="guardarUbicacion()" #tipoUbicacionForm="ngForm">
-                <div class="mb-3">
-                  <label>Nombre</label>
-                  <input
-                    type="text"
-                    [(ngModel)]="nuevaUbicacion.nombre"
-                    name="nombre"
-                    required
-                  />
-                </div>
+      <div class="cards-grid">
+        <div class="type-card" *ngFor="let tipo of registrosPaginados">
 
-                <div class="acciones-form">
-                  <button type="submit" class="btn-guardar" [disabled]="tipoUbicacionForm.invalid">
-                    {{ editando ? 'Actualizar' : 'Guardar' }}
-                  </button>
-                  <button type="button" class="btn-cancelar" (click)="toggleFormulario()">
-                    Cancelar
-                  </button>
-                </div>
-              </form>
+          <div class="card-top">
+            <div class="icon-box ubicacion-icon">
+              <i class="fa fa-map-marker-alt"></i>
             </div>
           </div>
-        </div>
 
-        <!-- 🟩 Cards -->
-        <div class="grid-ubicaciones">
-          <div class="ubicacion-card" *ngFor="let tipo of registrosPaginados; let i = index">
-            <div class="card-header">
-              <span class="card-num">{{ (paginaActual - 1) * registrosPorPagina + i + 1 }}</span>
-              <h3>{{ tipo.nombre }}</h3>
-            </div>
+          <div class="card-body" (click)="verUbicacion(tipo)">
+            <h3>{{ tipo.nombre }}</h3>
+            <p>{{ tipo.descripcion }}</p>
+          </div>
 
-            <div class="acciones">
-              <button class="btn-ver" (click)="verUbicaciones(tipo.id)">
+          <div class="card-footer">
+            <div class="actions">
+              <button class="btn-icon ver" (click)="verUbicaciones(tipo.id)" title="Ver Detalle">
                 <i class="fa fa-eye"></i>
               </button>
-              <button class="btn-editar" (click)="editarUbicacion(tipo)">
-                <i class="fa fa-edit"></i>
+              <button class="btn-icon edit" (click)="editarUbicacion(tipo)" title="Editar">
+                <i class="fa fa-pencil"></i>
               </button>
-              <button class="btn-eliminar" (click)="eliminarUbicacion(tipo.id)">
+              <button class="btn-icon delete" (click)="eliminarUbicacion(tipo.id)" title="Eliminar">
                 <i class="fa fa-trash"></i>
               </button>
             </div>
           </div>
 
-          <!-- Sin resultados -->
-          <div class="sin-resultados" *ngIf="registrosPaginados.length === 0">
-            <p>No se encontraron tipos de ubicación.</p>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="registrosPaginados.length === 0">
+        <i class="fa fa-map-signs"></i>
+        <p>No se encontraron tipos de ubicación.</p>
+      </div>
+
+      <div class="footer-paginacion">
+        <div class="pag-info">
+          Mostrando <strong>{{ registrosPaginados.length }}</strong> de <strong>{{ ubicacionesFiltradas.length
+            }}</strong> tipos
+        </div>
+        <div class="pag-botones">
+          <button class="btn-pag-nav" [disabled]="paginaActual === 1"
+            (click)="cambiarPagina(paginaActual - 1)">Anterior</button>
+          <button class="btn-pag-nav active" [disabled]="paginaActual === totalPaginas"
+            (click)="cambiarPagina(paginaActual + 1)">Siguiente</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="modal-overlay" *ngIf="mostrarFormulario">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>{{ editando ? 'Editar Tipo de Ubicación' : 'Registrar Nuevo Tipo de Ubicación' }}</h3>
+        <button class="btn-close" (click)="toggleFormulario()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <form (ngSubmit)="guardarUbicacion()" #tipoUbicacionForm="ngForm">
+
+          <div class="form-group">
+            <label>Nombre del Tipo</label>
+            <input type="text" placeholder="ej. Laboratorio, Aula, Oficina, etc." [(ngModel)]="nuevaUbicacion.nombre"
+              name="nombre" required />
           </div>
-        </div>
 
-        <!-- 🩵 Paginación -->
-        <div class="paginacion" *ngIf="totalPaginas > 1">
-          <button (click)="cambiarPagina(paginaActual - 1)" [disabled]="paginaActual === 1">Anterior</button>
-          <span>Página {{ paginaActual }} de {{ totalPaginas }}</span>
-          <button (click)="cambiarPagina(paginaActual + 1)" [disabled]="paginaActual === totalPaginas">Siguiente</button>
-        </div>
+          <div class="form-group">
+            <label>Descripción</label>
+            <textarea placeholder="Describe el propósito de este tipo de ubicación..."
+              [(ngModel)]="nuevaUbicacion.descripcion" name="descripcion">
+            </textarea>
+          </div>
 
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" (click)="toggleFormulario()">Cancelar</button>
+            <button type="submit" class="btn-primary" [disabled]="tipoUbicacionForm.invalid">
+              {{ editando ? 'Actualizar Tipo' : 'Guardar Tipo' }}
+            </button>
+          </div>
+
+        </form>
       </div>
     </div>
   </div>
+
 </div>

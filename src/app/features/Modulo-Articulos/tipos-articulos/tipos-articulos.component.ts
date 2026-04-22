@@ -7,9 +7,11 @@ import { HeaderComponent } from "../../../shared/components/header/header.compon
 import { SidebarComponent } from "../../../shared/components/sidebar/sidebar.component";
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { lastValueFrom } from 'rxjs'; // ✅ Importante para el manejo moderno de promesas
 
 @Component({
   selector: 'app-tipo-articulos',
+  standalone: true,
   imports: [HeaderComponent, SidebarComponent, FormsModule, CommonModule],
   templateUrl: './tipos-articulos.component.html',
   styleUrls: ['./tipos-articulos.component.css']
@@ -17,6 +19,7 @@ import { CommonModule } from '@angular/common';
 export class TipoArticulosComponent implements OnInit {
 
   tiposArticulos: any[] = [];
+  tipoarticulosFiltrados: any[] = [];
   registrosPaginados: any[] = [];
 
   nuevoArticulo: any = {
@@ -30,9 +33,9 @@ export class TipoArticulosComponent implements OnInit {
   };
 
   mostrarFormulario = false;
+  menuAbierto = false;
   editando = false;
   mostrarCampos = false;
-  editandoCampos = false;
 
   tipoSeleccionado: any = null;
   camposTemporales: any[] = [];
@@ -46,79 +49,80 @@ export class TipoArticulosComponent implements OnInit {
     private tipoArticuloService: TipoArticuloService,
     private campoArticuloService: CamposArticuloService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.cargarTipos();
   }
 
-  /* ================= TIPOS ARTICULO ================= */
+  obtenerPrefijo(nombre: string): string {
+    if (!nombre) return '---';
+    return nombre.substring(0, 3).toUpperCase();
+  }
+
+  /* ================= LÓGICA DE DATOS Y FILTRADO ================= */
 
   cargarTipos() {
     this.tipoArticuloService.getTipoArticulos().subscribe({
       next: data => {
-        this.tiposArticulos = data;
-        this.aplicarFiltro();
+        this.tiposArticulos = data || [];
+        this.ejecutarLogicaFiltrado(); // ✅ Llamada directa para evitar resetear página si no es necesario
       },
-      error: () => Swal.fire("Error", "No se pudieron cargar los tipos de artículos", "error")
+      error: () => Swal.fire("Error", "No se pudieron cargar los tipos", "error")
     });
   }
 
   aplicarFiltro() {
-    let lista = this.tiposArticulos;
-
-    if (this.filtro.trim()) {
-      lista = lista.filter(x =>
-        x.nombre.toLowerCase().includes(this.filtro.toLowerCase())
-      );
-    }
-
-    this.totalPaginas = Math.ceil(lista.length / this.registrosPorPagina);
     this.paginaActual = 1;
-    this.actualizarPagina(lista);
+    this.ejecutarLogicaFiltrado();
   }
 
-  actualizarPagina(lista: any[]) {
+  private ejecutarLogicaFiltrado() {
+    let lista = [...this.tiposArticulos];
+
+    if (this.filtro && this.filtro.trim()) {
+      const termo = this.filtro.toLowerCase().trim();
+      lista = lista.filter(x => x.nombre.toLowerCase().includes(termo));
+    }
+
+    this.tipoarticulosFiltrados = lista;
+    this.totalPaginas = Math.ceil(this.tipoarticulosFiltrados.length / this.registrosPorPagina) || 1;
+    this.actualizarPagina();
+  }
+
+  actualizarPagina() {
     const inicio = (this.paginaActual - 1) * this.registrosPorPagina;
-    this.registrosPaginados = lista.slice(inicio, inicio + this.registrosPorPagina);
+    const fin = inicio + this.registrosPorPagina;
+    this.registrosPaginados = this.tipoarticulosFiltrados.slice(inicio, fin);
   }
 
   cambiarPagina(num: number) {
     if (num < 1 || num > this.totalPaginas) return;
     this.paginaActual = num;
-    this.aplicarFiltro();
+    this.actualizarPagina();
   }
 
-  /* ───────── FORMULARIO ───────── */
-  toggleFormulario() {
-    this.mostrarCampos = false;
-    this.mostrarFormulario = !this.mostrarFormulario;
+  /* ================= GESTIÓN DE FORMULARIO ================= */
 
-    if (!this.mostrarFormulario) {
-      this.resetArticulo();
-    }
+  toggleFormulario() {
+    this.mostrarFormulario = !this.mostrarFormulario;
+    if (!this.mostrarFormulario) this.resetArticulo();
   }
 
   resetArticulo() {
     this.editando = false;
     this.nuevoArticulo = {
-      id: null,
-      nombre: "",
-      descripcion: "",
-      estado: 1,
-      imagen: null,
-      imagenPreview: null,
-      imagenPath: null
+      id: null, nombre: "", descripcion: "", estado: 1,
+      imagen: null, imagenPreview: null, imagenPath: null
     };
   }
 
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (!file) return;
-
     this.nuevoArticulo.imagen = file;
     const reader = new FileReader();
-    reader.onload = () => this.nuevoArticulo.imagenPreview = reader.result;
+    reader.onload = () => { this.nuevoArticulo.imagenPreview = reader.result; };
     reader.readAsDataURL(file);
   }
 
@@ -128,97 +132,81 @@ export class TipoArticulosComponent implements OnInit {
     this.nuevoArticulo.imagenPath = null;
   }
 
-guardarArticulo() {
-  if (!this.nuevoArticulo.nombre.trim()) {
-    Swal.fire("Advertencia", "El nombre es obligatorio", "warning");
-    return;
-  }
-
-  const formData = new FormData();
-  formData.append("nombre", this.nuevoArticulo.nombre);
-  formData.append("descripcion", this.nuevoArticulo.descripcion);
-  formData.append("estado", String(this.nuevoArticulo.estado));
-
-  if (this.nuevoArticulo.imagen) {
-    formData.append("imagen", this.nuevoArticulo.imagen);
-  } else if (this.editando && this.nuevoArticulo.imagenPath) {
-    formData.append("imagenPath", this.nuevoArticulo.imagenPath);
-  }
-
-  const request = this.editando
-    ? this.tipoArticuloService.updateTipoArticulo(this.nuevoArticulo.id, formData)
-    : this.tipoArticuloService.addTipoArticulo(formData);
-
-  request.subscribe({
-    next: () => {
-      Swal.fire("Éxito", "Guardado correctamente", "success");
-      this.toggleFormulario();
-      this.cargarTipos();
-    },
-    error: e => {
-      Swal.fire(
-        "No permitido",
-        e?.error?.message || "Error al guardar",
-        "warning"
-      );
+  guardarArticulo() {
+    if (!this.nuevoArticulo.nombre?.trim()) {
+      Swal.fire("Advertencia", "El nombre es obligatorio", "warning");
+      return;
     }
-  });
-}
 
+    const formData = new FormData();
+    formData.append("nombre", this.nuevoArticulo.nombre);
+    formData.append("descripcion", this.nuevoArticulo.descripcion || "");
+    formData.append("estado", String(this.nuevoArticulo.estado));
+
+    if (this.nuevoArticulo.imagen) {
+      formData.append("imagen", this.nuevoArticulo.imagen);
+    }
+
+    const request = this.editando
+      ? this.tipoArticuloService.updateTipoArticulo(this.nuevoArticulo.id, formData)
+      : this.tipoArticuloService.addTipoArticulo(formData);
+
+    request.subscribe({
+      next: () => {
+        Swal.fire("Éxito", "Guardado correctamente", "success");
+        this.toggleFormulario();
+        this.cargarTipos();
+      },
+      error: e => Swal.fire("Error", e?.error?.message || "Error al guardar", "error")
+    });
+  }
 
   editarTipoArticulo(data: any) {
     this.editando = true;
     this.mostrarFormulario = true;
-
     this.nuevoArticulo = {
       id: data.id,
       nombre: data.nombre,
       descripcion: data.descripcion,
       estado: data.estado,
       imagen: null,
-      imagenPreview: data.imagenPath ? `http://localhost:7000/${data.imagenPath}` : null,
+      imagenPreview: data.imagenPath ? `http://localhost:7000${data.imagenPath}` : null,
       imagenPath: data.imagenPath
     };
   }
 
   eliminarTipoArticulo(id: number) {
     Swal.fire({
-      title: '¿Eliminar?',
+      title: '¿Eliminar categoría?',
+      text: 'Se eliminarán los registros asociados.',
       icon: 'warning',
       showCancelButton: true,
+      confirmButtonColor: '#00a468',
       confirmButtonText: 'Sí, eliminar'
     }).then(res => {
       if (res.isConfirmed) {
         this.tipoArticuloService.deleteTipoArticulo(id).subscribe({
-          next: (r: any) => {
-            Swal.fire("Eliminado", r.message, "success");
+          next: () => {
+            Swal.fire("Eliminado", "La categoría ha sido borrada", "success");
             this.cargarTipos();
           },
-          error: e =>
-            Swal.fire("No permitido", e?.error?.message || "Error", "error")
+          error: e => Swal.fire("Error", e?.error?.message || "No se pudo eliminar", "error")
         });
       }
     });
   }
 
-  verArticulosTipoArticulo(tipo: any) {
-    this.router.navigate(['/tipos-articulos', tipo.id]);
-  }
-
-  /* ================= CAMPOS ================= */
+  /* ================= GESTIÓN DE CAMPOS DINÁMICOS ================= */
 
   abrirCampos(tipo: any) {
-    this.mostrarFormulario = false;
-    this.editandoCampos = true;
     this.tipoSeleccionado = tipo;
     this.mostrarCampos = true;
-
     this.campoArticuloService.getCamposByTipoArticulo(tipo.id).subscribe({
       next: data => {
         this.camposTemporales = data.map((c: any) => ({
           id: c.id,
           nombre: c.nombreCampo,
-          tipo: c.tipoDato
+          tipo: c.tipoDato || 'texto'
         }));
       },
       error: () => this.camposTemporales = []
@@ -234,39 +222,40 @@ guardarArticulo() {
   }
 
   async guardarCampos() {
-    for (const c of this.camposTemporales) {
-      if (!c.nombre.trim()) {
-        Swal.fire("Advertencia", "Todos los campos deben tener nombre", "warning");
-        return;
-      }
+    // Validación básica
+    if (this.camposTemporales.some(c => !c.nombre.trim())) {
+      Swal.fire("Advertencia", "Todos los campos deben tener un nombre", "warning");
+      return;
     }
 
-    const peticiones = this.camposTemporales.map(campo => {
-      const dto = {
-        nombreCampo: campo.nombre,
-        tipoDato: campo.tipo,
-        tipoArticuloId: this.tipoSeleccionado.id // ✅ CLAVE
-      };
-
-      return campo.id
-        ? this.campoArticuloService.updateCampo(campo.id, dto).toPromise()
-        : this.campoArticuloService.addCampo(dto).toPromise();
-    });
-
     try {
-      await Promise.all(peticiones);
+      // ✅ Uso de lastValueFrom en lugar de toPromise()
+      const promesas = this.camposTemporales.map(campo => {
+        const dto = {
+          nombreCampo: campo.nombre,
+          tipoDato: campo.tipo,
+          tipoArticuloId: this.tipoSeleccionado.id
+        };
+
+        return campo.id
+          ? lastValueFrom(this.campoArticuloService.updateCampo(campo.id, dto))
+          : lastValueFrom(this.campoArticuloService.addCampo(dto));
+      });
+
+      await Promise.all(promesas);
+      Swal.fire("Éxito", "Configuración de campos guardada", "success");
       this.cerrarCampos();
-      Swal.fire("Guardado", "Campos guardados correctamente", "success");
     } catch (e) {
-      console.error(e);
-      Swal.fire("Error", "No se pudieron guardar los campos", "error");
+      Swal.fire("Error", "Ocurrió un problema al guardar los campos", "error");
     }
   }
 
   cerrarCampos() {
     this.mostrarCampos = false;
-    this.editandoCampos = false;
     this.camposTemporales = [];
     this.tipoSeleccionado = null;
   }
+
+  toggleMenu() { this.menuAbierto = !this.menuAbierto; }
+  verArticulosTipoArticulo(tipo: any) { this.router.navigate(['/tipos-articulos', tipo.id]); }
 }

@@ -52,7 +52,7 @@ export class ModulosService {
   }
 
   public getSubModulosByRol(rolId: number): Observable<any[]> {
-    return this.httpClient.get<any[]>(`${baseUrl}/RolSubModulo/rol/${rolId}`);
+    return this.httpClient.get<any[]>(`${baseUrl}/RolPermisos/${rolId}/accesos`);
   }
 
 }

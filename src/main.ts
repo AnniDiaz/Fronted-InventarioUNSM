@@ -1,14 +1,6 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from './app/app.component';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
-import { provideRouter } from '@angular/router';
-import { authInterceptorProviders } from './app/core/interceptors/auth-interceptor';
-import { routes } from './app/app.routes';
+import { appConfig } from './app/app.config'; // 👈 Asegúrate de que la ruta sea correcta
 
-bootstrapApplication(AppComponent, {
-  providers: [
-    provideHttpClient(withInterceptorsFromDi()),
-    provideRouter(routes),  // 👈 importante, aquí registras tus rutas
-    authInterceptorProviders,
-  ]
-});
+bootstrapApplication(AppComponent, appConfig)
+  .catch((err) => console.error(err));

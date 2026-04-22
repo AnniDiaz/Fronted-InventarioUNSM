@@ -2,21 +2,34 @@
 
   <!-- Buscador -->
   <div class="buscador">
+    <i class="fa fa-search icon-buscar"></i>
     <input type="text" placeholder="Buscar...">
-    <button><i class="fa fa-search"></i></button>
   </div>
 
   <!-- Acciones -->
   <div class="acciones-usuario">
 
+    <!-- Campana de notificaciones -->
+    <div class="notificacion">
+      <i class="fa-regular fa-bell"></i>
+      <span class="badge"></span>
+    </div>
+
+    <!-- Separador -->
+    <div class="separador"></div>
+
     <!-- Perfil del usuario -->
-    <div class="perfil" (click)="irAPerfil()">
-<div class="perfil" (click)="irAPerfil()">
-  <img [src]="usuarioActual?.imagenPath ? 'http://localhost:7000/' + usuarioActual?.imagenPath : 'assets/perfil.png'" alt="Perfil">
-<span>{{ usuarioActual?.username }}</span>
-</div>
-
-
+    <div class="perfil-info" (click)="irAPerfil()">
+      <div class="textos-perfil">
+        <span class="nombre-perfil">{{ usuarioActual?.data.nombre || usuarioActual?.username || 'Usuario' }}</span>
+        <span class="rol-perfil">{{ rolActual?.data.nombre || 'Rol no definido' }}</span>
+      </div>
+      <div class="avatar-container">
+        <img
+          [src]="usuarioActual?.imagenPath ? 'http://localhost:7000/' + usuarioActual?.imagenPath : 'assets/perfil.png'"
+          alt="Perfil">
+      </div>
+    </div>
 
   </div>
 </div>

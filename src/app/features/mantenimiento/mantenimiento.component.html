@@ -1,0 +1,126 @@
+<div class="container" [class.menu-activo]="menuAbierto">
+
+    <div class="sidebar-overlay" *ngIf="menuAbierto" (click)="toggleMenu()"></div>
+
+    <div class="barra-lateral">
+        <app-sidebar></app-sidebar>
+    </div>
+
+    <div class="main-section">
+        <app-header></app-header>
+
+        <div class="contenido-principal">
+            <div class="page-container">
+
+                <div class="header-section"
+                    style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+
+                    <div class="header-titles-wrapper" style="display: flex; align-items: center; gap: 15px;">
+                        <button class="menu-toggle" (click)="toggleMenu()">
+                            <i class="fa fa-bars"></i>
+                        </button>
+
+                        <div class="titulos-header">
+                            <h2>Mantenimiento</h2>
+                            <p>Seguimiento de servicios preventivos y correctivos.</p>
+                        </div>
+                    </div>
+
+                    <button class="btn-principal" (click)="toggleFormulario()">
+                        <i class="fa fa-wrench"></i> Programar Mantenimiento
+                    </button>
+                </div>
+
+                <div class="tabla-container">
+                    <table class="tabla-moderna">
+                        <thead>
+                            <tr>
+                                <th>ARTÍCULO</th>
+                                <th>TIPO</th>
+                                <th>FECHA</th>
+                                <th>PROVEEDOR</th>
+                                <th>COSTO</th>
+                                <th>ESTADO</th>
+                                <th class="text-right">ACCIONES</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let m of mantenimientosFiltrados">
+                                <td><strong>{{ m.articulo }}</strong></td>
+                                <td>{{ m.tipo }}</td>
+                                <td>{{ m.fecha }}</td>
+                                <td>{{ m.proveedor }}</td>
+                                <td><strong>S/ {{ m.costo }}</strong></td>
+                                <td>
+                                    <span class="badge"
+                                        [ngClass]="{'badge-completado': m.estado === 'COMPLETADO', 'badge-pendiente': m.estado === 'PENDIENTE'}">
+                                        {{ m.estado }}
+                                    </span>
+                                </td>
+                                <td class="text-right">
+                                    <button *ngIf="m.estado === 'PENDIENTE'" class="btn-action-done"
+                                        (click)="marcarCompletado(m.id)">
+                                        Marcar Completado
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="modal-overlay" *ngIf="mostrarFormulario">
+                    <div class="modal-modern">
+                        <div class="modal-header">
+                            <h3>Programar Mantenimiento</h3>
+                            <button class="btn-cerrar" (click)="toggleFormulario()">&times;</button>
+                        </div>
+
+                        <form (ngSubmit)="programarMantenimiento()" #f="ngForm" class="modal-body">
+                            <div class="form-group">
+                                <label>ARTÍCULO</label>
+                                <select [(ngModel)]="nuevoMantenimiento.articulo" name="articulo" required>
+                                    <option value="" disabled>Seleccionar artículo...</option>
+                                    <option *ngFor="let art of articulosDisponibles" [value]="art.nombre">{{ art.nombre
+                                        }}</option>
+                                </select>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>TIPO</label>
+                                    <select [(ngModel)]="nuevoMantenimiento.tipo" name="tipo">
+                                        <option value="Preventivo">Preventivo</option>
+                                        <option value="Correctivo">Correctivo</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>FECHA</label>
+                                    <input type="date" [(ngModel)]="nuevoMantenimiento.fecha" name="fecha" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>PROVEEDOR DEL SERVICIO</label>
+                                <input type="text" [(ngModel)]="nuevoMantenimiento.proveedor" name="prov"
+                                    placeholder="ej. TecnoService" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>COSTO ESTIMADO (S/)</label>
+                                <input type="number" [(ngModel)]="nuevoMantenimiento.costo" name="costo" placeholder="0"
+                                    required>
+                            </div>
+
+                            <div class="modal-footer-btns">
+                                <button type="button" class="btn-cancelar"
+                                    (click)="toggleFormulario()">Cancelar</button>
+                                <button type="submit" class="btn-registrar" [disabled]="f.invalid">Programar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

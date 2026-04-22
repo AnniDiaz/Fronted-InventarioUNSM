@@ -32,7 +32,7 @@ export class ModulosComponent {
     estado: 1
   };
 
-  constructor(private modulosService: ModulosService) {}
+  constructor(private modulosService: ModulosService) { }
 
   ngOnInit(): void {
     this.cargarModulos();
@@ -42,6 +42,7 @@ export class ModulosComponent {
     this.modulosService.getModulos().subscribe({
       next: (data) => {
         this.modulos = data;
+        console.log(data)
         this.aplicarFiltro();
       },
       error: (err: any) => console.error("Error al obtener módulos", err)

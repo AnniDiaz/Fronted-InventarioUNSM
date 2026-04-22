@@ -75,9 +75,19 @@ export class LoginService {
   // -----------------------------------
   // Roles
   // -----------------------------------
-  public getUserRole(): string | null {
-    const user = this.getUser();
-    return user?.rol?.nombreRol || null;
+  public getUserRole(): any {
+    const usuarioLocalStorage = localStorage.getItem('usuario_actual');
+
+    if (usuarioLocalStorage) {
+      // Aquí TypeScript ya sabe que usuarioLocalStorage NO es null
+      const res = JSON.parse(usuarioLocalStorage);
+      const rolId = res.data.rolId;
+      return rolId
+    } else {
+      console.warn("No se encontró el usuario en el storage");
+      // Tal vez redirigir al login
+      return null
+    }
   }
 
   public getUserRoleId(): number | null {
@@ -89,12 +99,8 @@ export class LoginService {
   // Llamadas al backend
   // -----------------------------------
   public getCurrentUser(): Observable<any> {
-    const token = this.getToken();
-    if (!token) throw new Error("No se encontró token. Usuario no autenticado.");
-
-    return this.httpClient.get(`${baseUrl}/usuarios/usuario-actual`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
+    // ✅ El interceptor le pondrá el token automáticamente en el viaje
+    return this.httpClient.get(`${baseUrl}/usuarios/usuario-actual`);
   }
 
   public enviarEmail(email: string): Observable<any> {

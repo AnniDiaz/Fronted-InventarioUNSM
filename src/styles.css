@@ -1,380 +1,443 @@
-
-.crud-container {
-  max-width: 1000px;
-  margin: 3rem auto;
-  padding: 1.5rem;
-  margin-right: 60px;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
-  font-family: 'Segoe UI', Arial, sans-serif;
+/* =========================================================
+   1. RESET Y BASES GLOBALES
+   ========================================================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
+
+html,
+body {
+  height: 100vh;
+  overflow: hidden;
+  margin: 0;
+  font-family: 'Poppins', Roboto, "Helvetica Neue", sans-serif;
+  background-color: #f5f6fa;
+}
+
 .swal2-container {
   z-index: 20000 !important;
 }
 
-.crud-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  margin-bottom: 1.5rem;
+/* =========================================================
+   2. LAYOUT Y ESTRUCTURA PRINCIPAL
+   ========================================================= */
+.container {
+  display: flex !important;
+  height: 100vh !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
 }
 
-.crud-header h2 {
-  font-size: 1.5rem;
-  color: #333;
-  font-weight: 600;
-}
-
-.crud-header input {
-  padding: 8px 12px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  outline: none;
-}
-.crud-header input:focus {
-  border-color: #4a90e2;
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 1rem;
-  text-align: center;
-}
-
-.table th,
-.table td {
-  padding: 12px 14px;
-  border-bottom: 1px solid #eee;
-}
-
-.table th {
-  background: #f8f9fa;
-  font-weight: 600;
-  color: #555;
-  text-transform: uppercase;
-  font-size: 0.85rem;
-}
-
-.table tr:hover {
-  background: #f2f6ff;
-}
-
-.btn {
-  padding: 8px 14px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: background 0.2s, transform 0.1s;
-}
-
-.btn:active {
-  transform: scale(0.97);
-}
-
-.btn-primary {
-  background: #4a90e2;
+.barra-lateral {
   color: white;
-}
-.btn-primary:hover {
-  background: #357ab8;
+  z-index: 1050;
 }
 
-.btn-success {
-  background: #4caf50;
-  color: white;
-}
-.btn-success:hover {
-  background: #3d8c40;
-}
-
-.btn-danger {
-  background: #f44336;
-  color: white;
-}
-.btn-danger:hover {
-  background: #d32f2f;
-}
-.btn-action {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  font-size: 14px;
-  font-weight: 500;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-decoration: none;
-  color: #fff;
-}
-
-.btn-action.edit {
-  background-color: #1976d2;
-}
-.btn-action.edit:hover {
-  background-color: #125a9c;
-}
-
-.btn-action.delete {
-  background-color: #d32f2f;
-}
-.btn-action.delete:hover {
-  background-color: #a52727;
-}
-
-.btn-action i {
-  font-size: 15px;
-}
-
-.form-group {
+.main-section {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  margin-bottom: 1rem;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.contenido-principal {
+  flex: 1;
+  padding: 20px;
+  background: #f5f6fa;
+  overflow-y: auto;
+}
+
+.card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+/* =========================================================
+   3. MENÚ HAMBURGUESA Y RESPONSIVO (MANTENIDO)
+   ========================================================= */
+.menu-toggle {
+  display: none;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  width: 42px;
+  height: 42px;
+  font-size: 18px;
+  color: #334155;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.menu-toggle:hover {
+  background: #f8fafc;
+  color: #04a777;
+  border-color: #cbd5e1;
+}
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(2px);
+  z-index: 1040;
+}
+
+@media (max-width: 1024px) {
+  .menu-toggle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1030;
+  }
+
+  .barra-lateral {
+    position: fixed;
+    top: 0;
+    left: -260px;
+    height: 100vh;
+    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.05);
+    transition: left 0.3s ease;
+  }
+
+  .menu-activo .barra-lateral {
+    left: 0 !important;
+  }
+
+  .menu-activo .sidebar-overlay {
+    display: block !important;
+  }
+}
+
+/* =========================================================
+   6. MODALES GLOBALES (ARREGLADO / BLINDADO)
+   ========================================================= */
+.modal-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(15, 23, 42, 0.5) !important;
+  backdrop-filter: blur(4px) !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  z-index: 2000 !important;
+}
+
+.modal-content {
+  background: #ffffff !important;
+  /* FONDO BLANCO SÓLIDO */
+  width: 100% !important;
+  max-width: 520px !important;
+  border-radius: 20px !important;
+  padding: 32px !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2) !important;
+  position: relative !important;
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+  border: none !important;
+  animation: slideUp 0.3s ease-out !important;
+}
+
+.modal-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 24px !important;
+}
+
+.modal-header h3 {
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
+  margin: 0 !important;
+}
+
+.btn-close,
+.btn-cerrar {
+  background: transparent !important;
+  border: none !important;
+  font-size: 24px !important;
+  color: #94a3b8 !important;
+  cursor: pointer !important;
+  line-height: 1 !important;
+}
+
+.modal-actions,
+.acciones-form {
+  display: flex !important;
+  justify-content: flex-end !important;
+  gap: 12px !important;
+  margin-top: 30px !important;
+}
+
+/* =========================================================
+   7. FORMULARIOS GLOBALES (ESTILO VERDE)
+   ========================================================= */
+.form-group {
+  margin-bottom: 18px;
+  display: flex;
+  flex-direction: column;
 }
 
 .form-group label {
-  font-size: 0.9rem;
-  margin-bottom: 4px;
-  font-weight: 500;
-  color: #444;
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  margin-bottom: 6px;
+  text-transform: uppercase;
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
-  padding: 9px 12px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 0.95rem;
-}
-
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-  border-color: #4a90e2;
-  outline: none;
-}
-
-/* === Modal === */
-.busqueda {
-  display: flex;
-  align-items: center;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  overflow: hidden;
-  background: #fff;
-}
-
-.busqueda input {
-  flex: 1;
-  padding: 10px 12px;
-  border: none;
-  outline: none;
-  font-size: 14px;
-}
-
-.busqueda button {
-  padding: 10px 14px;
-  background: #007bff;
-  color: white;
-  transition: 0.3s;
-}
-
-.busqueda button:hover {
-  background: #0056b3;
-}
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
   width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid #04a777 !important;
+  /* BORDE VERDE */
+  background: #fff !important;
+  font-size: 14px;
+  color: #0f172a;
+  transition: all 0.2s ease;
+}
+
+.form-group input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(4, 167, 119, 0.1);
+}
+
+/* =========================================================
+   8. CARD INVENTARIO Y HEADER PRINCIPAL (GLOBALIZADO)
+   ========================================================= */
+.card-inventario {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  padding: 30px;
+}
+
+.header-inventario {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.textos-inventario {
+  display: flex;
   align-items: center;
-  z-index: 1000;
+  gap: 16px;
 }
 
-.modal-content {
-  background: #fff;
-  padding: 20px;
-  border-radius: 12px;
-  width: 450px;
-  max-width: 95%;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-  animation: fadeIn 0.3s ease;
+.textos-inventario h2, .titulos h2 {
+  font-size: 24px;
+  font-weight: 800;
+  color: #0d1e3a;
+  margin: 0 0 6px 0;
+  letter-spacing: -0.5px;
 }
 
-.modal-header {
+.textos-inventario p, .titulos p {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+}
+
+.acciones-top {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.buscador-sutil {
+  display: flex;
+  align-items: center;
+  background: #f1f5f9;
+  border-radius: 999px;
+  padding: 8px 16px;
+  color: #64748b;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+
+.buscador-sutil:focus-within {
+  border-color: #cbd5e1;
+  background: #ffffff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+}
+
+.buscador-sutil i {
+  font-size: 13px;
+  margin-right: 8px;
+}
+
+.buscador-sutil input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 13px;
+  width: 140px;
+}
+
+.btn-agregar-pill {
+  background: #00a468;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.2s, background 0.2s;
+  box-shadow: 0 4px 12px rgba(0, 164, 104, 0.2);
+}
+
+.btn-agregar-pill:hover {
+  background: #008f5a;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 1024px) {
+  .header-inventario {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .textos-inventario {
+    margin-bottom: 15px;
+  }
+}
+
+@media (max-width: 600px) {
+  .acciones-top {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  .buscador-sutil {
+    flex: 1;
+    justify-content: space-between;
+  }
+  .buscador-sutil input {
+    width: 100%;
+  }
+}
+
+/* =========================================================
+   PAGINACIÓN GLOBAL (ESTILO MODERNO)
+   ========================================================= */
+/* =========================================================
+   PAGINACIÓN GLOBAL (ESTILO MODERNIZADO)
+   ========================================================= */
+.footer-paginacion {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  padding-top: 25px;
+  margin-top: 20px;
+  border-top: 1px solid #f1f5f9;
+  flex-wrap: wrap;
+  gap: 15px;
 }
 
-.modal-header h3 {
-  font-size: 18px;
-  font-weight: 600;
-  color: #333;
+/* Información del conteo (Izquierda) */
+.pag-info {
+  font-size: 13px;
+  color: #64748b;
 }
 
-.btn-cerrar {
-  background: transparent;
-  border: none;
-  font-size: 22px;
-  cursor: pointer;
-  color: #666;
+.pag-info strong {
+  color: #1e293b;
+  font-weight: 700;
 }
 
-.btn-cerrar:hover {
-  color: #000;
-}
-
-.modal-body .mb-3 {
-  margin-bottom: 15px;
+/* Contenedor de botones (Derecha) */
+.pag-botones {
   display: flex;
-  flex-direction: column;
+  gap: 8px;
+  align-items: center;
 }
 
-.modal-body label {
-  margin-bottom: 6px;
-  font-weight: 500;
-  color: #444;
-}
-
-.modal-body input {
-  padding: 8px 10px;
-  border: 1px solid #ccc;
+/* Botones de navegación (Anterior/Siguiente) */
+.btn-pag-nav {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  padding: 8px 16px;
   border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 90px;
   outline: none;
 }
 
-.acciones-form {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 15px;
+.btn-pag-nav:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #1e293b;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.btn-guardar {
-  background: #28a745;
-  color: white;
-  padding: 8px 14px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
+/* Estado Activo (Página actual) */
+.btn-pag-nav.active {
+  background: #00a468;
+  border-color: #00a468;
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 164, 104, 0.2);
 }
 
-.btn-guardar:hover {
-  background: #218838;
-}
-
-.btn-cancelar {
-  background: #dc3545;
-  color: white;
-  padding: 8px 14px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-}
-
-.btn-cancelar:hover {
-  background: #c82333;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
-}
-.paginacion {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 15px;
-  gap: 10px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.paginacion button {
-  background-color: #f0f0f0;
-  border: 1px solid #d1d1d1;
-  border-radius: 6px;
-  padding: 6px 12px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s ease-in-out;
-}
-
-.paginacion button:hover {
-  background-color: #e0e0e0;
-  border-color: #c0c0c0;
-}
-
-.paginacion button:disabled {
-  background-color: #fafafa;
-  color: #aaa;
-  border-color: #eee;
+/* Estado Deshabilitado */
+.btn-pag-nav:disabled {
+  background: #f1f5f9;
+  border-color: #f1f5f9;
+  color: #94a3b8;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
-.paginacion span {
-  font-weight: 500;
-  color: #333;
+/* Responsive para móviles */
+@media (max-width: 600px) {
+  .footer-paginacion {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .pag-botones {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .btn-pag-nav {
+    flex: 1;
+  }
 }
-
-/* You can add global styles to this file, and also import other style files */
-*{
-  margin: 0px;
-  padding: 0px
-}
-
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
-
-
-/* Layout principal */
-.container {
-  display: flex !important;
-  min-height: 100vh !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-
-/* Barra lateral a la izquierda */
-.barra-lateral {
-  color: white;
-}
-
-/* Sección derecha (header + contenido) */
-.main-section {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Contenido principal debajo del header */
-.contenido-principal {
-  flex: 1;
-  padding: 20px;
-  background: #f5f6fa;
-}
-
-
-/* Card */
-.card {
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-  padding: 20px;
-}
-
