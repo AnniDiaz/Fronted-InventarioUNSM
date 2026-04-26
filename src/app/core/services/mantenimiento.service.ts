@@ -10,53 +10,23 @@ export class MantenimientoService {
 
     constructor(private httpClient: HttpClient) { }
 
-    /**
-     * Obtiene todos los registros de mantenimiento
-     */
     public getMantenimientos(): Observable<any[]> {
-        return this.httpClient.get<any[]>(`${baseUrl}/mantenimientos`);
+        return this.httpClient.get<any[]>(`${baseUrl}/Mantenimientos`);
     }
 
-    /**
-     * Registra un nuevo mantenimiento (Programar)
-     */
-    public addMantenimiento(mantenimiento: any): Observable<any> {
-        return this.httpClient.post(`${baseUrl}/mantenimientos`, mantenimiento);
+    public getMantenimientoById(id: number) {
+        return this.httpClient.get(`${baseUrl}/Mantenimientos/${id}`);
     }
 
-    /**
-     * Obtiene un mantenimiento por su ID
-     */
-    public getMantenimientoById(id: number): Observable<any> {
-        return this.httpClient.get(`${baseUrl}/mantenimientos/${id}`);
+    public addMantenimiento(mantenimiento: any) {
+        return this.httpClient.post(`${baseUrl}/Mantenimientos`, mantenimiento);
     }
 
-    /**
-     * Actualiza los datos de un mantenimiento existente
-     */
-    public updateMantenimiento(id: number, mantenimiento: any): Observable<any> {
-        return this.httpClient.put(`${baseUrl}/mantenimientos/${id}`, mantenimiento);
+    public updateEstadoMantenimiento(id: number, mantenimientoDto: any) {
+        return this.httpClient.patch(`${baseUrl}/Mantenimientos/${id}`, mantenimientoDto, { responseType: 'text' });
     }
 
-    /**
-     * Cambia el estado a COMPLETADO
-     * Si tu backend usa un endpoint específico para esto
-     */
-    public completarMantenimiento(id: number): Observable<any> {
-        return this.httpClient.patch(`${baseUrl}/mantenimientos/${id}/completar`, {});
-    }
-
-    /**
-     * Elimina un registro de mantenimiento
-     */
-    public deleteMantenimiento(id: number): Observable<any> {
-        return this.httpClient.delete(`${baseUrl}/mantenimientos/${id}`);
-    }
-
-    /**
-     * Opcional: Obtener mantenimientos por artículo específico
-     */
-    public getMantenimientosByArticulo(articuloId: number): Observable<any[]> {
-        return this.httpClient.get<any[]>(`${baseUrl}/mantenimientos/articulo/${articuloId}`);
+    public deleteMantenimiento(id: number) {
+        return this.httpClient.delete(`${baseUrl}/Mantenimientos/${id}`, { responseType: 'text' });
     }
 }

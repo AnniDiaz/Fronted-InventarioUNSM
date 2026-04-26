@@ -38,7 +38,6 @@
                                 <th>ARTÍCULO</th>
                                 <th>TIPO</th>
                                 <th>FECHA</th>
-                                <th>PROVEEDOR</th>
                                 <th>COSTO</th>
                                 <th>ESTADO</th>
                                 <th class="text-right">ACCIONES</th>
@@ -46,20 +45,19 @@
                         </thead>
                         <tbody>
                             <tr *ngFor="let m of mantenimientosFiltrados">
-                                <td><strong>{{ m.articulo }}</strong></td>
-                                <td>{{ m.tipo }}</td>
-                                <td>{{ m.fecha }}</td>
-                                <td>{{ m.proveedor }}</td>
+                                <td><strong>{{ m.articulo?.codigoPatrimonial }}</strong></td>
+                                <td>{{ m.tipoMantenimiento }}</td>
+                                <td>{{ m.fechaMantenimiento | date: 'dd/MM/yyyy' }}</td>
                                 <td><strong>S/ {{ m.costo }}</strong></td>
                                 <td>
                                     <span class="badge"
-                                        [ngClass]="{'badge-completado': m.estado === 'COMPLETADO', 'badge-pendiente': m.estado === 'PENDIENTE'}">
-                                        {{ m.estado }}
+                                        [ngClass]="{'badge-completado': m.estadoMantenimiento === false, 'badge-pendiente': m.estadoMantenimiento === true}">
+                                        {{ m.estadoMantenimiento === false ? 'Completado' : 'Pendiente' }}
                                     </span>
                                 </td>
                                 <td class="text-right">
-                                    <button *ngIf="m.estado === 'PENDIENTE'" class="btn-action-done"
-                                        (click)="marcarCompletado(m.id)">
+                                    <button *ngIf="m.estadoMantenimiento === true" class="btn-action-done"
+                                        (click)="marcarCompletado(m)">
                                         Marcar Completado
                                     </button>
                                 </td>
@@ -78,10 +76,11 @@
                         <form (ngSubmit)="programarMantenimiento()" #f="ngForm" class="modal-body">
                             <div class="form-group">
                                 <label>ARTÍCULO</label>
-                                <select [(ngModel)]="nuevoMantenimiento.articulo" name="articulo" required>
+                                <select [(ngModel)]="nuevoMantenimiento.idArticulo" name="articulo" required>
                                     <option value="" disabled>Seleccionar artículo...</option>
-                                    <option *ngFor="let art of articulosDisponibles" [value]="art.nombre">{{ art.nombre
-                                        }}</option>
+                                    <option *ngFor="let art of articulosDisponibles" [value]="art.id">
+                                        {{ art.nombre }}
+                                    </option>
                                 </select>
                             </div>
 

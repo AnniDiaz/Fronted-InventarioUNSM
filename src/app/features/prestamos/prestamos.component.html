@@ -1,4 +1,7 @@
-<div class="container">
+<div class="container" [class.menu-activo]="menuAbierto">
+
+    <div class="sidebar-overlay" *ngIf="menuAbierto" (click)="toggleMenu()"></div>
+
     <div class="barra-lateral">
         <app-sidebar></app-sidebar>
     </div>
@@ -9,11 +12,20 @@
         <div class="contenido-principal">
             <div class="page-container">
 
-                <div class="header-prestamos">
-                    <div class="titulos-header">
-                        <h2>Préstamos de Equipos</h2>
-                        <p>Control de equipos prestados a docentes y personal.</p>
+                <div class="header-prestamos"
+                    style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+
+                    <div class="header-titles-wrapper" style="display: flex; align-items: center; gap: 15px;">
+                        <button class="menu-toggle" (click)="toggleMenu()">
+                            <i class="fa fa-bars"></i>
+                        </button>
+
+                        <div class="titulos-header">
+                            <h2>Préstamos de Equipos</h2>
+                            <p>Control de equipos prestados a docentes y personal.</p>
+                        </div>
                     </div>
+
                     <button class="btn-nuevo-prestamo" (click)="toggleFormulario()">
                         <i class="fa fa-handshake-o"></i> Nuevo Préstamo
                     </button>
@@ -33,19 +45,19 @@
                         </thead>
                         <tbody>
                             <tr *ngFor="let p of prestamosFiltrados">
-                                <td><strong>{{ p.articulo }}</strong></td>
-                                <td>{{ p.solicitante }}</td>
-                                <td>{{ p.fechaPrestamo }}</td>
-                                <td>{{ p.fechaDevolucion }}</td>
+                                <td><strong>{{ p.nombreArticulo || p.articulo }}</strong></td>
+                                <td>{{ p.nombreSolicitante }}</td>
+                                <td>{{ p.fechaPrestamo | date:'dd/MM/yyyy' }}</td>
+                                <td>{{ p.fechaDevolucion | date:'dd/MM/yyyy' }}</td>
                                 <td>
                                     <span class="badge"
-                                        [ngClass]="{'badge-activo': p.estado === 'ACTIVO', 'badge-devuelto': p.estado === 'DEVUELTO'}">
-                                        {{ p.estado }}
+                                        [ngClass]="{'badge-activo': p.estado === 1, 'badge-devuelto': p.estado === 0}">
+                                        {{ p.estado === 1 ? 'ACTIVO' : 'DEVUELTO' }}
                                     </span>
                                 </td>
                                 <td class="text-right">
-                                    <button *ngIf="p.estado === 'ACTIVO'" class="btn-action-devuelto"
-                                        (click)="marcarDevuelto(p.id)">
+                                    <button *ngIf="p.estado === 1" class="btn-action-devuelto"
+                                        (click)="marcarDevuelto(p)">
                                         Marcar Devuelto
                                     </button>
                                 </td>
@@ -68,35 +80,39 @@
                         <form (ngSubmit)="registrarPrestamo()" #f="ngForm" class="modal-body">
                             <div class="form-group">
                                 <label>ARTÍCULO A PRESTAR</label>
-                                <select [(ngModel)]="nuevoPrestamo.articulo" name="articulo" required>
-                                    <option value="" disabled>Seleccione un equipo</option>
-                                    <option *ngFor="let art of articulosDisponibles" [value]="art.nombre">{{ art.nombre
-                                        }}</option>
+                                <select [(ngModel)]="nuevoPrestamo.ArticuloId" name="ArticuloId" required>
+                                    <option [value]="null" disabled>Seleccione un equipo</option>
+                                    <option *ngFor="let art of articulosDisponibles" [value]="art.id">
+                                        {{ art.nombre }}
+                                    </option>
                                 </select>
                             </div>
 
                             <div class="form-group">
                                 <label>NOMBRE DEL SOLICITANTE</label>
-                                <input type="text" [(ngModel)]="nuevoPrestamo.solicitante" name="solic"
-                                    placeholder="ej. Prof. Carlos Ruiz" required>
+                                <input type="text" [(ngModel)]="nuevoPrestamo.NombreSolicitante"
+                                    name="NombreSolicitante" placeholder="ej. Prof. Carlos Ruiz" required>
                             </div>
 
                             <div class="form-row">
                                 <div class="form-group">
                                     <label>FECHA PRÉSTAMO</label>
-                                    <input type="date" [(ngModel)]="nuevoPrestamo.fechaPrestamo" name="fP" required>
+                                    <input type="date" [(ngModel)]="nuevoPrestamo.FechaPrestamo" name="FechaPrestamo"
+                                        required>
                                 </div>
                                 <div class="form-group">
                                     <label>FECHA DEVOLUCIÓN</label>
-                                    <input type="date" [(ngModel)]="nuevoPrestamo.fechaDevolucion" name="fD" required>
+                                    <input type="date" [(ngModel)]="nuevoPrestamo.FechaDevolucion"
+                                        name="FechaDevolucion" required>
                                 </div>
                             </div>
 
                             <div class="modal-footer-btns">
                                 <button type="button" class="btn-cancelar"
                                     (click)="toggleFormulario()">Cancelar</button>
-                                <button type="submit" class="btn-registrar" [disabled]="f.invalid">Registrar
-                                    Préstamo</button>
+                                <button type="submit" class="btn-registrar" [disabled]="f.invalid">
+                                    Registrar Préstamo
+                                </button>
                             </div>
                         </form>
                     </div>

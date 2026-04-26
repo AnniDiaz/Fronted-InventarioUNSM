@@ -3,77 +3,161 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HeaderComponent } from '../../shared/components/header/header.component';
 import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
+import { PrestamosService } from '../../core/services/prestamos.service';
+import { ArticuloService } from '../../core/services/articulos.service';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-prestamos',
+  standalone: true,
   imports: [HeaderComponent, SidebarComponent, FormsModule, CommonModule],
   templateUrl: './prestamos.component.html',
   styleUrls: ['./prestamos.component.css']
 })
 export class PrestamoComponent implements OnInit {
-  filtro: string = '';
-  mostrarFormulario = false;
 
-  // Lista de ejemplo basada en tu imagen
-  prestamos: any[] = [
-    { id: 1, articulo: 'Laptop Dell Latitude', solicitante: 'Prof. Carlos Ruiz', fechaPrestamo: '2025-03-20', fechaDevolucion: '2025-03-27', estado: 'ACTIVO' },
-    { id: 2, articulo: 'Proyector Epson', solicitante: 'Ing. Ana Belén', fechaPrestamo: '2025-03-15', fechaDevolucion: '2025-03-16', estado: 'DEVUELTO' }
-  ];
+  // --- Propiedades para el Layout Responsivo ---
+  menuAbierto = false; // Controla si el menú lateral se muestra en móviles
 
+  // --- Datos ---
+  prestamos: any[] = [];
   prestamosFiltrados: any[] = [];
+  articulosDisponibles: any[] = [];
 
-  // Objeto para el nuevo préstamo
-  nuevoPrestamo = {
-    articulo: '',
-    solicitante: '',
-    fechaPrestamo: new Date().toISOString().split('T')[0],
-    fechaDevolucion: ''
+  mostrarFormulario = false;
+  filtro: string = '';
+
+  nuevoPrestamo: any = {
+    ArticuloId: null,
+    NombreSolicitante: '',
+    FechaPrestamo: new Date().toISOString().split('T')[0],
+    FechaDevolucion: '',
   };
 
-  // Simulación de artículos para el select
-  articulosDisponibles = [
-    { id: 1, nombre: 'Laptop Dell Latitude (FISI-001)' },
-    { id: 2, nombre: 'Proyector Epson (LAB-02)' },
-    { id: 3, nombre: 'Cámara Canon (EXT-05)' }
-  ];
+  constructor(
+    private _prestamosService: PrestamosService,
+    private _articulosService: ArticuloService
+  ) { }
 
   ngOnInit(): void {
-    this.prestamosFiltrados = [...this.prestamos];
+    this.cargarPrestamos();
+    this.cargarArticulosDisponibles();
+  }
+
+  // --- Lógica del Menú Hamburguesa ---
+  toggleMenu(): void {
+    this.menuAbierto = !this.menuAbierto;
+  }
+
+  // --- Lógica de Negocio ---
+  cargarPrestamos() {
+    this._prestamosService.getPrestamos().subscribe({
+      next: (data) => {
+        this.prestamos = data;
+        this.prestamosFiltrados = data;
+      },
+      error: (err) => {
+        console.error('Error al cargar préstamos', err);
+        Swal.fire('Error', 'No se pudieron cargar los préstamos', 'error');
+      }
+    });
+  }
+
+  cargarArticulosDisponibles() {
+    this._articulosService.getArticulos().subscribe({
+      next: (data) => {
+        this.articulosDisponibles = data;
+      }
+    });
   }
 
   aplicarFiltro() {
     const texto = this.filtro.toLowerCase();
     this.prestamosFiltrados = this.prestamos.filter(p =>
-      p.articulo.toLowerCase().includes(texto) ||
-      p.solicitante.toLowerCase().includes(texto)
+      (p.nombreArticulo?.toLowerCase().includes(texto)) ||
+      (p.solicitante?.toLowerCase().includes(texto))
     );
   }
 
   toggleFormulario() {
     this.mostrarFormulario = !this.mostrarFormulario;
     if (!this.mostrarFormulario) {
-      this.nuevoPrestamo = { articulo: '', solicitante: '', fechaPrestamo: new Date().toISOString().split('T')[0], fechaDevolucion: '' };
+      this.resetFormulario();
     }
+  }
+
+  resetFormulario() {
+    this.nuevoPrestamo = {
+      ArticuloId: null,
+      NombreSolicitante: '',
+      FechaPrestamo: new Date().toISOString().split('T')[0],
+      FechaDevolucion: ''
+    };
   }
 
   registrarPrestamo() {
-    const p = {
-      ...this.nuevoPrestamo,
-      id: this.prestamos.length + 1,
-      estado: 'ACTIVO'
-    };
-    this.prestamos.unshift(p);
-    this.aplicarFiltro();
-    this.toggleFormulario();
-    Swal.fire('¡Registrado!', 'El préstamo se ha creado con éxito.', 'success');
+    if (!this.nuevoPrestamo.FechaPrestamo || !this.nuevoPrestamo.FechaDevolucion) {
+      Swal.fire('Error', 'Debes completar ambas fechas', 'warning');
+      return;
+    }
+
+    try {
+      const dataParaEnviar = {
+        ArticuloId: Number(this.nuevoPrestamo.ArticuloId),
+        NombreSolicitante: this.nuevoPrestamo.NombreSolicitante,
+        FechaPrestamo: new Date(this.nuevoPrestamo.FechaPrestamo).toISOString(),
+        FechaDevolucion: new Date(this.nuevoPrestamo.FechaDevolucion).toISOString(),
+        Estado: 1,
+        EstadoPrestamo: true
+      };
+
+      this._prestamosService.addPrestamo(dataParaEnviar).subscribe({
+        next: (res) => {
+          Swal.fire('¡Registrado!', 'El préstamo se ha creado con éxito.', 'success');
+          this.cargarPrestamos();
+          this.toggleFormulario();
+        },
+        error: (err) => {
+          console.error("Error en la petición:", err);
+          Swal.fire('Error', 'Hubo un fallo al registrar. Revisa los datos.', 'error');
+        }
+      });
+    } catch (e) {
+      Swal.fire('Error', 'Ocurrió un error al procesar las fechas.', 'error');
+    }
   }
 
-  marcarDevuelto(id: number) {
-    const index = this.prestamos.findIndex(p => p.id === id);
-    if (index !== -1) {
-      this.prestamos[index].estado = 'DEVUELTO';
-      Swal.fire('Actualizado', 'Equipo marcado como devuelto', 'success');
-    }
+  marcarDevuelto(prestamo: any) {
+    Swal.fire({
+      title: '¿Confirmar devolución?',
+      text: `El equipo ${prestamo.nombreArticulo} será marcado como devuelto`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, devuelto',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Obtenemos el ID real (ajusta según cómo venga del back: id o idPrestamo)
+        const idFinal = prestamo.id || prestamo.idPrestamo;
+
+        const updateData = {
+          ...prestamo,
+          Id: idFinal,
+          Estado: 0, // 0 para DEVUELTO según tu lógica de badges
+          EstadoPrestamo: false
+        };
+
+        this._prestamosService.updatePrestamo(idFinal, updateData).subscribe({
+          next: () => {
+            Swal.fire('Actualizado', 'Equipo marcado como devuelto', 'success');
+            this.cargarPrestamos();
+          },
+          error: (err) => {
+            console.error(err);
+            Swal.fire('Error', 'No se pudo actualizar el estado', 'error');
+          }
+        });
+      }
+    });
   }
 }

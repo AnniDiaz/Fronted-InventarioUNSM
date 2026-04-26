@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import baseUrl from '../../shared/components/helper';
+import baseUrl from '../../shared/components/helper'; // Manteniendo tu helper
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -8,29 +8,31 @@ import { Observable } from 'rxjs';
 })
 export class PrestamosService {
 
+    private url = `${baseUrl}/prestamos`;
+
     constructor(private httpClient: HttpClient) { }
 
-    // Obtener todos los préstamos para la tabla principal
     public getPrestamos(): Observable<any[]> {
-        return this.httpClient.get<any[]>(`${baseUrl}/prestamos`);
+        return this.httpClient.get<any[]>(this.url);
     }
 
-    public addPrestamo(prestamo: any) {
-        return this.httpClient.post(`${baseUrl}/prestamos`, prestamo);
+    public getPrestamoById(id: number): Observable<any> {
+        return this.httpClient.get<any>(`${this.url}/${id}`);
     }
 
-    public getPrestamoById(id: number) {
-        return this.httpClient.get(`${baseUrl}/prestamos/${id}`);
+    public addPrestamo(prestamo: any): Observable<any> {
+        return this.httpClient.post<any>(this.url, prestamo);
     }
 
-    public marcarComoDevuelto(id: number) {
-        return this.httpClient.patch(`${baseUrl}/prestamos/${id}/devolver`, {});
-    }
-    public deletePrestamo(id: number) {
-        return this.httpClient.delete(`${baseUrl}/prestamos/${id}`);
+    public updatePrestamo(id: number, prestamo: any): Observable<any> {
+        return this.httpClient.put<any>(`${this.url}/${id}`, prestamo);
     }
 
-    public getPrestamosPorEstado(estado: string): Observable<any[]> {
-        return this.httpClient.get<any[]>(`${baseUrl}/prestamos/estado/${estado}`);
+    public deletePrestamo(id: number): Observable<any> {
+        return this.httpClient.delete<any>(`${this.url}/${id}`);
+    }
+
+    public getPrestamosActivos(): Observable<any[]> {
+        return this.httpClient.get<any[]>(`${this.url}/activos`);
     }
 }
