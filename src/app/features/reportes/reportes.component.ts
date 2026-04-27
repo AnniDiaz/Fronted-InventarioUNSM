@@ -79,7 +79,9 @@ export class ReportesComponent {
   renderChart(labels: any[], valores: any[]) {
     this.mostrarGrafico = true;
     this.mostrarTabla = true;
-
+setTimeout(() => {
+  this.renderChart(labels, valores);
+}, 0);
     const ctx = document.getElementById('graficoReporte') as HTMLCanvasElement;
 
     this.chart = new Chart(ctx, {
@@ -118,8 +120,8 @@ export class ReportesComponent {
       const logoFacu = '/assets/logo_fisi.png';
 
       // Header
-      pdf.addImage(logoUni, 'PNG', margin, 10, 25, 25);  
-      pdf.addImage(logoFacu, 'PNG', pageWidth - margin - 25, 10, 25, 25); 
+      pdf.addImage(logoUni, 'PNG', margin, 10, 25, 25);
+      pdf.addImage(logoFacu, 'PNG', pageWidth - margin - 25, 10, 25, 25);
 
       // Título
       pdf.setFont('helvetica', 'bold');
@@ -130,7 +132,7 @@ export class ReportesComponent {
       const imgGraficoData = canvasGrafico.toDataURL('image/png');
       const graficoHeight = (canvasGrafico.height * fullWidth) / canvasGrafico.width;
 
-      let y = 45; 
+      let y = 45;
       pdf.addImage(imgGraficoData, 'PNG', margin, y, fullWidth, graficoHeight);
 
       // --- Insertar tabla ---

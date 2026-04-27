@@ -2,13 +2,16 @@
 .container {
   display: flex;
   width: 100%;
-  min-height: 80vh;
+  min-height: 85vh;
   background: #f8fafc;
   position: relative;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   color: #111827;
 }
-
+.footer-paginacion{
+  margin-top: 22vh;
+  padding: 30px;
+}
 .main-section {
   flex: 1;
   display: flex;
@@ -25,12 +28,13 @@
 
 .page-container {
   margin: 0 auto;
+  height: 80vh;
 }
 
-/* --- Contenedor de Tabla --- */
 .tabla-container {
   background: white;
   border-radius: 24px;
+  height: 83vh;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
   border: 1px solid #f1f5f9;
   overflow: hidden;

@@ -56,7 +56,6 @@ export class LoginComponent implements OnInit {
 
             this.router.navigate(['/dashboard']); // ruta ejemplo
 
-            this.snack.open(`Bienvenido ${user.username}`, 'Cerrar', { duration: 3000 });
           },
           (error) => {
             Swal.fire({

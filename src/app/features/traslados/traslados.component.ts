@@ -54,14 +54,15 @@ export class TrasladosComponent implements OnInit {
     this.cargarArticulos();
     this.cargarUbicaciones();
   }
-
-  // ✅ FIX: SIEMPRE usar .data
-  cargarTraslados(): void {
-    this.trasladoService.getTraslados().subscribe({
-      next: (resp: any) => this.traslados = resp.data || [],
-      error: () => Swal.fire('Error', 'No se pudieron cargar los traslados', 'error')
-    });
-  }
+cargarTraslados(): void {
+  this.trasladoService.getTraslados().subscribe({
+    next: (resp: any) => {
+      this.traslados = Array.isArray(resp) ? resp : []; // 👈 AQUÍ EL FIX
+      this.paginaActual = 1;
+    },
+    error: () => Swal.fire('Error', 'No se pudieron cargar los traslados', 'error')
+  });
+}
 
   cargarArticulos(): void {
     this.articuloService.getArticulos().subscribe({
