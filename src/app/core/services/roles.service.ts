@@ -12,11 +12,15 @@ export class RolesService {
   public addRol(rol: any) {
     return this.httpClient.post(`${baseUrl}/roles`, rol);
   }
-
+syncPermisos(rolId: number, permisos: any[]) {
+  return this.httpClient.put(`${baseUrl}/rolpermisos/sync/${rolId}`, permisos);
+}
   public getRoles() {
     return this.httpClient.get<any[]>(`${baseUrl}/roles`);
   }
-
+addRolPermisos(data: any[]) {
+  return this.httpClient.post(`${baseUrl}/RolPermisos`,data);
+}
   public getRolById(id: number) {
     return this.httpClient.get(`${baseUrl}/roles/${id}`);
   }

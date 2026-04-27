@@ -20,7 +20,7 @@ export class SidebarComponent implements OnInit {
   constructor(
     private modulosService: ModulosService,
     private loginService: LoginService,
-    private router: Router
+    public  router: Router
   ) { }
 
   ngOnInit(): void {
@@ -75,7 +75,17 @@ export class SidebarComponent implements OnInit {
   toggle(id: number) {
     this.expanded[id] = !this.expanded[id];
   }
+onClickModulo(mod: any) {
+  // 1. Si tiene ruta → SIEMPRE navega primero
+  if (mod.ruta && mod.ruta.trim() !== '') {
+    this.router.navigate([mod.ruta]);
+  }
 
+  // 2. Si tiene submódulos → también expande
+  if (mod.subModulos && mod.subModulos.length > 0) {
+    this.toggle(mod.id);
+  }
+}
   logout() {
     this.loginService.logout();
     this.router.navigate(['/login']);

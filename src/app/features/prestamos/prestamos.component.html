@@ -45,22 +45,21 @@
                         </thead>
                         <tbody>
                             <tr *ngFor="let p of prestamosFiltrados">
-                                <td><strong>{{ p.nombreArticulo || p.articulo }}</strong></td>
-                                <td>{{ p.nombreSolicitante }}</td>
+<td><strong>  {{ getNombreArticulo(p.articuloId) }} </strong></td>                                <td>{{ p.nombreSolicitante }}</td>
                                 <td>{{ p.fechaPrestamo | date:'dd/MM/yyyy' }}</td>
                                 <td>{{ p.fechaDevolucion | date:'dd/MM/yyyy' }}</td>
                                 <td>
                                     <span class="badge"
-                                        [ngClass]="{'badge-activo': p.estado === 1, 'badge-devuelto': p.estado === 0}">
+                                        [ngClass]="{'badge-activo': p.estadoPrestamo === 1, 'badge-devuelto': p.estadoPrestamo === 0}">
                                         {{ p.estado === 1 ? 'ACTIVO' : 'DEVUELTO' }}
                                     </span>
                                 </td>
-                                <td class="text-right">
-                                    <button *ngIf="p.estado === 1" class="btn-action-devuelto"
-                                        (click)="marcarDevuelto(p)">
-                                        Marcar Devuelto
-                                    </button>
-                                </td>
+<td class="text-right">
+    <button *ngIf="p.estado === 1" class="btn-action-devuelto"
+        (click)="marcarDevuelto(p)">
+        Marcar Devuelto
+    </button>
+</td>
                             </tr>
                         </tbody>
                     </table>
@@ -103,7 +102,7 @@
                                 <div class="form-group">
                                     <label>FECHA DEVOLUCIÓN</label>
                                     <input type="date" [(ngModel)]="nuevoPrestamo.FechaDevolucion"
-                                        name="FechaDevolucion" required>
+                                        name="FechaDevolucion">
                                 </div>
                             </div>
 

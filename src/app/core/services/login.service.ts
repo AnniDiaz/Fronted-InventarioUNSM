@@ -12,13 +12,19 @@ export class LoginService {
   private usuarioSubject = new BehaviorSubject<any | null>(null);
   public usuario$ = this.usuarioSubject.asObservable();
 
-  constructor(private httpClient: HttpClient) {
-    // Cargar usuario del localStorage si existe
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
+constructor(private httpClient: HttpClient) {
+  const userStr = localStorage.getItem('user');
+
+  if (userStr) {
+    try {
       this.usuarioSubject.next(JSON.parse(userStr));
+    } catch (error) {
+      console.warn('Error parseando user, se eliminará:', userStr);
+      localStorage.removeItem('user');
+      this.usuarioSubject.next(null);
     }
   }
+}
 
   // -----------------------------------
   // Autenticación y login
@@ -36,22 +42,25 @@ export class LoginService {
     return !!tokenStr;
   }
 
-  // -----------------------------------
-  // Usuario actual
-  // -----------------------------------
-  public setUser(user: any): void {
-    localStorage.setItem('user', JSON.stringify(user));
-    this.usuarioSubject.next(user); // Notifica a todos los suscriptores
-  }
+public setUser(user: any): void {
+  localStorage.setItem('user', JSON.stringify(user));
+  this.usuarioSubject.next(user);
+}
+public getUser(): any | null {
+  const userStr = localStorage.getItem('user');
 
-  public getUser(): any | null {
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
+  if (userStr) {
+    try {
       return JSON.parse(userStr);
+    } catch (error) {
+      console.warn('Error parseando user en getUser');
+      localStorage.removeItem('user');
+      return null;
     }
-    return null;
   }
 
+  return null;
+}
   public actualizarUsuario(usuario: any): void {
     this.setUser(usuario);
   }
@@ -72,24 +81,23 @@ export class LoginService {
     return localStorage.getItem('token');
   }
 
-  // -----------------------------------
-  // Roles
-  // -----------------------------------
-  public getUserRole(): any {
-    const usuarioLocalStorage = localStorage.getItem('usuario_actual');
+public getUserRole(): any {
+  const usuarioLocalStorage = localStorage.getItem('user');
 
-    if (usuarioLocalStorage) {
-      // Aquí TypeScript ya sabe que usuarioLocalStorage NO es null
+  if (usuarioLocalStorage) {
+    try {
       const res = JSON.parse(usuarioLocalStorage);
-      const rolId = res.data.rolId;
-      return rolId
-    } else {
-      console.warn("No se encontró el usuario en el storage");
-      // Tal vez redirigir al login
-      return null
+      return res?.data?.rolId || null;
+    } catch (error) {
+      console.warn('Error parseando usuario para rol');
+      localStorage.removeItem('user');
+      return null;
     }
+  } else {
+    console.warn("No se encontró el usuario en el storage");
+    return null;
   }
-
+}
   public getUserRoleId(): number | null {
     const user = this.getUser();
     return user?.rol?.id || null;

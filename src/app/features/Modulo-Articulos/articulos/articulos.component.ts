@@ -142,16 +142,20 @@ export class ArticuloFormComponent implements OnInit {
 
   listarArticulos() {
     this.articuloService.getArticulosConCampos().subscribe({
-      next: (data: any[]) => {
-        this.articulos = data.map(a => {
-          if (a.id) {
-            const urlQR = `http://localhost:4200/tipos-articulos/articulo/${a.id}`;
-            a.qrCodeBase64 = this.generarQR(urlQR);
-          }
-          return a;
-        });
-        this.aplicarFiltro();
-      },
+     next: (res: any) => {
+
+  const data = Array.isArray(res) ? res : res.data ?? [];
+
+  this.articulos = data.map((a: any) => {
+    if (a.id) {
+      const urlQR = `http://localhost:4200/tipos-articulos/articulo/${a.id}`;
+      a.qrCodeBase64 = this.generarQR(urlQR);
+    }
+    return a;
+  });
+
+  this.aplicarFiltro();
+},
       error: (err) => {
         console.error('Error al listar artículos:', err);
         Swal.fire('Error', 'No se pudieron cargar los artículos', 'error');
@@ -173,16 +177,19 @@ export class ArticuloFormComponent implements OnInit {
   // ---------------------------
   cargarTipos() {
     this.tipoService.getTipoArticulos().subscribe({
-      next: data => this.tipos = data,
-      error: () => Swal.fire('Error', 'No se pudieron cargar los tipos', 'error')
+next: (res: any) => {
+  this.tipos = Array.isArray(res) ? res : res?.data ?? [];
+},      error: () => Swal.fire('Error', 'No se pudieron cargar los tipos', 'error')
     });
   }
 
   cargarUbicaciones() {
-    this.ubicService.getUbicaciones().subscribe({
-      next: data => this.ubicaciones = data,
-      error: () => this.ubicaciones = []
-    });
+this.ubicService.getUbicaciones().subscribe({
+  next: (res: any) => {
+    this.ubicaciones = Array.isArray(res) ? res : res?.data ?? [];
+  },
+  error: () => this.ubicaciones = []
+});
   }
 
   obtenerTipoArticulo(id: number) {
@@ -209,25 +216,27 @@ export class ArticuloFormComponent implements OnInit {
 
     if (!this.articulo.tipoArticuloId) return;
 
-    this.campoService.getCamposByTipoArticulo(this.articulo.tipoArticuloId).subscribe({
-      next: (res: any) => {
-        const campos = Array.isArray(res) ? res : res.campos ?? [];
+this.campoService.getCamposByTipoArticulo(this.articulo.tipoArticuloId).subscribe({
+  next: (res: any) => {
 
-        this.camposDelTipo = campos.map((c: any) => ({
-          id: c.id,
-          nombreCampo: c.nombreCampo ?? c.nombre,
-          tipoDato: c.tipoDato ?? c.tipo ?? 'texto',
-          opciones: c.opciones ?? []
-        }));
+    const campos = Array.isArray(res)
+      ? res
+      : (res?.campos ?? res?.data ?? []);
 
-        this.articulo.camposValores = this.camposDelTipo.map((c: any) => ({
-          id: 0,
-          articuloId: 0,
-          campoArticuloId: c.id,
-          valor: ''
-        }));
-      }
-    });
+    this.camposDelTipo = campos.map((c: any) => ({
+      id: c.id,
+      nombreCampo: c.nombreCampo ?? c.nombre,
+      tipoDato: c.tipoDato ?? c.tipo ?? 'texto',
+      opciones: c.opciones ?? []
+    }));
+
+    // 🔥 IMPORTANTE: inicializar camposValores aquí
+    this.articulo.camposValores = this.camposDelTipo.map(c => ({
+      campoArticuloId: c.id,
+      valor: ''
+    }));
+  }
+});
   }
 
   // ---------------------------

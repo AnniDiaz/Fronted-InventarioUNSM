@@ -9,18 +9,31 @@
     <div class="contenido-principal">
       <div class="card">
         <div class="cont-tit">
-          <h2>Gestión de Permisos</h2>
+          <div class="block">
+  <h2>Permisos</h2>
+
+            <p>Administra los permisos del sistema, controlando el acceso y las acciones disponibles para cada usuario.</p>
+          </div>
+
           <div class="cont-btns">
             <button class="btn-agregar" (click)="toggleFormulario()">
               <i class="fa fa-plus"></i> Agregar Permiso
             </button>
 
-            <div class="busqueda">
-              <input type="text" placeholder="Buscar permiso..." [(ngModel)]="filtro" (input)="aplicarFiltro()">
-              <button class="btn-buscar">
-                <i class="fa fa-search"></i>
-              </button>
-            </div>
+<div class="busqueda">
+  <i class="fa fa-search icono"></i>
+
+  <input
+    type="text"
+    placeholder="Buscar permisos..."
+    [(ngModel)]="filtro"
+    (input)="aplicarFiltro()"
+  >
+
+  <button *ngIf="filtro" class="btn-clear" (click)="filtro=''; aplicarFiltro()">
+    <i class="fa fa-times"></i>
+  </button>
+</div>
           </div>
         </div>
 
@@ -41,8 +54,8 @@
                 <div class="mb-3">
                   <label>Activo</label>
                   <select [(ngModel)]="nuevoPermiso.activo" name="activo" required>
-                    <option [value]="true">Sí</option>
-                    <option [value]="false">No</option>
+              <option [ngValue]="true">Sí</option>
+<option [ngValue]="false">No</option>
                   </select>
                 </div>
 
@@ -68,20 +81,45 @@
               <th style="width: 120px;">Acciones</th>
             </tr>
           </thead>
-          <tbody>
-            <tr *ngFor="let permiso of permisosPaginados">
-              <td>{{ permiso.nombre }}</td>
-              <td>{{ permiso.activo ? 'Sí' : 'No' }}</td>
-              <td class="acciones">
-                <button class="btn-editar" (click)="editarPermiso(permiso)">
-                  <i class="fa fa-edit"></i>
-                </button>
-                <button class="btn-eliminar" (click)="eliminarPermiso(permiso.id)">
-                  <i class="fa fa-trash"></i>
-                </button>
-              </td>
-            </tr>
-          </tbody>
+  <tbody>
+
+  <!-- LISTA NORMAL -->
+  <tr *ngFor="let permiso of permisosPaginados">
+    <td>{{ permiso.nombre }}</td>
+
+    <td>
+      <span class="estado" [ngClass]="permiso.activo ? 'activo' : 'inactivo'">
+        {{ permiso.activo ? 'Activo' : 'Inactivo' }}
+      </span>
+    </td>
+
+    <td class="acciones">
+      <button class="btn-editar" (click)="editarPermiso(permiso)">
+        <i class="fa fa-edit"></i>
+      </button>
+      <button class="btn-eliminar" (click)="eliminarPermiso(permiso.id)">
+        <i class="fa fa-trash"></i>
+      </button>
+    </td>
+  </tr>
+
+  <!-- 🚫 NO HAY DATOS EN BD -->
+  <tr *ngIf="permisos.length === 0">
+    <td colspan="3" class="sin-datos">
+      <i class="fa fa-database"></i>
+      No hay permisos registrados
+    </td>
+  </tr>
+
+  <!-- 🔍 NO HAY RESULTADOS DEL FILTRO -->
+  <tr *ngIf="permisos.length > 0 && permisosFiltrados.length === 0">
+    <td colspan="3" class="sin-datos">
+      <i class="fa fa-search"></i>
+      No se encontraron resultados para "{{ filtro }}"
+    </td>
+  </tr>
+
+</tbody>
         </table>
 
         <!-- PAGINACIÓN -->

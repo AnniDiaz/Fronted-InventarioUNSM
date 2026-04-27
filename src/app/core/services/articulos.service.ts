@@ -10,8 +10,8 @@ export class ArticuloService {
   constructor(private http: HttpClient) { }
 
   public getArticulos() {
-    return this.http.get<any[]>(`${baseUrl}/articulos`);
-  }
+  return this.http.get<any>(`${baseUrl}/articulos`);
+}
 getArticuloPorQR(qr: string) {
   return this.http.get<any >(`${baseUrl}/articulos/qr/${qr}`);
 }

@@ -24,75 +24,165 @@
             </div>
           </div>
         </div>
+<div class="modal-overlay" *ngIf="mostrarFormulario">
+  <div class="modal-permisos">
 
-        <!-- MODAL -->
-        <div class="modal-overlay" *ngIf="mostrarFormulario">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h3>{{ editando ? 'Editar Rol' : 'Registrar Nuevo Rol' }}</h3>
-              <button class="btn-cerrar" (click)="toggleFormulario()">&times;</button>
-            </div>
+    <!-- HEADER -->
+    <div class="modal-header-pro">
+      <div class="title">
+        <i class="fa fa-shield-alt icono"></i>
+        <div>
+          <h2>Asignar Permisos</h2>
+          <span>Control de acceso granular por módulo</span>
+        </div>
+      </div>
+      <button class="close" (click)="toggleFormulario()">✕</button>
+    </div>
 
-            <div class="modal-body">
-              <form (ngSubmit)="guardarRol()" #rolForm="ngForm">
+    <!-- BODY -->
+    <div class="modal-body-pro">
 
-                <!-- NOMBRE -->
-                <div class="mb-3">
-                  <label>Nombre del Rol</label>
-                  <input type="text" [(ngModel)]="nuevoRol.nombre" name="nombre" required>
-                </div>
-
-                <!-- ESTADO -->
-                <div class="mb-3">
-                  <label>Estado</label>
-                  <select [(ngModel)]="nuevoRol.estado" name="estado" required>
-                    <option [value]="1">Activo</option>
-                    <option [value]="0">Inactivo</option>
-                  </select>
-                </div>
-
-                <!-- MODULOS Y SUBMODULOS -->
-                <div class="mb-3 permisos-container">
-                  <label>Módulos y Submódulos</label>
-
-                  <div class="accordion">
-                    <div class="modulo" *ngFor="let modulo of modulos">
-
-                      <div class="modulo-header" (click)="modulo.expandido = !modulo.expandido">
-                        <input type="checkbox"
-                               [checked]="estaModuloCompleto(modulo)"
-                               (click)="$event.stopPropagation()"
-                               (change)="toggleModuloCompleto(modulo, $event)">
-                        <span><i class="{{ modulo.icon }}"></i> {{ modulo.nombre }}</span>
-                        <i class="fa" [ngClass]="modulo.expandido ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-                      </div>
-
-                      <div class="submodulos" *ngIf="modulo.expandido">
-                        <div class="submodulo" *ngFor="let sub of modulo.subModulos">
-                          <input type="checkbox"
-                                 [checked]="subModulosSeleccionados.includes(sub.id)"
-                                 (change)="toggleSubModulo(sub.id, $event)">
-                          <span><i class="{{ sub.icon }}"></i> {{ sub.nombre }}</span>
-                        </div>
-                      </div>
-
-                    </div>
-                  </div>
-                </div>
-
-                <div class="acciones-form">
-                  <button type="submit" class="btn-guardar" [disabled]="rolForm.invalid">
-                    {{ editando ? 'Actualizar' : 'Guardar' }}
-                  </button>
-                  <button type="button" class="btn-cancelar" (click)="toggleFormulario()">
-                    Cancelar
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
+      <!-- INFO ROL -->
+      <div class="rol-info">
+        <div>
+          <label>Nombre del Rol</label>
+          <input type="text" [(ngModel)]="nuevoRol.nombre">
         </div>
 
+        <div>
+          <label>Estado</label>
+          <select [(ngModel)]="nuevoRol.estado">
+            <option [value]="1">Activo</option>
+            <option [value]="0">Inactivo</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- MATRIZ -->
+      <h4 class="titulo-matriz">Matriz de Privilegios</h4>
+
+ <div class="lista-modulos">
+
+  <div class="card-modulo" *ngFor="let modulo of modulos">
+
+<div class="modulo-header" (click)="modulo.expandido = !modulo.expandido">
+
+  <!-- CHECK -->
+  <input type="checkbox"
+    class="check-modulo"
+    [checked]="estaModuloCompleto(modulo)"
+    (click)="$event.stopPropagation()"
+(change)="toggleModuloPermisos(modulo, $event)">
+
+  <!-- ICONO + INFO -->
+  <div class="modulo-info">
+    <div class="icono-modulo">
+      <i class="{{ modulo.icon || 'fa fa-layer-group' }}"></i>
+    </div>
+
+    <div class="texto">
+      <h5>{{ modulo.nombre }}</h5>
+      <span> {{ modulo.subModulos?.length || 0 }} submódulos</span>
+    </div>
+  </div>
+
+  <!-- PERMISOS INLINE (SIN SUBMODULOS) -->
+  <div class="permisos-header"
+       *ngIf="!modulo.subModulos || modulo.subModulos.length === 0"
+       (click)="$event.stopPropagation()">
+
+    <label class="permiso-chip"
+           *ngFor="let permiso of permisos">
+
+      <input type="checkbox"
+        [checked]="tienePermiso(null, modulo.id, permiso.id)"
+        (change)="togglePermiso(null, modulo.id, permiso.id, $event)">
+
+      <span>{{ permiso.nombre }}</span>
+    </label>
+
+  </div>
+
+  <!-- ICONO EXPAND -->
+  <i class="fa expand"
+     [ngClass]="modulo.expandido ? 'fa-chevron-up' : 'fa-chevron-down'">
+  </i>
+
+</div>
+
+
+    <!-- 🔥 CASO 2: CON SUBMODULOS -->
+    <div *ngIf="modulo.expandido && modulo.subModulos.length > 0"
+         class="submodulos">
+<div class="sub-card" *ngFor="let sub of modulo.subModulos">
+
+  <div class="sub-row">
+
+    <!-- IZQUIERDA -->
+    <div class="sub-left">
+
+      <input type="checkbox"
+        class="check-sub"
+        [checked]="estaSubModuloCompleto(sub, modulo)"
+        (change)="toggleSubModuloCompleto(sub, modulo, $event)">
+
+      <div class="sub-info">
+          <i [class]="sub.icon"></i>
+
+        <span>{{ sub.nombre }}</span>
+      </div>
+
+    </div>
+
+    <!-- DERECHA -->
+    <div class="sub-right">
+
+      <label class="permiso-chip"
+             *ngFor="let permiso of permisos">
+
+        <input type="checkbox"
+          [checked]="tienePermiso(sub.id, modulo.id, permiso.id)"
+          (change)="togglePermiso(sub.id, modulo.id, permiso.id, $event)">
+
+        <span>{{ permiso.nombre }}</span>
+      </label>
+
+    </div>
+
+  </div>
+
+</div>
+    </div>
+
+  </div>
+</div>
+    </div>
+
+<div class="modal-footer-pro">
+
+  <!-- IZQUIERDA -->
+  <div class="footer-info">
+    <i class="fa fa-circle-check"></i>
+    <span>Cambios guardados automáticamente</span>
+  </div>
+
+  <!-- DERECHA -->
+  <div class="footer-actions">
+
+    <button class="btn-cancelar" (click)="toggleFormulario()">
+      Cancelar
+    </button>
+
+    <button class="btn-guardar" (click)="guardarRol()">
+      <i class="fa fa-save"></i>
+      Guardar Matriz
+    </button>
+
+  </div>
+
+</div>
+  </div>
+</div>
         <!-- TABLA -->
         <table class="tabla-roles">
           <thead>
@@ -106,15 +196,21 @@
             <tr *ngFor="let rol of registrosPaginados">
               <td>{{ rol.nombre }}</td>
               <td>{{ rol.estado === 1 ? 'Activo' : 'Inactivo' }}</td>
-              <td class="acciones">
-                <button class="btn-editar" (click)="editarRol(rol)">
-                  <i class="fa fa-edit"></i>
-                </button>
-                <button class="btn-eliminar" (click)="eliminarRol(rol.id)">
-                  <i class="fa fa-trash"></i>
-                </button>
-              </td>
-            </tr>
+<td class="acciones">
+
+  <button class="btn-asignar" (click)="asignarPermisos(rol)">
+    <i class="fa fa-key"></i>
+  </button>
+
+  <button class="btn-editar" (click)="editarRol(rol)">
+    <i class="fa fa-edit"></i>
+  </button>
+
+  <button class="btn-eliminar" (click)="eliminarRol(rol.id)">
+    <i class="fa fa-trash"></i>
+  </button>
+
+</td>            </tr>
           </tbody>
         </table>
 

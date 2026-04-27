@@ -2,7 +2,7 @@
 .container {
   display: flex;
   width: 100%;
-  min-height: 100vh;
+  min-height: 80vh;
   background: #f8fafc;
   position: relative;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -20,12 +20,10 @@
 
 .contenido-principal {
   flex: 1;
-  padding: 30px;
   overflow-y: auto;
 }
 
 .page-container {
-  max-width: 1200px;
   margin: 0 auto;
 }
 

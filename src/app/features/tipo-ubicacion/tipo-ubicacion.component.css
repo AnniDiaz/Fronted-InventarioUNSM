@@ -9,18 +9,25 @@
   position: relative;
   overflow: hidden;
 }
-
 .main-content {
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
 }
-
 .page-content {
-  padding: 24px 32px;
+  padding: 30px 42px;
+  display: flex;
+  flex-direction: column;
+  min-height: 91%;
 }
-
+.footer-paginacion {
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+}
 /* =========================================================
    BARRA LATERAL, HAMBURGUESA Y OVERLAY
    ========================================================= */
@@ -86,7 +93,7 @@
 
 .header-titles h2 {
   font-size: 26px;
-  font-weight: 700;
+  font-weight: 900;
   color: #0f172a;
 }
 
@@ -225,14 +232,17 @@
 
 .icon-box.ubicacion-icon {
   background: #eff6ff;
+    width: 70px;
+  height: 60px;
 }
 
 .icon-box.ubicacion-icon i {
-  font-size: 18px;
+  font-size: 40px;
   color: #3b82f6;
 }
 
 .card-body {
+  margin-top: 10px;
   cursor: pointer;
   flex: 1;
 }
@@ -422,6 +432,7 @@
   align-items: center;
   justify-content: center;
   padding: 60px 20px;
+  margin-top: 20vh !important;
   color: #64748b;
   text-align: center;
 }

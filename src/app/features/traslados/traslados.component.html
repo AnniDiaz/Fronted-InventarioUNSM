@@ -120,8 +120,9 @@
             <form (ngSubmit)="guardarTraslado()" #f="ngForm" class="modal-body">
               <div class="form-group">
                 <label>ARTÍCULO A TRASLADAR</label>
-                <select [(ngModel)]="nuevoTraslado.articulo" name="articulo" required
-                  (change)="onArticuloChange(nuevoTraslado.articulo)">
+              <select [(ngModel)]="nuevoTraslado.articulo"
+        name="articulo"
+        (ngModelChange)="onArticuloChange($event)">
                   <option value="" disabled selected>Seleccionar artículo...</option>
                   <option *ngFor="let a of listaArticulos" [value]="a.id">{{ a.nombre }}</option>
                 </select>

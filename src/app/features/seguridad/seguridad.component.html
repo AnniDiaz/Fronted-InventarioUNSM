@@ -1,0 +1,92 @@
+<div class="container" [class.menu-activo]="menuAbierto">
+
+  <div class="sidebar-overlay" (click)="toggleMenu()"></div>
+
+  <div class="barra-lateral">
+    <app-sidebar></app-sidebar>
+  </div>
+
+  <div class="main-section">
+    <app-header></app-header>
+
+    <div class="dashboard">
+
+      <!-- HEADER -->
+      <div class="header-text">
+        <h1>Centro de Seguridad</h1>
+        <p>Gestiona accesos, usuarios y auditoría del sistema</p>
+      </div>
+
+      <!-- CARDS -->
+      <div class="cards-grid">
+
+        <div class="card">
+          <div class="icon green"><i class="fas fa-lock"></i></div>
+          <h3>Roles</h3>
+          <p>Define jerarquías de acceso</p>
+          <a class="link green-text" routerLink="/roles">Gestionar →</a>
+        </div>
+
+        <div class="card">
+          <div class="icon blue"><i class="fas fa-shield-alt"></i></div>
+          <h3>Permisos</h3>
+          <p>Control de acciones por módulo</p>
+          <a class="link blue-text" routerLink="/permisos">Gestionar →</a>
+        </div>
+
+        <div class="card">
+          <div class="icon purple"><i class="fas fa-user"></i></div>
+          <h3>Usuarios</h3>
+          <p>Administra cuentas del sistema</p>
+          <a class="link purple-text" routerLink="/usuarios">Gestionar →</a>
+        </div>
+
+        <div class="card">
+          <div class="icon orange"><i class="fas fa-box"></i></div>
+          <h3>Módulos</h3>
+          <p>Configura componentes activos</p>
+          <a class="link orange-text" routerLink="/modulos">Gestionar →</a>
+        </div>
+
+      </div>
+
+      <!-- AUDITORÍA -->
+      <div class="audit-section">
+
+        <div class="audit-left">
+          <h2>Auditoría de Seguridad</h2>
+          <p>
+            Monitorea actividad, accesos y cambios críticos del sistema en tiempo real.
+          </p>
+          <button routerLink="/reportes">Ver actividad</button>
+        </div>
+
+        <div class="audit-right">
+
+          <div class="stat">
+            <h3 class="green">0</h3>
+            <span>Alertas críticas</span>
+          </div>
+
+          <div class="stat">
+            <h3 class="blue">12</h3>
+            <span>Inicios de sesión</span>
+          </div>
+
+          <div class="stat">
+            <h3 class="yellow">2</h3>
+            <span>Cambios de rol</span>
+          </div>
+
+          <div class="stat">
+            <h3 class="purple">100%</h3>
+            <span>Uptime</span>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>

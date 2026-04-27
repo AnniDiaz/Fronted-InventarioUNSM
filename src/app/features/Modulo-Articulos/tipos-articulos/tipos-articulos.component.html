@@ -140,23 +140,48 @@
     </div>
 
     <div class="modal-body">
-      <div class="campos-list">
-        <div *ngFor="let campo of camposTemporales; let i = index" class="campo-row">
-          <input type="text" placeholder="Nombre del campo" [(ngModel)]="campo.nombre" name="campoNombre{{ i }}"
-            required />
+<div class="campos-list modern-fields">
 
-          <select [(ngModel)]="campo.tipo" name="campoTipo{{ i }}">
-            <option value="texto">Texto</option>
-            <option value="numero">Número</option>
-            <option value="fecha">Fecha</option>
-          </select>
+  <div
+    *ngFor="let campo of camposTemporales; let i = index; trackBy: trackByCampo"
+    class="campo-card"
+  >
 
-          <button class="icon-btn eliminar" (click)="eliminarCampo(i)">
-            <i class="fa fa-trash"></i>
-          </button>
-        </div>
-      </div>
+    <!-- ICONO / DRAG VISUAL -->
+    <div class="campo-icon">
+      <i class="fa fa-sliders"></i>
+    </div>
 
+    <!-- INPUT -->
+    <div class="campo-inputs">
+      <input
+        type="text"
+        placeholder="Nombre del campo"
+        [(ngModel)]="campo.nombre"
+        name="campoNombre{{ i }}"
+        required
+      />
+
+    </div>
+
+    <!-- SELECT -->
+    <div class="campo-select">
+      <select [(ngModel)]="campo.tipo" name="campoTipo{{ i }}">
+        <option value="texto">Texto</option>
+        <option value="numero">Número</option>
+        <option value="fecha">Fecha</option>
+      </select>
+
+    </div>
+
+    <!-- ACCIONES -->
+    <button class="btn-delete-field" (click)="eliminarCampo(i)">
+      <i class="fa fa-trash"></i>
+    </button>
+
+  </div>
+
+</div>
       <button class="chip-btn-add active" (click)="agregarCampo()">
         <i class="fa fa-plus"></i> Agregar nuevo campo
       </button>

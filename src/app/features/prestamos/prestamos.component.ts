@@ -50,27 +50,28 @@ export class PrestamoComponent implements OnInit {
   }
 
   // --- Lógica de Negocio ---
-  cargarPrestamos() {
-    this._prestamosService.getPrestamos().subscribe({
-      next: (data) => {
-        this.prestamos = data;
-        this.prestamosFiltrados = data;
-      },
-      error: (err) => {
-        console.error('Error al cargar préstamos', err);
-        Swal.fire('Error', 'No se pudieron cargar los préstamos', 'error');
-      }
-    });
-  }
-
-  cargarArticulosDisponibles() {
-    this._articulosService.getArticulos().subscribe({
-      next: (data) => {
-        this.articulosDisponibles = data;
-      }
-    });
-  }
-
+cargarPrestamos() {
+  this._prestamosService.getPrestamos().subscribe({
+    next: (res) => {
+      this.prestamos = res.data;           // ✅ AQUÍ ESTÁ EL FIX
+      this.prestamosFiltrados = res.data;  // ✅
+    },
+    error: (err) => {
+      console.error('Error al cargar préstamos', err);
+      Swal.fire('Error', 'No se pudieron cargar los préstamos', 'error');
+    }
+  });
+}
+cargarArticulosDisponibles() {
+  this._articulosService.getArticulos().subscribe({
+    next: (res) => {
+      this.articulosDisponibles = res.data; // ✅ ahora sí existe
+    }
+  });
+}getNombreArticulo(id: number) {
+  const articulo = this.articulosDisponibles.find(a => a.id === id);
+  return articulo ? articulo.nombre : 'Desconocido';
+}
   aplicarFiltro() {
     const texto = this.filtro.toLowerCase();
     this.prestamosFiltrados = this.prestamos.filter(p =>
@@ -95,39 +96,35 @@ export class PrestamoComponent implements OnInit {
     };
   }
 
-  registrarPrestamo() {
-    if (!this.nuevoPrestamo.FechaPrestamo || !this.nuevoPrestamo.FechaDevolucion) {
-      Swal.fire('Error', 'Debes completar ambas fechas', 'warning');
-      return;
-    }
+registrarPrestamo() {
 
-    try {
-      const dataParaEnviar = {
-        ArticuloId: Number(this.nuevoPrestamo.ArticuloId),
-        NombreSolicitante: this.nuevoPrestamo.NombreSolicitante,
-        FechaPrestamo: new Date(this.nuevoPrestamo.FechaPrestamo).toISOString(),
-        FechaDevolucion: new Date(this.nuevoPrestamo.FechaDevolucion).toISOString(),
-        Estado: 1,
-        EstadoPrestamo: true
-      };
+  try {
 
-      this._prestamosService.addPrestamo(dataParaEnviar).subscribe({
-        next: (res) => {
-          Swal.fire('¡Registrado!', 'El préstamo se ha creado con éxito.', 'success');
-          this.cargarPrestamos();
-          this.toggleFormulario();
-        },
-        error: (err) => {
-          console.error("Error en la petición:", err);
-          Swal.fire('Error', 'Hubo un fallo al registrar. Revisa los datos.', 'error');
-        }
-      });
-    } catch (e) {
-      Swal.fire('Error', 'Ocurrió un error al procesar las fechas.', 'error');
-    }
+    const dataParaEnviar: any = {
+      ArticuloId: Number(this.nuevoPrestamo.ArticuloId),
+      NombreSolicitante: this.nuevoPrestamo.NombreSolicitante,
+      FechaPrestamo: new Date(this.nuevoPrestamo.FechaPrestamo).toISOString(),
+      Estado: 1,
+      EstadoPrestamo: true
+    };
+
+    this._prestamosService.addPrestamo(dataParaEnviar).subscribe({
+      next: () => {
+        Swal.fire('¡Registrado!', 'El préstamo se ha creado con éxito.', 'success');
+        this.cargarPrestamos();
+        this.toggleFormulario();
+      },
+      error: (err) => {
+        console.error("Error en la petición:", err);
+        Swal.fire('Error', 'Hubo un fallo al registrar. Revisa los datos.', 'error');
+      }
+    });
+
+  } catch (e) {
+    Swal.fire('Error', 'Ocurrió un error al procesar los datos.', 'error');
   }
-
-  marcarDevuelto(prestamo: any) {
+}
+   marcarDevuelto(prestamo: any) {
     Swal.fire({
       title: '¿Confirmar devolución?',
       text: `El equipo ${prestamo.nombreArticulo} será marcado como devuelto`,
@@ -137,13 +134,13 @@ export class PrestamoComponent implements OnInit {
       cancelButtonText: 'Cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
-        // Obtenemos el ID real (ajusta según cómo venga del back: id o idPrestamo)
+
         const idFinal = prestamo.id || prestamo.idPrestamo;
 
         const updateData = {
           ...prestamo,
           Id: idFinal,
-          Estado: 0, // 0 para DEVUELTO según tu lógica de badges
+          Estado: 0,
           EstadoPrestamo: false
         };
 

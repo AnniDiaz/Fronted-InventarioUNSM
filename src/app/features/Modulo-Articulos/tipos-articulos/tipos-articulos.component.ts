@@ -63,13 +63,13 @@ export class TipoArticulosComponent implements OnInit {
   /* ================= LÓGICA DE DATOS Y FILTRADO ================= */
 
   cargarTipos() {
-    this.tipoArticuloService.getTipoArticulos().subscribe({
-      next: data => {
-        this.tiposArticulos = data || [];
-        this.ejecutarLogicaFiltrado(); // ✅ Llamada directa para evitar resetear página si no es necesario
-      },
-      error: () => Swal.fire("Error", "No se pudieron cargar los tipos", "error")
-    });
+this.tipoArticuloService.getTipoArticulos().subscribe({
+  next: (res: any) => {
+    this.tiposArticulos = res?.data || [];
+    this.ejecutarLogicaFiltrado();
+  },
+  error: () => Swal.fire("Error", "No se pudieron cargar los tipos", "error")
+});
   }
 
   aplicarFiltro() {
@@ -104,11 +104,20 @@ export class TipoArticulosComponent implements OnInit {
 
   /* ================= GESTIÓN DE FORMULARIO ================= */
 
-  toggleFormulario() {
-    this.mostrarFormulario = !this.mostrarFormulario;
-    if (!this.mostrarFormulario) this.resetArticulo();
-  }
-
+toggleFormulario() {
+  this.mostrarFormulario = !this.mostrarFormulario;
+  if (!this.mostrarFormulario) this.resetArticulo();
+}
+abrirFormulario() {
+  this.mostrarFormulario = true;
+}
+trackByCampo(index: number, item: any) {
+  return item.id ?? index;
+}
+cerrarFormulario() {
+  this.mostrarFormulario = false;
+  this.resetArticulo();
+}
   resetArticulo() {
     this.editando = false;
     this.nuevoArticulo = {
@@ -153,9 +162,11 @@ export class TipoArticulosComponent implements OnInit {
 
     request.subscribe({
       next: () => {
-        Swal.fire("Éxito", "Guardado correctamente", "success");
-        this.toggleFormulario();
-        this.cargarTipos();
+Swal.fire("Éxito", "Guardado correctamente", "success").then(() => {
+  this.mostrarFormulario = false;   // 👈 cerrar modal directo
+  this.resetArticulo();             // 👈 limpiar formulario
+  this.cargarTipos();              // 👈 recargar lista
+});
       },
       error: e => Swal.fire("Error", e?.error?.message || "Error al guardar", "error")
     });
@@ -202,14 +213,19 @@ export class TipoArticulosComponent implements OnInit {
     this.tipoSeleccionado = tipo;
     this.mostrarCampos = true;
     this.campoArticuloService.getCamposByTipoArticulo(tipo.id).subscribe({
-      next: data => {
-        this.camposTemporales = data.map((c: any) => ({
-          id: c.id,
-          nombre: c.nombreCampo,
-          tipo: c.tipoDato || 'texto'
-        }));
-      },
-      error: () => this.camposTemporales = []
+next: (res: any) => {
+  console.log("CAMPOS BACKEND:", res);
+
+  const data = res?.data || [];
+
+  this.camposTemporales = data.map((c: any) => ({
+    id: c.id,
+    nombre: c.nombreCampo,
+    tipo: c.tipoDato || 'texto'
+  }));
+
+  console.log("CAMPOS FRONT:", this.camposTemporales);
+}
     });
   }
 
@@ -221,34 +237,43 @@ export class TipoArticulosComponent implements OnInit {
     this.camposTemporales.splice(i, 1);
   }
 
-  async guardarCampos() {
-    // Validación básica
-    if (this.camposTemporales.some(c => !c.nombre.trim())) {
-      Swal.fire("Advertencia", "Todos los campos deben tener un nombre", "warning");
-      return;
-    }
-
-    try {
-      // ✅ Uso de lastValueFrom en lugar de toPromise()
-      const promesas = this.camposTemporales.map(campo => {
-        const dto = {
-          nombreCampo: campo.nombre,
-          tipoDato: campo.tipo,
-          tipoArticuloId: this.tipoSeleccionado.id
-        };
-
-        return campo.id
-          ? lastValueFrom(this.campoArticuloService.updateCampo(campo.id, dto))
-          : lastValueFrom(this.campoArticuloService.addCampo(dto));
-      });
-
-      await Promise.all(promesas);
-      Swal.fire("Éxito", "Configuración de campos guardada", "success");
-      this.cerrarCampos();
-    } catch (e) {
-      Swal.fire("Error", "Ocurrió un problema al guardar los campos", "error");
-    }
+async guardarCampos() {
+  // Validación básica
+  if (this.camposTemporales.some(c => !c.nombre.trim())) {
+    Swal.fire("Advertencia", "Todos los campos deben tener un nombre", "warning");
+    return;
   }
+
+  try {
+    // Promesas de guardado / actualización
+    const promesas = this.camposTemporales.map(campo => {
+      const dto = {
+        nombreCampo: campo.nombre,
+        tipoDato: campo.tipo,
+        tipoArticuloId: this.tipoSeleccionado.id
+      };
+
+      return campo.id
+        ? lastValueFrom(this.campoArticuloService.updateCampo(campo.id, dto))
+        : lastValueFrom(this.campoArticuloService.addCampo(dto));
+    });
+
+    await Promise.all(promesas);
+
+    Swal.fire("Éxito", "Configuración de campos guardada", "success");
+    this.cerrarCampos();
+
+  } catch (e: any) {
+    console.log("ERROR COMPLETO:", e);
+
+    const msg =
+      e?.error?.message ||
+      e?.message ||
+      'Ocurrió un problema al guardar los campos';
+
+    Swal.fire("Error", msg, "error");
+  }
+}
 
   cerrarCampos() {
     this.mostrarCampos = false;

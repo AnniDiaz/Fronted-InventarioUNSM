@@ -11,15 +11,24 @@
     <!-- Módulos dinámicos -->
     <li *ngFor="let mod of modulos">
 
-      <!-- Si el módulo tiene submódulos -->
       <ng-container *ngIf="mod.subModulos && mod.subModulos.length > 0; else moduloDirecto">
-        <div class="menu-head" (click)="toggle(mod.id)">
-          <i [class]="mod.icon ? mod.icon : 'fas fa-folder'"></i>
-          {{ mod.nombre }}
-          <span>
-            {{ expanded[mod.id] ? '▾' : '▸' }}
-          </span>
-        </div>
+
+      <div class="menu-head">
+
+  <span (click)="onClickModulo(mod)" style="flex:1; cursor:pointer;">
+    <i [class]="mod.icon"></i>
+    {{ mod.nombre }}
+  </span>
+
+  <span
+    *ngIf="mod.subModulos?.length"
+    (click)="toggle(mod.id)"
+    style="cursor:pointer;"
+  >
+    {{ expanded[mod.id] ? '▾' : '▸' }}
+  </span>
+
+</div>
 
         <ul *ngIf="expanded[mod.id]" class="submenu">
           <li *ngFor="let sub of mod.subModulos">
@@ -29,9 +38,10 @@
             </a>
           </li>
         </ul>
+
       </ng-container>
 
-      <!-- Si el módulo NO tiene submódulos -->
+      <!-- SIN SUBMÓDULOS -->
       <ng-template #moduloDirecto>
         <a [routerLink]="mod.ruta" routerLinkActive="active" class="menu-head">
           <i [class]="mod.icon ? mod.icon : 'fas fa-folder'"></i>
@@ -42,7 +52,7 @@
     </li>
   </ul>
 
-  <!-- Botón Cerrar Sesión -->
+  <!-- Logout -->
   <div class="logout-section">
     <button class="btn-logout" (click)="logout()">
       <i class="fa fa-sign-out"></i> Cerrar sesión

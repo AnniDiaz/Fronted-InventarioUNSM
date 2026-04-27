@@ -26,79 +26,178 @@
           </div>
         </div>
 
-        <!-- MODAL -->
-        <div class="modal-overlay" *ngIf="mostrarFormulario">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h3>{{ editando ? 'Editar Usuario' : 'Registrar Nuevo Usuario' }}</h3>
-              <button class="btn-cerrar" (click)="toggleFormulario()">&times;</button>
-            </div>
+       <!-- MODAL -->
+<div class="modal-overlay" *ngIf="mostrarFormulario">
+  <div class="modal-content">
 
-            <div class="modal-body">
-              <form (ngSubmit)="guardarUsuario()" #usuarioForm="ngForm" enctype="multipart/form-data">
+    <!-- HEADER -->
+    <div class="modal-header">
+      <div>
+        <h3>{{ editando ? 'Editar Usuario' : 'Crear nuevo usuario' }}</h3>
+        <p class="subtitulo">
+          {{ editando ? 'Modifica los datos del usuario' : 'Completa la información para registrar un usuario' }}
+        </p>
+      </div>
 
-                <div class="mb-3">
-                  <label>Nombres</label>
-                  <input type="text" [(ngModel)]="nuevoUsuario.nombres" name="nombres" required>
-                </div>
+      <button class="btn-cerrar" (click)="toggleFormulario()">&times;</button>
+    </div>
 
-                <div class="mb-3">
-                  <label>Apellidos</label>
-                  <input type="text" [(ngModel)]="nuevoUsuario.apellidos" name="apellidos">
-                </div>
+<!-- BODY -->
+<div class="modal-body">
 
-                <div class="mb-3">
-                  <label>Email</label>
-                  <input type="email" [(ngModel)]="nuevoUsuario.email" name="email" required>
-                </div>
+  <form (ngSubmit)="guardarUsuario()" #usuarioForm="ngForm" enctype="multipart/form-data">
 
-                <div class="mb-3">
-                  <label>Username</label>
-                  <input type="text" [(ngModel)]="nuevoUsuario.username" name="username" required>
-                </div>
+    <div class="grid-form">
 
-                <div class="mb-3" *ngIf="!editando">
-                  <label>Password</label>
-                  <input type="password" [(ngModel)]="nuevoUsuario.password" name="password" required>
-                </div>
+      <!-- NOMBRES -->
+      <div class="field">
+        <label>Nombres *</label>
+        <input type="text"
+               [(ngModel)]="nuevoUsuario.nombres"
+               name="nombres"
+               required
+               #nombres="ngModel"
+               placeholder="Ej: Juan">
 
-                <div class="mb-3">
-                  <label>Rol</label>
-                  <select [(ngModel)]="nuevoUsuario.rolId" name="rolId" required>
-                    <option value="">Seleccione...</option>
-                    <option *ngFor="let r of roles" [value]="r.id">{{ r.nombre }}</option>
-                  </select>
-                </div>
-
-                <!-- NUEVO: Imagen del usuario -->
-                <div class="mb-3">
-                  <label>Imagen</label>
-
-                  <!-- INPUT FILE -->
-                  <input type="file" accept="image/*" (change)="onFileSelected($event)" *ngIf="!nuevoUsuario.imagenPreview">
-
-                  <!-- PREVIEW IMAGEN -->
-                  <div *ngIf="nuevoUsuario.imagenPreview" class="preview-imagen">
-                    <img [src]="nuevoUsuario.imagenPreview" alt="Vista previa" />
-                    <button type="button" (click)="quitarImagen()">Quitar</button>
-                  </div>
-                </div>
-
-                <div class="acciones-form">
-                  <button type="submit" class="btn-guardar" [disabled]="usuarioForm.invalid">
-                    {{ editando ? 'Actualizar' : 'Guardar' }}
-                  </button>
-
-                  <button type="button" class="btn-cancelar" (click)="toggleFormulario()">
-                    Cancelar
-                  </button>
-                </div>
-
-              </form>
-            </div>
-          </div>
+        <div class="error" *ngIf="nombres.invalid && nombres.touched">
+          El nombre es obligatorio
         </div>
+      </div>
 
+      <!-- APELLIDOS -->
+      <div class="field">
+        <label>Apellidos *</label>
+        <input type="text"
+               [(ngModel)]="nuevoUsuario.apellidos"
+               name="apellidos"
+               required
+               #apellidos="ngModel"
+               placeholder="Ej: Pérez">
+
+        <div class="error" *ngIf="apellidos.invalid && apellidos.touched">
+          Los apellidos son obligatorios
+        </div>
+      </div>
+
+      <!-- EMAIL -->
+      <div class="field full">
+        <label>Email *</label>
+        <input type="email"
+               [(ngModel)]="nuevoUsuario.email"
+               name="email"
+               required
+               email
+               #email="ngModel"
+               placeholder="usuario@email.com">
+
+        <div class="error" *ngIf="email.invalid && email.touched">
+          Ingresa un email válido
+        </div>
+      </div>
+
+      <!-- USERNAME -->
+      <div class="field">
+        <label>Username *</label>
+        <input type="text"
+               [(ngModel)]="nuevoUsuario.username"
+               name="username"
+               required
+               minlength="4"
+               #username="ngModel"
+               placeholder="usuario123">
+
+        <div class="error" *ngIf="username.invalid && username.touched">
+          Mínimo 4 caracteres
+        </div>
+      </div>
+
+  <!-- PASSWORD -->
+<div class="field" *ngIf="!editando">
+  <label>Password *</label>
+
+<input type="password"
+       [(ngModel)]="nuevoUsuario.password"
+       name="password"
+       required
+       minlength="5"
+       pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{5,}$"
+       #password="ngModel"
+       placeholder="••••••••">
+  <div class="error" *ngIf="password.invalid && password.touched">
+
+    <div *ngIf="password.errors?.['required']">
+      La contraseña es obligatoria
+    </div>
+
+    <div *ngIf="password.errors?.['minlength']">
+      Mínimo 5 caracteres
+    </div>
+
+    <div *ngIf="password.errors?.['pattern']">
+      Debe contener: mayúscula, minúscula y número
+    </div>
+
+  </div>
+</div>
+      <!-- ROL -->
+      <div class="field full">
+        <label>Rol *</label>
+        <select [(ngModel)]="nuevoUsuario.rolId"
+                name="rolId"
+                required
+                #rolId="ngModel">
+
+          <option value="">Seleccione un rol</option>
+          <option *ngFor="let r of roles" [value]="r.id">{{ r.nombre }}</option>
+        </select>
+
+        <div class="error" *ngIf="rolId.invalid && rolId.touched">
+          Debes seleccionar un rol
+        </div>
+      </div>
+
+      <!-- IMAGEN -->
+      <div class="field full">
+        <label>Imagen de perfil</label>
+
+        <div class="upload-box">
+
+          <input type="file"
+                 accept="image/*"
+                 (change)="onFileSelected($event)"
+                 *ngIf="!nuevoUsuario.imagenPreview">
+
+          <div *ngIf="nuevoUsuario.imagenPreview" class="preview">
+            <img [src]="nuevoUsuario.imagenPreview" />
+            <button type="button" (click)="quitarImagen()">Quitar</button>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <div class="modal-footer">
+
+      <button type="button" class="btn-secondary" (click)="toggleFormulario()">
+        Cancelar
+      </button>
+
+      <button type="submit"
+              class="btn-primary"
+              [disabled]="usuarioForm.invalid">
+
+        {{ editando ? 'Actualizar usuario' : 'Crear usuario' }}
+      </button>
+
+    </div>
+
+  </form>
+
+</div>
+  </div>
+</div>
         <!-- TABLA -->
         <table class="tabla-usuarios">
           <thead>
@@ -115,7 +214,7 @@
           <tbody>
             <tr *ngFor="let u of usuariosPaginados">
               <td>
-                <img *ngIf="u.imagenPath" [src]="'http://localhost:7000/' + u.imagenPath" alt="Imagen usuario" class="img-usuario">
+                <img *ngIf="u.imagenPath" [src]=" u.imagenPath" alt="Imagen usuario" class="img-usuario">
                 <img *ngIf="!u.imagenPath" src="assets/sin-imagen.jpg" alt="Sin imagen" class="img-usuario">
               </td>
               <td>{{ u.nombres }} {{ u.apellidos }}</td>
@@ -143,7 +242,7 @@
           <button (click)="cambiarPagina(paginaActual + 1)" [disabled]="paginaActual === totalPaginas">Siguiente</button>
         </div>
 
-      </div> 
+      </div>
     </div>
   </div>
 </div>

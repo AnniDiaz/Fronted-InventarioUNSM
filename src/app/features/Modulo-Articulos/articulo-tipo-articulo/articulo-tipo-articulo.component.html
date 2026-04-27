@@ -29,37 +29,38 @@
         <table class="tabla-articulos" *ngIf="articulosFiltrados.length > 0">
           <thead>
             <tr>
-              <th *ngFor="let campo of encabezados"
-                  [hidden]="campo.toLowerCase() === 'estado' || campo.toLowerCase() === 'tipo'">
-                {{ campo }}
-              </th>
-            </tr>
+<ng-container *ngFor="let campo of safeEncabezados">
+  <th *ngIf="!columnasOcultas.has(campo)">
+    {{ columnaAlias[campo] || campo }}
+  </th>
+</ng-container>         </tr>
           </thead>
 
           <tbody>
             <tr *ngFor="let articulo of articulosFiltrados">
-              <td *ngFor="let campo of encabezados"
-                  [hidden]="campo.toLowerCase() === 'estado' || campo.toLowerCase() === 'tipo'">
+         <ng-container *ngFor="let campo of safeEncabezados">
+  <td *ngIf="!columnasOcultas.has(campo)">
 
-                <!-- QR -->
-                <ng-container *ngIf="isQRCode(campo)">
-                  <img *ngIf="getValue(articulo, campo)"
-                       [src]="'data:image/png;base64,' + getValue(articulo, campo)"
-                       class="img-qr" />
-                </ng-container>
+    <!-- QR -->
+    <ng-container *ngIf="isQRCode(campo)">
+    <img *ngIf="getValue(articulo, campo)"
+     [src]="generarQR(getValue(articulo, campo))"
+     class="img-qr" />
+    </ng-container>
 
-                <!-- Fecha -->
-                <ng-container *ngIf="!isQRCode(campo)">
-                  <span *ngIf="isFecha(campo); else normal">
-                    {{ getValue(articulo, campo) | date:'dd/MM/yyyy' }}
-                  </span>
-                  <ng-template #normal>
-                    {{ getValue(articulo, campo) }}
-                  </ng-template>
-                </ng-container>
+    <!-- Fecha -->
+    <ng-container *ngIf="!isQRCode(campo)">
+      <span *ngIf="isFecha(campo); else normal">
+        {{ getValue(articulo, campo) | date:'dd/MM/yyyy' }}
+      </span>
 
-              </td>
+      <ng-template #normal>
+        {{ getValue(articulo, campo) }}
+      </ng-template>
+    </ng-container>
 
+  </td>
+</ng-container>
             </tr>
           </tbody>
         </table>
@@ -122,8 +123,10 @@
     <div class="form-group">
       <label>Ubicación</label>
       <select [(ngModel)]="formulario['UbicacionId']" name="UbicacionId">
-        <option *ngFor="let u of ubicaciones" [value]="u.id">{{ u.nombre }}</option>
-      </select>
+<option *ngFor="let u of ubicaciones" [ngValue]="u.id">
+  {{ u.nombre }}
+</option>
+</select>
     </div>
 
     <!-- Campos dinámicos -->

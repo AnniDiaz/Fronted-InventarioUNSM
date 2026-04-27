@@ -44,7 +44,7 @@ export class PerfilComponent implements OnInit {
         this.usuario = data;
         // Previsualización de la imagen
         this.usuario.imagenPreview = data.imagenPath
-          ? `http://localhost:7000/${data.imagenPath}`
+          ? `${data.imagenPath}`
           : '/assets/perfil.png';
         this.cargarRol();
       },

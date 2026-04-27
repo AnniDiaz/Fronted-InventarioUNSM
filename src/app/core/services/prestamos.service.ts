@@ -12,7 +12,7 @@ export class PrestamosService {
 
     constructor(private httpClient: HttpClient) { }
 
-    public getPrestamos(): Observable<any[]> {
+    public getPrestamos(): Observable<any> {
         return this.httpClient.get<any[]>(this.url);
     }
 

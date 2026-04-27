@@ -47,41 +47,88 @@
     }
 
     cargarRoles() {
-      this.rolesService.getRoles().subscribe({
-        next: (rolesData: any[]) => {
-          this.roles = rolesData;
-          this.cargarUsuarios();
-        },
-        error: err => console.error("Error al cargar roles", err)
-      });
-    }
+  this.rolesService.getRoles().subscribe({
+    next: (resp: any) => {
+      console.log("ROLES RESPUESTA:", resp);
 
-    cargarUsuarios() {
-      this.usuariosService.getUsuarios().subscribe({
-        next: (data: any[]) => {
-          this.usuarios = data.map(u => ({
-            ...u,
-            nombres: u.nombres || u.nombre || "",
-            apellidos: u.apellidos || u.apellido || "",
-            rolNombre: this.roles.find(r => r.id === u.rolId)?.nombre || 'Sin rol'
-          }));
-          this.aplicarFiltro();
-        },
-        error: err => console.error("Error al obtener usuarios", err)
-      });
-    }
+      // 🔥 VALIDAR Y EXTRAER BIEN
+      if (!resp || !resp.success || !Array.isArray(resp.data)) {
+        console.warn("Roles inválidos:", resp);
+        this.roles = [];
+        return;
+      }
 
-    aplicarFiltro() {
-      const texto = this.filtro.trim().toLowerCase();
-      this.usuariosFiltrados = texto
-        ? this.usuarios.filter(u =>
-            u.nombres.toLowerCase().includes(texto) ||
-            u.username.toLowerCase().includes(texto)
-          )
-        : this.usuarios;
-      this.paginaActual = 1;
-    }
+      this.roles = resp.data; // 👈 AQUÍ ESTÁ LA CLAVE
 
+      console.log("ROLES ARRAY:", this.roles);
+
+      this.cargarUsuarios(); // después de tener roles
+    },
+    error: err => {
+      console.error("Error al cargar roles", err);
+      this.roles = [];
+    }
+  });
+}
+
+cargarUsuarios() {
+  this.usuariosService.getUsuarios().subscribe({
+    next: (resp: any) => {
+      console.log("RESPUESTA COMPLETA:", resp);
+
+      // 🔥 VALIDACIÓN CLAVE
+      if (!resp || !resp.success || !Array.isArray(resp.data)) {
+        console.warn("La respuesta no es válida:", resp);
+        this.usuarios = [];
+        this.usuariosFiltrados = [];
+        return;
+      }
+
+      const usuariosArray = resp.data;
+
+      this.usuarios = usuariosArray.map((u: any) => ({
+        id: u.id,
+        nombres: u.nombre || '',
+        apellidos: u.apellido || '',
+        email: u.email || '',
+        username: u.username || '',
+        rolId: u.rolId,
+        imagenPath: u.imagenUrl || null,
+
+        // 🔥 CRUCE CON ROLES
+        rolNombre: this.roles.find(r => r.id === u.rolId)?.nombre || 'Sin rol'
+      }));
+
+      console.log("USUARIOS PROCESADOS:", this.usuarios);
+
+      this.aplicarFiltro();
+    },
+    error: err => {
+      console.error("Error al obtener usuarios", err);
+      this.usuarios = [];
+      this.usuariosFiltrados = [];
+    }
+  });
+}
+aplicarFiltro() {
+  if (!this.usuarios || this.usuarios.length === 0) {
+    this.usuariosFiltrados = [];
+    return;
+  }
+
+  const texto = this.filtro.trim().toLowerCase();
+
+  this.usuariosFiltrados = texto
+    ? this.usuarios.filter(u =>
+        (u.nombres || '').toLowerCase().includes(texto) ||
+        (u.username || '').toLowerCase().includes(texto)
+      )
+    : [...this.usuarios]; // 👈 importante
+
+  console.log("FILTRADOS:", this.usuariosFiltrados);
+
+  this.paginaActual = 1;
+}
     get totalPaginas(): number {
       return Math.ceil(this.usuariosFiltrados.length / this.registrosPorPagina);
     }
@@ -138,7 +185,7 @@
 
     // Campos obligatorios según tu DTO
     formData.append("Nombres", this.nuevoUsuario.nombres);
-    formData.append("Apellido", this.nuevoUsuario.apellidos || '');
+    formData.append("Apellidos", this.nuevoUsuario.apellidos || '');
     formData.append("Email", this.nuevoUsuario.email);
     formData.append("Username", this.nuevoUsuario.username);
     formData.append("RolId", String(this.nuevoUsuario.rolId));
@@ -174,17 +221,26 @@
           this.toggleFormulario();
           Swal.fire('¡Agregado!', 'Usuario registrado correctamente.', 'success');
         },
-        error: (err) => {
-          console.error(err);
-          Swal.fire('Error', 'No se pudo registrar el usuario.', 'error');
-        }
+      error: (err) => {
+
+  const mensaje =
+    err?.error?.message ||
+    err?.error?.errors ||
+    'No se pudo registrar el usuario';
+
+  Swal.fire({
+    icon: 'error',
+    title: 'Error',
+    text: mensaje
+  });
+}
       });
     }
   }
 
 
     editarUsuario(usuario: any) {
-  const urlBase = "http://localhost:7000/"; // sin "usuarios/"
+  const urlBase = "http://localhost:4200/"; // sin "usuarios/"
 
   this.nuevoUsuario = {
     id: usuario.id,
@@ -203,7 +259,9 @@
   this.mostrarFormulario = true;
 }
 
-
+validarPassword(pass: string): boolean {
+  return /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{5,}$/.test(pass);
+}
     eliminarUsuario(id: number) {
       Swal.fire({
         title: '¿Estás seguro?',

@@ -46,29 +46,38 @@ export class TipoUbicacionComponent implements OnInit {
     this.router.navigate(['/ubicaciones'], { queryParams: { tipo: tipoId } });
   }
 
-  cargarUbicaciones() {
-    this.ubicacionService.getTipoUbicaciones().subscribe({
-      next: (data: any[]) => {
-        this.ubicaciones = data;
-        this.aplicarFiltro();
-      },
-      error: (err) => {
-        console.error('Error al obtener ubicaciones', err);
-      }
-    });
+cargarUbicaciones() {
+  this.ubicacionService.getTipoUbicaciones().subscribe({
+    next: (resp: any) => {
+      console.log('RESPUESTA:', resp);
+
+      // 🔥 AQUÍ ESTÁ EL FIX
+      this.ubicaciones = Array.isArray(resp.data) ? resp.data : [];
+
+      this.aplicarFiltro();
+    },
+    error: (err) => {
+      console.error('Error al obtener ubicaciones', err);
+    }
+  });
+}
+
+aplicarFiltro() {
+  if (!Array.isArray(this.ubicaciones)) {
+    this.ubicacionesFiltradas = [];
+    return;
   }
 
-  aplicarFiltro() {
-    const texto = this.filtro.trim().toLowerCase();
-    this.ubicacionesFiltradas = texto
-      ? this.ubicaciones.filter(u =>
+  const texto = this.filtro.trim().toLowerCase();
+
+  this.ubicacionesFiltradas = texto
+    ? this.ubicaciones.filter(u =>
         u.nombre.toLowerCase().includes(texto)
       )
-      : this.ubicaciones;
+    : [...this.ubicaciones];
 
-    this.paginaActual = 1;
-  }
-
+  this.paginaActual = 1;
+}
   get totalPaginas(): number {
     return Math.ceil(this.ubicacionesFiltradas.length / this.registrosPorPagina);
   }
@@ -93,35 +102,54 @@ export class TipoUbicacionComponent implements OnInit {
     }
   }
 
-  guardarUbicacion() {
-    if (this.editando) {
-      this.ubicacionService.updateTipoUbicacion(this.nuevaUbicacion.id, this.nuevaUbicacion).subscribe({
-        next: () => {
-          this.cargarUbicaciones();
-          this.toggleFormulario();
-          Swal.fire('¡Actualizado!', 'Tipo de ubicación actualizada correctamente.', 'success');
-        },
-        error: (err) => {
-          console.error('Error al actualizar tipo de ubicación', err);
-          Swal.fire('Error', 'No se pudo actualizar el tipo de ubicación.', 'error');
-        }
+guardarUbicacion() {
+  const servicio = this.editando
+    ? this.ubicacionService.updateTipoUbicacion(this.nuevaUbicacion.id, this.nuevaUbicacion)
+    : this.ubicacionService.addTipoUbicacion(this.nuevaUbicacion);
+
+  servicio.subscribe({
+    next: (resp: any) => {
+
+      console.log('RESP BACKEND:', resp);
+
+      // 🚨 SI FALLA EL BACKEND
+      if (!resp?.success) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'No permitido',
+          text: resp?.message || resp?.errors || 'Operación no permitida'
+        });
+        return;
+      }
+
+      // ✅ OK
+      this.cargarUbicaciones();
+      this.toggleFormulario();
+
+      Swal.fire({
+        icon: 'success',
+        title: this.editando ? 'Actualizado' : 'Agregado',
+        text: resp.message || 'Operación exitosa'
       });
-    } else {
-      // Crear nuevo
-      this.ubicacionService.addTipoUbicacion(this.nuevaUbicacion).subscribe({
-        next: () => {
-          this.cargarUbicaciones();
-          this.toggleFormulario();
-          Swal.fire('¡Agregado!', 'Tipo de ubicación agregada correctamente.', 'success');
-        },
-        error: (err) => {
-          console.error('Error al guardar tipo de ubicación', err);
-          Swal.fire('Error', 'No se puede guardar, ya existe un registro con ese nombre.', 'error');
-        }
+    },
+
+    error: (err) => {
+      console.error('ERROR HTTP:', err);
+
+      // 🔥 AQUÍ ES CLAVE: cuando backend manda error real (500/400)
+      const msg =
+        err?.error?.message ||
+        err?.error?.errors ||
+        'Error del servidor';
+
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: msg
       });
     }
-  }
-
+  });
+}
   editarUbicacion(ubicacion: any) {
     this.nuevaUbicacion = { ...ubicacion };
     this.editando = true;

@@ -19,16 +19,11 @@
 
 .contenido-principal {
   flex: 1;
-  padding: 30px;
   overflow-y: auto;
+  padding: 30px 40px;
   background: #f4f7f6;
 }
 
-.page-container {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-}
 
 /* ENCABEZADO */
 .header-ubicaciones {
@@ -146,10 +141,14 @@
 /* GRILLA TARJETAS */
 .grid-ubicaciones {
   display: grid;
+
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 25px;
 }
-
+.footer-paginacion {
+  margin-top: auto;
+  padding-top: 20px;
+}
 .card-ubicacion {
   background: #ffffff;
   border-radius: 16px;
@@ -422,6 +421,7 @@
   padding: 32px;
   max-height: 75vh;
   overflow-y: auto;
+  margin-top: -40px !important;
   overflow-x: hidden;
 }
 
@@ -477,7 +477,11 @@
   gap: 16px;
   margin-top: 10px;
 }
-
+.page-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
 .btn-guardar-md,
 .btn-cancelar-md {
   padding: 12px 24px;

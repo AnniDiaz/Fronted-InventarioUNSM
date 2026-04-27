@@ -36,15 +36,33 @@ export class PermisosComponent {
     this.cargarPermisos();
   }
 
-  cargarPermisos() {
-    this.permisoService.getPermisos().subscribe({
-      next: (data: any[]) => {
-        this.permisos = data;
-        this.aplicarFiltro();
-      },
-      error: (err: any) => console.error("Error al obtener permisos", err)
-    });
-  }
+cargarPermisos() {
+  this.permisoService.getPermisos().subscribe({
+    next: (resp: any) => {
+      console.log("RESPUESTA PERMISOS:", resp);
+
+      // 🔥 VALIDACIÓN
+      if (!resp || !resp.success || !Array.isArray(resp.data)) {
+        console.warn("Respuesta inválida:", resp);
+        this.permisos = [];
+        this.permisosFiltrados = [];
+        return;
+      }
+
+      // ✅ EXTRAER ARRAY REAL
+      this.permisos = resp.data;
+
+      console.log("PERMISOS ARRAY:", this.permisos);
+
+      this.aplicarFiltro();
+    },
+    error: (err: any) => {
+      console.error("Error al obtener permisos", err);
+      this.permisos = [];
+      this.permisosFiltrados = [];
+    }
+  });
+}
 
   aplicarFiltro() {
     const texto = this.filtro.trim().toLowerCase();
@@ -79,29 +97,41 @@ export class PermisosComponent {
 
   guardarPermiso() {
     if (this.editando) {
-      this.permisoService.updatePermiso(this.nuevoPermiso.id, this.nuevoPermiso).subscribe({
-        next: () => {
-          this.cargarPermisos();
-          this.toggleFormulario();
-          Swal.fire('¡Actualizado!', 'Permiso actualizado correctamente.', 'success');
-        },
-        error: (err: any) => {
-          console.error("Error al actualizar permiso", err);
-          Swal.fire('Error', 'No se pudo actualizar el permiso.', 'error');
-        }
-      });
+    this.permisoService.updatePermiso(this.nuevoPermiso.id, this.nuevoPermiso).subscribe({
+  next: () => {
+    this.cargarPermisos();
+    this.toggleFormulario();
+    Swal.fire('¡Actualizado!', 'Permiso actualizado correctamente.', 'success');
+  },
+  error: (err: any) => {
+    console.error("Error al actualizar permiso", err);
+
+    const mensaje =
+      err?.error?.errors ||
+      err?.error?.message ||
+      'No se pudo actualizar el permiso.';
+
+    Swal.fire('Error', mensaje, 'error');
+  }
+});
     } else {
-      this.permisoService.addPermiso(this.nuevoPermiso).subscribe({
-        next: () => {
-          this.cargarPermisos();
-          this.toggleFormulario();
-          Swal.fire('¡Agregado!', 'Permiso agregado correctamente.', 'success');
-        },
-        error: (err: any) => {
-          console.error("Error al agregar permiso", err);
-          Swal.fire('Error', 'No se pudo agregar el permiso.', 'error');
-        }
-      });
+this.permisoService.addPermiso(this.nuevoPermiso).subscribe({
+  next: () => {
+    this.cargarPermisos();
+    this.toggleFormulario();
+    Swal.fire('¡Agregado!', 'Permiso agregado correctamente.', 'success');
+  },
+  error: (err: any) => {
+    console.error("Error al agregar permiso", err);
+
+    const mensaje =
+      err?.error?.errors ||
+      err?.error?.message ||
+      'No se pudo agregar el permiso.';
+
+    Swal.fire('Error', mensaje, 'error');
+  }
+});
     }
   }
 

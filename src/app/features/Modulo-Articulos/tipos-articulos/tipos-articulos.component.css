@@ -1,15 +1,4 @@
-/* =========================================================
-   LAYOUT Y CONTENEDOR PRINCIPAL
-   ========================================================= */
 
-
-/* =========================================================
-   ENCABEZADO DE PÁGINA (HEADER)
-   ========================================================= */
-
-/* =========================================================
-   BUSCADOR Y BOTONES PRIMARIOS
-   ========================================================= */
 .search-container {
   display: flex;
   align-items: center;
@@ -238,15 +227,14 @@
 }
 
 .modal-body {
-  padding: 24px;
+  padding: 14px 24px;
 }
 
 .modal-footer-modern {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  margin-top: 10px;
-  padding-top: 20px;
+
 }
 
 .btn-cancelar-md,
@@ -283,7 +271,9 @@
   background: #008f5a;
   transform: translateY(-1px);
 }
-
+.form-group{
+  margin-top: -20px;
+}
 .form-grid-modern {
   display: flex;
   flex-direction: column;
@@ -316,14 +306,107 @@
   grid-template-columns: 1fr 120px auto;
   gap: 10px;
   align-items: center;
-  background: #f8fafc;
+  background: #a5a5a5;
   padding: 10px;
   border-radius: 8px;
   border: 1px solid #e2e8f0;
 }
 
+
+.modern-fields {
+  display: flex;
+  margin-top: -19px;
+  margin-bottom: 30px;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* CARD PRINCIPAL */
+.campo-card {
+  display: grid;
+  grid-template-columns: 40px 1fr 140px 40px;
+  align-items: center;
+  gap: 12px;
+
+  background: #ffffff;
+  border: 1px solid #eef2f7;
+  border-radius: 12px;
+  padding: 12px 14px;
+
+  transition: 0.2s ease;
+}
+
+.campo-card:hover {
+  border-color: #00a468;
+  box-shadow: 0 4px 14px rgba(0, 164, 104, 0.08);
+  transform: translateY(-2px);
+}
+
+/* ICONO */
+.campo-icon {
+  width: 34px;
+  height: 34px;
+  background: #f0fdf4;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #00a468;
+  font-size: 14px;
+}
+
+/* INPUT */
+.campo-inputs input {
+  width: 100%;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.campo-inputs small {
+  display: block;
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+/* SELECT */
+.campo-select select {
+  width: 100%;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  font-size: 13px;
+  outline: none;
+  background: #fff;
+}
+
+.campo-select small {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+/* BOTÓN ELIMINAR */
+.btn-delete-field {
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 10px;
+  background: #fef2f2;
+  color: #ef4444;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-delete-field:hover {
+  background: #fee2e2;
+  transform: scale(1.05);
+}
+
 .chip-btn-add {
-  margin-top: 15px;
+  margin-top: -20px;
   width: 100%;
   padding: 10px;
   border: 1px dashed #00a468;
@@ -331,6 +414,7 @@
   color: #00a468;
   font-weight: 600;
   border-radius: 8px;
+  margin-bottom: 25px !important;
   cursor: pointer;
 }
 
@@ -347,7 +431,21 @@
   font-size: 48px;
   margin-bottom: 16px;
 }
-
+.card-inventario {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+.footer-paginacion {
+  margin-top: auto;   /* 👈 CLAVE */
+  padding-top: 20px;
+  border-top: 1px solid #f1f5f9;
+}
+.contenido-principal {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 70px); /* ajusta header */
+}
 /* =========================================================
    MEDIA QUERIES
    ========================================================= */

@@ -32,7 +32,22 @@ export class ArticuloTipoArticuloComponent implements OnInit {
   mostrarFormulario = false;
   modoFormulario: 'crear' | 'editar' = 'crear';
   formulario: any = {};
-
+columnaAlias: Record<string, string> = {
+  TipoArticuloId: 'Tipo',
+  UbicacionId: 'Ubicación',
+  vidaUtil: 'Duración',
+  QRCodeBase64: 'QR',
+  CodigoPatrimonial: 'Código',
+  Nombre: 'Nombre',
+  FechaAdquision: 'Fecha',
+  ValorAdquisitivo: 'Valor',
+  Condicion: 'Condición',
+  Estado: 'Estado',
+  Id: 'ID',
+  Marca: 'Marca',
+  Modelo: 'Modelo',
+  Procesador: 'Procesador'
+};
   constructor(
     private route: ActivatedRoute,
     private articuloService: ArticuloService,
@@ -44,67 +59,83 @@ export class ArticuloTipoArticuloComponent implements OnInit {
     this.tipoArticuloId = Number(this.route.snapshot.paramMap.get('id'));
     this.cargarArticulos(this.tipoArticuloId);
     this.cargarUbicaciones();
+this.tipoArticuloService.getTipoArticuloById(this.tipoArticuloId).subscribe({
+  next: (response: any) => {
 
-    this.tipoArticuloService.getTipoArticuloById(this.tipoArticuloId).subscribe({
-      next: (data: any) => this.nombreTipoArticulo = data.nombre || `Tipo ID ${this.tipoArticuloId}`,
-      error: () => this.nombreTipoArticulo = `Tipo ID ${this.tipoArticuloId}`
-    });
+const data = response?.data;
+
+const tipo = Array.isArray(data)
+  ? data.find((x: any) => Number(x.id) === Number(this.tipoArticuloId))
+  : data && Number(data.id) === Number(this.tipoArticuloId)
+    ? data
+    : null;
+
+    this.nombreTipoArticulo = tipo?.nombre ?? `Tipo ID ${this.tipoArticuloId}`;
+  },
+  error: () => {
+    this.nombreTipoArticulo = `Tipo ID ${this.tipoArticuloId}`;
   }
-
-
-  generarQR(texto: string): string {
-    if (!texto) return '';
-
-    const qr = new Qrious({
-      value: texto,
-      size: 180,
-      level: 'H'
-    });
-
-    // Devuelve PNG en Base64 (sin prefijo data:image)
-    return qr.toDataURL().split(',')[1];
+});
   }
+get safeEncabezados(): string[] {
+  return Array.isArray(this.encabezados)
+    ? this.encabezados
+    : Object.keys(this.encabezados || {});
+}
+ generarQR(texto: string): string {
+  if (!texto) return '';
 
-  // =============================================
-  //                CARGAR ARTÍCULOS
-  // =============================================
-  cargarArticulos(id: number) {
-    this.articuloService.getPivotPorTipo(id).subscribe({
-      next: (data) => {
+  const qr = new Qrious({
+    value: texto,
+    size: 180,
+    level: 'H'
+  });
 
-        if (!Array.isArray(data) || data.length === 0) {
-          this.encabezados = [];
-          this.articulos = [];
-          this.articulosFiltrados = [];
-          return;
-        }
+  return qr.toDataURL(); // 🔥 devuelve imagen completa
+}
+cargarArticulos(id: number) {
+  this.articuloService.getPivotPorTipo(id).subscribe({
+    next: (res: any) => {
 
-        // claves sin objetos
-        const rawKeys = Object.keys(data[0]).filter(k =>
-          typeof data[0][k] !== 'object' || data[0][k] === null
-        );
+      const dataRaw = res?.data;
 
-        this.encabezados = rawKeys;
+      // 🔥 FORZAR ARRAY SIEMPRE
+      const data = Array.isArray(dataRaw)
+        ? dataRaw
+        : dataRaw
+          ? [dataRaw]
+          : [];
 
-        // ===== GENERAR QR EN FRONTEND =====
-        data.forEach(a => {
-          rawKeys.forEach(campo => {
-            if (this.isQRCode(campo)) {
-              const valor = a[campo];
-              if (valor && valor.trim() !== '') {
-                a[campo] = this.generarQR(valor); // 🔥 Convertido a PNG
-              }
-            }
-          });
+      if (data.length === 0) {
+        this.encabezados = [];
+        this.articulos = [];
+        this.articulosFiltrados = [];
+        return;
+      }
+
+      const cleanedData = data.map((item: any) => {
+        const newItem: any = {};
+        Object.keys(item || {}).forEach(k => {
+          newItem[k.trim()] = item[k];
         });
+        return newItem;
+      });
 
-        this.articulos = data;
-        this.articulosFiltrados = data;
-      },
-      error: (err) => console.error('Error al obtener artículos pivot', err)
-    });
-  }
+      // 🔥 ENCABEZADOS SIEMPRE ARRAY
+      this.encabezados = Object.keys(cleanedData[0] || {});
 
+      // 🔥 FORZAR ARRAYS
+      this.articulos = [...cleanedData];
+      this.articulosFiltrados = [...cleanedData];
+    },
+    error: (err) => {
+      console.error('Error al obtener artículos pivot', err);
+      this.articulos = [];
+      this.articulosFiltrados = [];
+      this.encabezados = [];
+    }
+  });
+}
   aplicarFiltro() {
     if (!this.filtro.trim()) {
       this.articulosFiltrados = this.articulos;
@@ -126,15 +157,25 @@ export class ArticuloTipoArticuloComponent implements OnInit {
     const posibles = ['valor', 'precio', 'cantidad', 'stock', 'vida', 'util', 'id'];
     return posibles.some(p => campo.toLowerCase().includes(p));
   }
+getValue(articulo: any, campo: string): any {
+  const key = Object.keys(articulo).find(k => k.trim() === campo.trim());
 
-  getValue(articulo: any, campo: string): any {
-    if (!articulo || !campo) return '';
-    return articulo[campo]
-      ?? articulo[campo.toLowerCase()]
-      ?? articulo[campo.charAt(0).toUpperCase() + campo.slice(1)]
-      ?? '';
+  const value = key ? articulo[key] : '';
+
+  // 🔥 evitar romper imagen QR
+  if (campo.toLowerCase().includes('qr')) {
+    return value?.startsWith('data:')
+      ? value.replace('data:image/png;base64,', '')
+      : value;
   }
 
+  return value;
+}
+columnasOcultas = new Set([
+  'TipoArticuloId',
+  'UbicacionId',
+  'Estado'
+]);
   formatEstado(val: any) {
     if (val === 1 || val === '1') return 'Activo';
     if (val === 0 || val === '0') return 'Inactivo';
@@ -148,28 +189,34 @@ export class ArticuloTipoArticuloComponent implements OnInit {
     this.modoFormulario = 'crear';
     this.formulario = {};
 
-    this.articuloService.getCamposPorTipo(this.tipoArticuloId).subscribe({
-      next: (campos: any[]) => {
-        this.camposDefinidos = campos;
+   this.articuloService.getCamposPorTipo(this.tipoArticuloId).subscribe({
+  next: (res: any) => {
 
-        campos.forEach(c => this.formulario[c.nombreCampo] = '');
+const camposRaw = res?.data;
 
-        this.formulario['CodigoPatrimonial'] = '';
-        this.formulario['Nombre'] = '';
-        this.formulario['FechaAdquision'] = new Date().toISOString().substring(0, 10);
-        this.formulario['ValorAdquisitivo'] = 0;
-        this.formulario['TipoArticuloId'] = this.tipoArticuloId;
-        this.formulario['Estado'] = 1;
-        this.formulario['Condicion'] = 'Bueno';
-        this.formulario['VidaUtil'] = 0;
+const campos = Array.isArray(camposRaw)
+  ? camposRaw
+  : camposRaw
+    ? [camposRaw]
+    : [];
+    this.camposDefinidos = campos;
 
-        if (this.ubicaciones.length === 0) this.cargarUbicaciones();
-        this.formulario['UbicacionId'] =
-          this.ubicaciones.length > 0 ? this.ubicaciones[0].id : 0;
-
-        this.mostrarFormulario = true;
-      }
+    campos.forEach((c: any) => {
+      this.formulario[c.nombreCampo] = '';
     });
+
+    this.formulario['CodigoPatrimonial'] = '';
+    this.formulario['Nombre'] = '';
+    this.formulario['FechaAdquision'] = new Date().toISOString().substring(0, 10);
+    this.formulario['ValorAdquisitivo'] = 0;
+    this.formulario['TipoArticuloId'] = this.tipoArticuloId;
+    this.formulario['Estado'] = 1;
+    this.formulario['Condicion'] = 'Bueno';
+    this.formulario['VidaUtil'] = 0;
+
+    this.mostrarFormulario = true;
+  }
+});
   }
 
   editarArticulo(articulo: any) {
@@ -247,12 +294,27 @@ guardarArticulo() {
     };
     reader.readAsDataURL(file);
   }
-    cargarUbicaciones() {
-    this.ubicacionService.getUbicaciones().subscribe({
-      next: (data: any[]) => this.ubicaciones = data,
-      error: (err) => console.error('Error al cargar ubicaciones', err)
-    });
-  }
+cargarUbicaciones() {
+  this.ubicacionService.getUbicaciones().subscribe({
+    next: (res: any) => {
+
+      const raw = res?.data?.data ?? res?.data ?? res;
+
+      const lista = Array.isArray(raw) ? raw : [];
+
+      this.ubicaciones = lista.map((u: any) => ({
+        id: u.id ?? u.Id,
+        nombre: u.nombre ?? u.Nombre
+      }));
+
+      console.log('UBICACIONES OK:', this.ubicaciones);
+    },
+    error: (err) => {
+      console.error('Error al cargar ubicaciones', err);
+      this.ubicaciones = [];
+    }
+  });
+}
 
 }
 

@@ -34,7 +34,7 @@
 
 .page-container {
     width: 100%;
-    max-width: 1200px;
+    padding: 0px 20px ;
     margin: 0 auto;
 }
 
@@ -214,6 +214,7 @@
 .form-group {
     display: flex;
     flex-direction: column;
+    margin-top: -18px ;
     gap: 8px;
 }
 

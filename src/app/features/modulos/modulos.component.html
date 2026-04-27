@@ -8,107 +8,141 @@
 
     <div class="contenido-principal">
       <div class="card">
+
+        <!-- HEADER -->
         <div class="cont-tit">
-          <h2>Gestión de Módulos</h2>
+          <div class="block">
+            <h2>Módulos del Sistema</h2>
+            <p>Gestiona los modulos principales del sistema y sus submodulos</p>
+          </div>
 
           <div class="cont-btns">
             <button class="btn-agregar" (click)="toggleFormulario()">
-              <i class="fa fa-plus"></i> Agregar Módulo
+              <i class="fa fa-plus"></i> Nuevo Módulo
             </button>
 
             <div class="busqueda">
-              <input type="text" placeholder="Buscar módulo..." [(ngModel)]="filtro" (input)="aplicarFiltro()">
-              <button class="btn-buscar">
-                <i class="fa fa-search"></i>
-              </button>
+              <input type="text" placeholder="Buscar módulo..."
+                     [(ngModel)]="filtro"
+                     (input)="aplicarFiltro()">
+              <i class="fa fa-search"></i>
             </div>
           </div>
         </div>
 
-        <!-- MODAL -->
-        <div class="modal-overlay" *ngIf="mostrarFormulario">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h3>{{ editando ? 'Editar Módulo' : 'Registrar Nuevo Módulo' }}</h3>
-              <button class="btn-cerrar" (click)="toggleFormulario()">&times;</button>
+        <!-- CARDS -->
+        <div class="grid-modulos">
+          <div class="card-modulo"
+               *ngFor="let modulo of modulosPaginados"
+               (click)="toggleSubmodulos(modulo.id)">
+
+            <div class="card-header">
+              <div class="icono" [ngClass]="'color-' + (modulo.id % 8)">
+                <i class="{{ modulo.icon || 'fa fa-cube' }}"></i>
+              </div>
+
+              <span class="estado">ACTIVO</span>
             </div>
 
-            <div class="modal-body">
-              <form (ngSubmit)="guardarModulo()" #moduloForm="ngForm">
+            <div class="card-body">
+              <h3>{{ modulo.nombre }}</h3>
 
-                <div class="mb-3">
-                  <label>Nombre</label>
-                  <input type="text" [(ngModel)]="nuevoModulo.nombre" name="nombre" required>
+              <p class="descripcion">
+                Gestión del módulo {{ modulo.nombre }}
+              </p>
+
+              <div class="linea"></div>
+
+              <div class="submodulos-row">
+                <div class="sub-info">
+                  <i class="fa fa-layer-group"></i>
+                  <span>{{ modulo.subModulos.length }} submódulos</span>
                 </div>
 
-                <div class="mb-3">
-                  <label>Ruta</label>
-                  <input type="text" [(ngModel)]="nuevoModulo.ruta" name="ruta" required>
-                </div>
-
-                <div class="mb-3">
-                  <label>Ícono (FontAwesome)</label>
-                  <input type="text" [(ngModel)]="nuevoModulo.icon" name="icon">
-                </div>
-
-                <div class="acciones-form">
-                  <button type="submit" class="btn-guardar" [disabled]="moduloForm.invalid">
-                    {{ editando ? 'Actualizar' : 'Guardar' }}
+                <div class="acciones-inline">
+                  <button class="btn-icon editar"
+                          (click)="editarModulo(modulo); $event.stopPropagation()">
+                    <i class="fa fa-pen"></i>
                   </button>
-                  <button type="button" class="btn-cancelar" (click)="toggleFormulario()">
-                    Cancelar
+
+                  <button class="btn-icon eliminar"
+                          (click)="eliminarModulo(modulo.id); $event.stopPropagation()">
+                    <i class="fa fa-trash"></i>
+                  </button>
+
+                  <button class="btn-icon"
+                          (click)="abrirSubmodulos(modulo); $event.stopPropagation()">
+                    <i class="fa fa-eye"></i>
                   </button>
                 </div>
+              </div>
 
-              </form>
+              <!-- EXPAND -->
+              <div class="submodulos-expand" *ngIf="isOpen(modulo.id)">
+                <div *ngIf="modulo.subModulos.length > 0; else sinSubs">
+                  <div class="sub-item" *ngFor="let sub of modulo.subModulos">
+                    <i class="fa fa-cube"></i>
+                    <span>{{ sub.nombre }}</span>
+                  </div>
+                </div>
+
+                <ng-template #sinSubs>
+                  <p class="vacio">No hay submódulos</p>
+                </ng-template>
+              </div>
+
             </div>
           </div>
         </div>
-
-        <!-- TABLA -->
-        <table class="tabla-modulos">
-          <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>Submódulos</th>
-              <th style="width:120px;">Acciones</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr *ngFor="let modulo of modulosPaginados">
-              <td>{{ modulo.nombre }}</td>
-              
-
-              <!-- SUBMÓDULOS -->
-              <td>
-                <ul>
-                  <li *ngFor="let s of modulo.subModulos">
-                    <i class="{{ s.icon }}"></i> {{ s.nombre }}
-                  </li>
-                </ul>
-              </td>
-
-              <td class="acciones">
-                <button class="btn-editar" (click)="editarModulo(modulo)">
-                  <i class="fa fa-edit"></i>
-                </button>
-                <button class="btn-eliminar" (click)="eliminarModulo(modulo.id)">
-                  <i class="fa fa-trash"></i>
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
 
         <!-- PAGINACIÓN -->
         <div class="paginacion" *ngIf="totalPaginas > 1">
-          <button (click)="cambiarPagina(paginaActual - 1)" [disabled]="paginaActual === 1">Anterior</button>
+          <button (click)="cambiarPagina(paginaActual - 1)"
+                  [disabled]="paginaActual === 1">Anterior</button>
+
           <span>Página {{ paginaActual }} de {{ totalPaginas }}</span>
-          <button (click)="cambiarPagina(paginaActual + 1)" [disabled]="paginaActual === totalPaginas">Siguiente</button>
+
+          <button (click)="cambiarPagina(paginaActual + 1)"
+                  [disabled]="paginaActual === totalPaginas">Siguiente</button>
         </div>
 
       </div>
     </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal_fondo" *ngIf="modalSubmodulos" (click)="cerrarModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h3>{{ moduloSeleccionado?.nombre }}</h3>
+      <button (click)="cerrarModal()">✖</button>
+    </div>
+
+    <div class="modal-body">
+      <div *ngIf="moduloSeleccionado && moduloSeleccionado.subModulos.length > 0; else sinDatos">
+
+        <div class="sub-card"
+             *ngFor="let sub of moduloSeleccionado.subModulos">
+
+          <div class="sub-icon">
+            <i class="fa fa-cube"></i>
+          </div>
+
+          <div class="sub-info">
+            <h4>{{ sub.nombre }}</h4>
+            <p>{{ sub.ruta }}</p>
+          </div>
+
+        </div>
+
+      </div>
+
+      <ng-template #sinDatos>
+        <p class="vacio">No hay submódulos</p>
+      </ng-template>
+    </div>
+
   </div>
 </div>

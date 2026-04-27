@@ -19,20 +19,16 @@ import { UbicacionService } from '../../core/services/ubicacion.service';
 })
 export class TrasladosComponent implements OnInit {
 
-  // Control de Vista
   mostrarFormulario = false;
   menuAbierto = false;
 
-  // Filtros
   filtroTexto: string = '';
   filtroFecha: string = '';
 
-  // Datos
   traslados: any[] = [];
   listaArticulos: any[] = [];
   listaUbicaciones: any[] = [];
 
-  // Formulario
   nuevoTraslado: any = {
     articulo: '',
     origen: '',
@@ -40,7 +36,6 @@ export class TrasladosComponent implements OnInit {
     observaciones: ''
   };
 
-  // Paginación
   paginaActual = 1;
   registrosPorPagina = 5;
 
@@ -60,29 +55,31 @@ export class TrasladosComponent implements OnInit {
     this.cargarUbicaciones();
   }
 
+  // ✅ FIX: SIEMPRE usar .data
   cargarTraslados(): void {
     this.trasladoService.getTraslados().subscribe({
-      next: (data) => this.traslados = data,
+      next: (resp: any) => this.traslados = resp.data || [],
       error: () => Swal.fire('Error', 'No se pudieron cargar los traslados', 'error')
     });
   }
 
   cargarArticulos(): void {
     this.articuloService.getArticulos().subscribe({
-      next: (data) => this.listaArticulos = data,
+      next: (resp: any) => this.listaArticulos = resp.data || [],
       error: () => console.error('Error cargando artículos')
     });
   }
 
   cargarUbicaciones(): void {
     this.ubicacionService.getUbicaciones().subscribe({
-      next: (data) => this.listaUbicaciones = data,
+      next: (resp: any) => {
+        this.listaUbicaciones = resp.data || [];
+      },
       error: () => console.error('Error cargando ubicaciones')
     });
   }
 
-  // --- LÓGICA DE FILTROS ---
-
+  // FILTROS
   get trasladosFiltrados(): any[] {
     return this.traslados.filter(t => {
       const texto = this.filtroTexto.toLowerCase();
@@ -112,8 +109,7 @@ export class TrasladosComponent implements OnInit {
     this.menuAbierto = false;
   }
 
-  // --- PAGINACIÓN (Sincronizada con el HTML nuevo) ---
-
+  // PAGINACIÓN
   get totalRegistros(): number {
     return this.trasladosFiltrados.length;
   }
@@ -133,26 +129,31 @@ export class TrasladosComponent implements OnInit {
     }
   }
 
-  // --- GESTIÓN DE FORMULARIO ---
-
+  // FORMULARIO
   toggleFormulario(): void {
     this.mostrarFormulario = !this.mostrarFormulario;
     if (!this.mostrarFormulario) this.limpiarFormulario();
   }
+onArticuloChange(articuloId: any): void {
+  if (!articuloId) return;
 
-  onArticuloChange(articuloId: any): void {
-    if (!articuloId) return;
+  this.articuloService.getArticuloById(articuloId).subscribe({
+    next: (resp: any) => {
+      const art = resp.data; // 🔥 IMPORTANTE (tu API devuelve {data: {...}})
 
-    this.articuloService.getArticuloById(articuloId).subscribe({
-      next: (art) => this.nuevoTraslado.origen = art.ubicacionId,
-      error: () => {
-        Swal.fire('Error', 'No se pudo obtener la ubicación del artículo', 'error');
-        this.nuevoTraslado.origen = '';
-      }
-    });
-  }
+      this.nuevoTraslado.origen = Number(art.ubicacionId);
+    },
+    error: () => {
+      Swal.fire('Error', 'No se pudo obtener la ubicación del artículo', 'error');
+      this.nuevoTraslado.origen = '';
+    }
+  });
+}
 
+  // ✅ FIX: evitar error find cuando no es array
   getNombreUbicacion(id: any): string {
+    if (!Array.isArray(this.listaUbicaciones)) return 'Cargando...';
+
     const ubicacion = this.listaUbicaciones.find(u => u.id == id);
     return ubicacion ? ubicacion.nombre : 'Seleccione un artículo...';
   }

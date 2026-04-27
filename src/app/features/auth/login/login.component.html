@@ -1,51 +1,48 @@
-<div class="container">
-  <div class="left">
-    <div class="brand-row">
-      <span class="brand-icon">
-        <i class="fa fa-archive" aria-hidden="true"></i>
-      </span>
-      <h1>FISI INVENTARIO</h1>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <div class="container">
+    <div class="left">
+      <div class="brand-row">
+        <img src="/assets/logo_unsm.png" alt="" >
+        <h1>SISTEMA DE INVENTARIO</h1>
 
-    </div>
-
-    <h2 class="welcome-title">Bienvenido de nuevo</h2>
-    <p class="welcome-subtitle">
-      Ingresa tus credenciales para acceder al sistema de la Facultad de
-      Ingeniería de Sistemas e Informática.
-    </p>
-
-    <div class="form-group">
-      <label for="username">Usuario</label>
-      <div class="input-wrapper">
-        <i class="fa fa-user input-icon-left" aria-hidden="true"></i>
-        <input id="username" type="text" placeholder="ej. adiaz" [(ngModel)]="loginData.username" name="username">
       </div>
-    </div>
 
-    <div class="form-group">
-      <label for="password">Contraseña</label>
-      <div class="input-wrapper">
-        <i class="fa fa-lock input-icon-left" aria-hidden="true"></i>
-        <input id="password" [type]="hide ? 'password' : 'text'" placeholder="••••••••" [(ngModel)]="loginData.password"
-          name="password">
-        <i class="input-icon-right" [ngClass]="hide ? 'fa fa-eye' : 'fa fa-eye-slash'" (click)="hide = !hide"
-          aria-label="Mostrar u ocultar contraseña" style="cursor: pointer"></i>
+      <p class="welcome-subtitle">
+        Ingresa tus credenciales para acceder al sistema de inventario
+      </p>
+
+      <div class="form-group">
+        <label for="username">Usuario</label>
+        <div class="input-wrapper">
+          <i class="fa fa-user input-icon-left" aria-hidden="true"></i>
+          <input id="username" type="text" placeholder="ej. adiaz" [(ngModel)]="loginData.username" name="username">
+        </div>
       </div>
+
+      <div class="form-group">
+        <label for="password">Contraseña</label>
+        <div class="input-wrapper">
+          <i class="fa fa-lock input-icon-left" aria-hidden="true"></i>
+          <input id="password" [type]="hide ? 'password' : 'text'" placeholder="••••••••" [(ngModel)]="loginData.password"
+            name="password">
+          <i class="input-icon-right" [ngClass]="hide ? 'fa fa-eye' : 'fa fa-eye-slash'" (click)="hide = !hide"
+            aria-label="Mostrar u ocultar contraseña" style="cursor: pointer"></i>
+        </div>
+      </div>
+
+      <div class="options-row">
+        <label class="remember-me">
+          <input type="checkbox">
+          <span>Recordarme</span>
+        </label>
+        <a href="#">¿Olvidaste tu contraseña?</a>
+      </div>
+
+      <button class="btn" (click)="formSubmit()">INGRESAR AL SISTEMA</button>
+
+      <p class="footer">© 2026 FISI - UNSM. Todos los derechos reservados.</p>
     </div>
 
-    <div class="options-row">
-      <label class="remember-me">
-        <input type="checkbox">
-        <span>Recordarme</span>
-      </label>
-      <a href="#">¿Olvidaste tu contraseña?</a>
+    <div class="right">
     </div>
-
-    <button class="btn" (click)="formSubmit()">INGRESAR AL SISTEMA</button>
-
-    <p class="footer">© 2026 FISI - UNSM. Todos los derechos reservados.</p>
   </div>
-
-  <div class="right">
-  </div>
-</div>

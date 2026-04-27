@@ -30,7 +30,7 @@ export class UbicacionComponent implements OnInit {
   editando = false;
 
   paginaActual: number = 1;
-  registrosPorPagina: number = 8;
+  registrosPorPagina: number = 6;
 
   // UI States
   menuAbiertoId: number | null = null;
@@ -79,31 +79,40 @@ export class UbicacionComponent implements OnInit {
     }
   }
 
-  cargarTiposUbicacion() {
-    this.tipoUbicacionService.getTipoUbicaciones().subscribe({
-      next: (data: any[]) => this.tiposUbicacion = data,
-      error: (err: any) => console.error("Error tipos", err)
-    });
-  }
+cargarTiposUbicacion() {
+  this.tipoUbicacionService.getTipoUbicaciones().subscribe({
+    next: (res: any) => {
+      const data = res?.data ?? res;
+      this.tiposUbicacion = Array.isArray(data) ? data : [];
+    },
+    error: (err: any) => console.error("Error tipos", err)
+  });
+}
+cargarUbicaciones() {
+  this.ubicacionService.getUbicaciones().subscribe({
+    next: (res: any) => {
 
-  cargarUbicaciones() {
-    this.ubicacionService.getUbicaciones().subscribe({
-      next: (data: any[]) => {
-        this.ubicaciones = data;
-        this.aplicarFiltro();
-      },
-      error: (err: any) => console.error("Error al obtener ubicaciones", err)
-    });
-  }
+      console.log("RESPUESTA:", res);
 
+      const data = res?.data;
+
+      this.ubicaciones = Array.isArray(data) ? data : [];
+
+      this.aplicarFiltro();
+    },
+    error: (err: any) => console.error("Error al obtener ubicaciones", err)
+  });
+}
   obtenerTipo(id: number): string {
     return this.tiposUbicacion.find(t => t.id === id)?.nombre || 'Sin tipo';
   }
 
-  aplicarFiltro() {
-    const texto = this.filtro.trim().toLowerCase();
+ aplicarFiltro() {
+  const texto = this.filtro.trim().toLowerCase();
 
-    let docs = [...this.ubicaciones];
+  let docs = Array.isArray(this.ubicaciones)
+    ? [...this.ubicaciones]
+    : [];
 
     // Filtro por texto
     if (texto) {
