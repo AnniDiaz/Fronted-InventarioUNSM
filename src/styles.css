@@ -344,6 +344,27 @@ body {
   transform: translateY(-1px);
 }
 
+.btn-excel {
+  background: #1d6f42;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.2s, background 0.2s;
+  box-shadow: 0 4px 12px rgba(29, 111, 66, 0.2);
+}
+
+.btn-excel:hover {
+  background: #155130;
+  transform: translateY(-1px);
+}
+
 @media (max-width: 1024px) {
   .header-inventario {
     flex-direction: column;

@@ -11,6 +11,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { provideNativeDateAdapter } from '@angular/material/core';
 import { NgxPaginationModule } from 'ngx-pagination';
+import * as XLSX from 'xlsx';
 
 import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
 import { HeaderComponent } from '../../shared/components/header/header.component';
@@ -21,11 +22,11 @@ import { UbicacionService } from '../../core/services/ubicacion.service';
 @Component({
   selector: 'app-reportes',
   imports: [
-    CommonModule, 
-    FormsModule, 
-    SidebarComponent, 
-    HeaderComponent, 
-    MatTabsModule, 
+    CommonModule,
+    FormsModule,
+    SidebarComponent,
+    HeaderComponent,
+    MatTabsModule,
     MatIconModule,
     MatDatepickerModule,
     MatFormFieldModule,
@@ -37,9 +38,10 @@ import { UbicacionService } from '../../core/services/ubicacion.service';
   styleUrls: ['./reportes.component.css']
 })
 export class ReportesComponent implements OnInit {
-  menuAbierto = false;
   viewMode: 'visual' | 'tabla' = 'visual';
   activeTab: number = 0;
+  menuAbierto: boolean = false;
+
   p: number = 1; // Página actual para paginación
 
   // Filtros
@@ -58,7 +60,7 @@ export class ReportesComponent implements OnInit {
   kpis: any[] = [];
   tablaDatos: any[] = [];
   columnasTabla: string[] = [];
-  
+
   chart: any;
   loading: boolean = false;
 
@@ -67,6 +69,10 @@ export class ReportesComponent implements OnInit {
     private tipoService: TipoArticuloService,
     private ubicService: UbicacionService
   ) { }
+
+  toggleMenu() {
+    this.menuAbierto = !this.menuAbierto;
+  }
 
   ngOnInit(): void {
     this.cargarTipos();
@@ -181,7 +187,7 @@ export class ReportesComponent implements OnInit {
     // 1. Encabezado con Logos
     const logoUni = 'assets/logo_unsm.png'; // Asegúrate de que las rutas sean correctas
     const logoFacu = 'assets/logo_fisi.png';
-    
+
     pdf.addImage(logoUni, 'PNG', 15, 10, 20, 20);
     pdf.addImage(logoFacu, 'PNG', pageWidth - 35, 10, 20, 20);
 
@@ -189,7 +195,7 @@ export class ReportesComponent implements OnInit {
     pdf.setFontSize(18);
     const titulos = ['INVENTARIO GENERAL', 'CONTROL DE PRÉSTAMOS', 'MANTENIMIENTO', 'HISTORIAL DE TRASLADOS'];
     pdf.text(titulos[this.activeTab], pageWidth / 2, 22, { align: 'center' });
-    
+
     pdf.setFontSize(10);
     pdf.setFont('helvetica', 'normal');
     pdf.text('Sistema de Gestión de Inventario - UNSM', pageWidth / 2, 28, { align: 'center' });
@@ -199,17 +205,17 @@ export class ReportesComponent implements OnInit {
     // 2. Leyenda de Filtros
     pdf.setDrawColor(200, 200, 200);
     pdf.line(15, currentY - 5, pageWidth - 15, currentY - 5);
-    
+
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(11);
     pdf.text('FILTROS APLICADOS:', 15, currentY);
-    
+
     pdf.setFont('helvetica', 'normal');
     pdf.setFontSize(9);
     let filtrosText = `Fecha: ${this.filtroFechaInicio?.toLocaleDateString() || 'Inicio'} - ${this.filtroFechaFin?.toLocaleDateString() || 'Fin'} | `;
     filtrosText += `Estado: ${this.filtroEstado} | `;
     filtrosText += `Categoría: ${this.filtroCategoriaId > 0 ? 'Filtrada' : 'Todas'}`;
-    
+
     pdf.text(filtrosText, 15, currentY + 5);
     currentY += 15;
 
@@ -220,7 +226,7 @@ export class ReportesComponent implements OnInit {
 
     const captureAndAdd = async (el: HTMLElement, y: number, width: number) => {
       if (!el) return y;
-      
+
       // Guardar estado original de visibilidad
       const wasHidden = el.parentElement?.hasAttribute('hidden') || el.hasAttribute('hidden');
       if (wasHidden) {
@@ -228,7 +234,7 @@ export class ReportesComponent implements OnInit {
         el.removeAttribute('hidden');
       }
 
-      const canvas = await html2canvas(el, { 
+      const canvas = await html2canvas(el, {
         scale: 2,
         useCORS: true,
         logging: false
@@ -241,29 +247,44 @@ export class ReportesComponent implements OnInit {
 
       const imgData = canvas.toDataURL('image/png');
       const imgHeight = (canvas.height * width) / canvas.width;
-      
+
       // Verificar si cabe en la página
       if (y + imgHeight > 280) {
         pdf.addPage();
         y = 20;
       }
-      
+
       pdf.addImage(imgData, 'PNG', (pageWidth - width) / 2, y, width, imgHeight);
       return y + imgHeight + 10;
     };
 
     const runExport = async () => {
       currentY = await captureAndAdd(kpiElement, currentY, 180);
-      
+
       if (this.viewMode === 'visual') {
         currentY = await captureAndAdd(chartElement, currentY, 160);
       }
-      
+
       currentY = await captureAndAdd(tableElement, currentY, 180);
-      
+
       pdf.save(`Reporte_${titulos[this.activeTab].replace(' ', '_')}_${new Date().getTime()}.pdf`);
     };
 
     runExport();
+  }
+
+  exportarExcel() {
+    if (this.tablaDatos.length === 0) return;
+
+    // 1. Crear la hoja de trabajo
+    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(this.tablaDatos);
+
+    // 2. Crear el libro
+    const wb: XLSX.WorkBook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Reporte');
+
+    // 3. Descargar
+    const nombres = ['Inventario', 'Prestamos', 'Mantenimiento', 'Traslados'];
+    XLSX.writeFile(wb, `Reporte_${nombres[this.activeTab]}_${new Date().toISOString().split('T')[0]}.xlsx`);
   }
 }

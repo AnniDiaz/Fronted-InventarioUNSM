@@ -6,21 +6,32 @@ import { SidebarComponent } from '../../shared/components/sidebar/sidebar.compon
 import { MantenimientoService } from '../../core/services/mantenimiento.service'; // Ajusta la ruta real
 import Swal from 'sweetalert2';
 import { ArticuloService } from '../../core/services/articulos.service';
+import { NgxPaginationModule } from 'ngx-pagination';
 
 @Component({
   selector: 'app-mantenimiento',
-  imports: [HeaderComponent, SidebarComponent, FormsModule, CommonModule],
+  imports: [HeaderComponent, SidebarComponent, FormsModule, CommonModule, NgxPaginationModule],
   templateUrl: './mantenimiento.component.html',
   styleUrls: ['./mantenimiento.component.css']
 })
 export class MantenimientoComponent implements OnInit {
 
+  p: number = 1;
   menuAbierto = false;
   mostrarFormulario = false;
 
   mantenimientos: any[] = [];
   mantenimientosFiltrados: any[] = [];
   articulosDisponibles: any[] = [];
+
+  filtroTexto: string = '';
+  filtroFecha: string = '';
+
+  // Paginación manual para match con Artículos
+  paginaActual = 1;
+  pageSize = 6;
+  totalPaginas = 1;
+  registrosPaginados: any[] = [];
 
   nuevoMantenimiento = {
     idArticulo: '',
@@ -55,6 +66,7 @@ export class MantenimientoComponent implements OnInit {
         console.log(data);
         this.mantenimientos = data;
         this.mantenimientosFiltrados = [...this.mantenimientos];
+        this.actualizarPaginacion();
       },
       error: (err) => {
         console.error('Error al cargar mantenimientos', err);
@@ -180,10 +192,38 @@ export class MantenimientoComponent implements OnInit {
     }
   }
 
-  aplicarFiltro(valor: string): void {
-    this.mantenimientosFiltrados = this.mantenimientos.filter(m =>
-      m.articulo.toLowerCase().includes(valor.toLowerCase()) ||
-      m.proveedor.toLowerCase().includes(valor.toLowerCase())
-    );
+  aplicarFiltro(): void {
+    const texto = this.filtroTexto.toLowerCase();
+    
+    this.mantenimientosFiltrados = this.mantenimientos.filter(m => {
+      const cumpleTexto = !texto || 
+        (m.articulo?.codigoPatrimonial?.toLowerCase().includes(texto)) ||
+        (m.tipoMantenimiento?.toLowerCase().includes(texto)) ||
+        (m.proveedorServicion?.toLowerCase().includes(texto));
+        
+      const cumpleFecha = !this.filtroFecha || 
+        (m.fechaMantenimiento && m.fechaMantenimiento.split('T')[0] === this.filtroFecha);
+        
+      return cumpleTexto && cumpleFecha;
+    });
+
+    this.paginaActual = 1;
+    this.actualizarPaginacion();
+  }
+
+  actualizarPaginacion(): void {
+    this.totalPaginas = Math.ceil(this.mantenimientosFiltrados.length / this.pageSize);
+    if (this.paginaActual > this.totalPaginas) this.paginaActual = 1;
+    
+    const inicio = (this.paginaActual - 1) * this.pageSize;
+    const fin = inicio + this.pageSize;
+    this.registrosPaginados = this.mantenimientosFiltrados.slice(inicio, fin);
+  }
+
+  cambiarPagina(nueva: number): void {
+    if (nueva >= 1 && nueva <= this.totalPaginas) {
+      this.paginaActual = nueva;
+      this.actualizarPaginacion();
+    }
   }
 }

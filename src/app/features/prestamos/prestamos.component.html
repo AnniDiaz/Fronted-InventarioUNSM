@@ -1,5 +1,4 @@
 <div class="container" [class.menu-activo]="menuAbierto">
-
     <div class="sidebar-overlay" *ngIf="menuAbierto" (click)="toggleMenu()"></div>
 
     <div class="barra-lateral">
@@ -11,64 +10,105 @@
 
         <div class="contenido-principal">
             <div class="page-container">
+                <div class="tabla-container">
 
-                <div class="header-prestamos"
-                    style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                    <div class="main-header-wrapper">
+                        <div class="header-titulo-wrapper" style="display: flex; align-items: center; gap: 15px;">
+                            <button class="menu-toggle" (click)="toggleMenu()">
+                                <i class="fa fa-bars"></i>
+                            </button>
+                            <div class="titulos-header">
+                                <h2 style="margin: 0;">Préstamos de Equipos</h2>
+                                <p style="margin: 0;">Control y seguimiento de activos prestados a personal.</p>
+                            </div>
+                        </div>
 
-                    <div class="header-titles-wrapper" style="display: flex; align-items: center; gap: 15px;">
-                        <button class="menu-toggle" (click)="toggleMenu()">
-                            <i class="fa fa-bars"></i>
+                        <button class="btn-principal" (click)="toggleFormulario()">
+                            <i class="fa fa-handshake"></i> Registrar Préstamo
                         </button>
+                    </div>
 
-                        <div class="titulos-header">
-                            <h2>Préstamos de Equipos</h2>
-                            <p>Control de equipos prestados a docentes y personal.</p>
+                    <div class="tabla-header-tools">
+                        <div class="search-box">
+                            <i class="fa fa-search"></i>
+                            <input type="text" [(ngModel)]="filtroTexto" (input)="aplicarFiltro()"
+                                placeholder="Buscar por artículo o solicitante...">
+                        </div>
+
+                        <div class="date-box">
+                            <i class="fa fa-calendar-alt"></i>
+                            <input type="date" [(ngModel)]="filtroFecha" (change)="aplicarFiltro()">
                         </div>
                     </div>
 
-                    <button class="btn-nuevo-prestamo" (click)="toggleFormulario()">
-                        <i class="fa fa-handshake-o"></i> Nuevo Préstamo
-                    </button>
-                </div>
+                    <div class="table-responsive">
+                        <table class="tabla-moderna">
+                            <thead>
+                                <tr>
+                                    <th>ARTÍCULO</th>
+                                    <th>SOLICITANTE</th>
+                                    <th>F. PRÉSTAMO</th>
+                                    <th>F. DEVOLUCIÓN</th>
+                                    <th>ESTADO</th>
+                                    <th class="text-right">ACCIONES</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let p of registrosPaginados">
+                                    <td>
+                                        <div class="art-card-mini">
+                                            <div class="art-icon-placeholder">
+                                                <i class="fa fa-laptop"></i>
+                                            </div>
+                                            <div class="art-details">
+                                                <strong>{{ getNombreArticulo(p.articuloId) }}</strong>
+                                                <span class="art-category">Patrimonio: {{ p.articuloId }}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ p.nombreSolicitante }}</td>
+                                    <td>{{ p.fechaPrestamo | date:'dd/MM/yyyy' }}</td>
+                                    <td>{{ (p.fechaDevolucion | date:'dd/MM/yyyy') || 'Pendiente' }}</td>
+                                    <td>
+                                        <span class="badge"
+                                            [ngClass]="{'badge-activo': p.estado === 1, 'badge-devuelto': p.estado === 0}">
+                                            {{ p.estado === 1 ? 'ACTIVO' : 'DEVUELTO' }}
+                                        </span>
+                                    </td>
+                                    <td class="text-right">
+                                        <button *ngIf="p.estado === 1" class="btn-action-devuelto"
+                                            (click)="marcarDevuelto(p)">
+                                            <i class="fa fa-undo"></i> Devolver
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr *ngIf="registrosPaginados.length === 0">
+                                    <td colspan="6" class="empty-state">
+                                        <i class="fa fa-hand-holding"
+                                            style="font-size: 40px; color: #e2e8f0; margin-bottom: 15px; display: block;"></i>
+                                        <p>No se encontraron registros de préstamos</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
 
-                <div class="tabla-container">
-                    <table class="tabla-moderna">
-                        <thead>
-                            <tr>
-                                <th>ARTÍCULO</th>
-                                <th>SOLICITANTE</th>
-                                <th>FECHA PRÉSTAMO</th>
-                                <th>FECHA DEVOLUCIÓN</th>
-                                <th>ESTADO</th>
-                                <th class="text-right">ACCIONES</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr *ngFor="let p of prestamosFiltrados">
-<td><strong>  {{ getNombreArticulo(p.articuloId) }} </strong></td>                                <td>{{ p.nombreSolicitante }}</td>
-                                <td>{{ p.fechaPrestamo | date:'dd/MM/yyyy' }}</td>
-                                <td>{{ p.fechaDevolucion | date:'dd/MM/yyyy' }}</td>
-                                <td>
-                                    <span class="badge"
-                                        [ngClass]="{'badge-activo': p.estado === 1, 'badge-devuelto': p.estado === 0}">
-                                        {{ p.estado === 1 ? 'ACTIVO' : 'DEVUELTO' }}
-                                    </span>
-                                </td>
-<td class="text-right">
-    <button *ngIf="p.estado === 1" class="btn-action-devuelto"
-        (click)="marcarDevuelto(p)">
-        Marcar Devuelto
-    </button>
-</td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <div class="empty-state" *ngIf="prestamosFiltrados.length === 0">
-                        <p>No hay registros de préstamos.</p>
+                    <div class="footer-paginacion" *ngIf="prestamosFiltrados.length > 0">
+                        <div class="pag-info">
+                            Mostrando <strong>{{ registrosPaginados.length }}</strong> de <strong>{{ prestamosFiltrados.length }}</strong> préstamos
+                        </div>
+                        <div class="pag-botones">
+                            <button class="btn-pag-nav" [disabled]="paginaActual === 1" (click)="cambiarPagina(paginaActual - 1)">
+                                Anterior
+                            </button>
+                            <button class="btn-pag-nav active" [disabled]="paginaActual === totalPaginas" (click)="cambiarPagina(paginaActual + 1)">
+                                Siguiente
+                            </button>
+                        </div>
                     </div>
                 </div>
 
+                <!-- Modal Formulario -->
                 <div class="modal-overlay" *ngIf="mostrarFormulario">
                     <div class="modal-modern">
                         <div class="modal-header">
@@ -78,11 +118,11 @@
 
                         <form (ngSubmit)="registrarPrestamo()" #f="ngForm" class="modal-body">
                             <div class="form-group">
-                                <label>ARTÍCULO A PRESTAR</label>
+                                <label>ARTÍCULO</label>
                                 <select [(ngModel)]="nuevoPrestamo.ArticuloId" name="ArticuloId" required>
-                                    <option [value]="null" disabled>Seleccione un equipo</option>
-                                    <option *ngFor="let art of articulosDisponibles" [value]="art.id">
-                                        {{ art.nombre }}
+                                    <option value="" disabled selected>Seleccionar artículo...</option>
+                                    <option *ngFor="let a of articulosDisponibles" [value]="a.id">
+                                        {{ a.codigoPatrimonial }} - {{ a.nombre }}
                                     </option>
                                 </select>
                             </div>
@@ -90,17 +130,17 @@
                             <div class="form-group">
                                 <label>NOMBRE DEL SOLICITANTE</label>
                                 <input type="text" [(ngModel)]="nuevoPrestamo.NombreSolicitante"
-                                    name="NombreSolicitante" placeholder="ej. Prof. Carlos Ruiz" required>
+                                    name="NombreSolicitante" placeholder="Ej: Juan Perez" required>
                             </div>
 
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label>FECHA PRÉSTAMO</label>
+                                    <label>FECHA DE PRÉSTAMO</label>
                                     <input type="date" [(ngModel)]="nuevoPrestamo.FechaPrestamo" name="FechaPrestamo"
                                         required>
                                 </div>
                                 <div class="form-group">
-                                    <label>FECHA DEVOLUCIÓN</label>
+                                    <label>FECHA ESTIMADA DEVOLUCIÓN</label>
                                     <input type="date" [(ngModel)]="nuevoPrestamo.FechaDevolucion"
                                         name="FechaDevolucion">
                                 </div>
@@ -109,9 +149,8 @@
                             <div class="modal-footer-btns">
                                 <button type="button" class="btn-cancelar"
                                     (click)="toggleFormulario()">Cancelar</button>
-                                <button type="submit" class="btn-registrar" [disabled]="f.invalid">
-                                    Registrar Préstamo
-                                </button>
+                                <button type="submit" class="btn-registrar" [disabled]="f.invalid">Confirmar
+                                    Préstamo</button>
                             </div>
                         </form>
                     </div>

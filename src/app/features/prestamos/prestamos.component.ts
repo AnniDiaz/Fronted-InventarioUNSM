@@ -5,17 +5,19 @@ import { HeaderComponent } from '../../shared/components/header/header.component
 import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
 import { PrestamosService } from '../../core/services/prestamos.service';
 import { ArticuloService } from '../../core/services/articulos.service';
+import { NgxPaginationModule } from 'ngx-pagination';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-prestamos',
   standalone: true,
-  imports: [HeaderComponent, SidebarComponent, FormsModule, CommonModule],
+  imports: [HeaderComponent, SidebarComponent, FormsModule, CommonModule, NgxPaginationModule],
   templateUrl: './prestamos.component.html',
   styleUrls: ['./prestamos.component.css']
 })
 export class PrestamoComponent implements OnInit {
 
+  p: number = 1;
   // --- Propiedades para el Layout Responsivo ---
   menuAbierto = false; // Controla si el menú lateral se muestra en móviles
 
@@ -25,7 +27,14 @@ export class PrestamoComponent implements OnInit {
   articulosDisponibles: any[] = [];
 
   mostrarFormulario = false;
-  filtro: string = '';
+  filtroTexto: string = '';
+  filtroFecha: string = '';
+
+  // Paginación manual para match con Artículos
+  paginaActual = 1;
+  pageSize = 5;
+  totalPaginas = 1;
+  registrosPaginados: any[] = [];
 
   nuevoPrestamo: any = {
     ArticuloId: null,
@@ -53,8 +62,9 @@ export class PrestamoComponent implements OnInit {
 cargarPrestamos() {
   this._prestamosService.getPrestamos().subscribe({
     next: (res) => {
-      this.prestamos = res.data;           // ✅ AQUÍ ESTÁ EL FIX
-      this.prestamosFiltrados = res.data;  // ✅
+      this.prestamos = res.data;
+      this.prestamosFiltrados = [...this.prestamos];
+      this.actualizarPaginacion();
     },
     error: (err) => {
       console.error('Error al cargar préstamos', err);
@@ -73,11 +83,37 @@ cargarArticulosDisponibles() {
   return articulo ? articulo.nombre : 'Desconocido';
 }
   aplicarFiltro() {
-    const texto = this.filtro.toLowerCase();
-    this.prestamosFiltrados = this.prestamos.filter(p =>
-      (p.nombreArticulo?.toLowerCase().includes(texto)) ||
-      (p.solicitante?.toLowerCase().includes(texto))
-    );
+    const texto = this.filtroTexto.toLowerCase();
+    
+    this.prestamosFiltrados = this.prestamos.filter(p => {
+      const cumpleTexto = !texto || 
+        (p.nombreArticulo?.toLowerCase().includes(texto)) ||
+        (p.nombreSolicitante?.toLowerCase().includes(texto));
+        
+      const cumpleFecha = !this.filtroFecha || 
+        (p.fechaPrestamo && p.fechaPrestamo.split('T')[0] === this.filtroFecha);
+        
+      return cumpleTexto && cumpleFecha;
+    });
+
+    this.paginaActual = 1;
+    this.actualizarPaginacion();
+  }
+
+  actualizarPaginacion() {
+    this.totalPaginas = Math.ceil(this.prestamosFiltrados.length / this.pageSize);
+    if (this.paginaActual > this.totalPaginas) this.paginaActual = 1;
+    
+    const inicio = (this.paginaActual - 1) * this.pageSize;
+    const fin = inicio + this.pageSize;
+    this.registrosPaginados = this.prestamosFiltrados.slice(inicio, fin);
+  }
+
+  cambiarPagina(nueva: number) {
+    if (nueva >= 1 && nueva <= this.totalPaginas) {
+      this.paginaActual = nueva;
+      this.actualizarPaginacion();
+    }
   }
 
   toggleFormulario() {

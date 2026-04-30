@@ -1,4 +1,6 @@
-<div class="container">
+<div class="container" [class.menu-activo]="menuAbierto">
+
+  <div class="sidebar-overlay" *ngIf="menuAbierto" (click)="toggleMenu()"></div>
 
   <div class="barra-lateral">
     <app-sidebar></app-sidebar>
@@ -12,6 +14,9 @@
 
         <div class="header-inventario">
           <div class="textos-inventario" style="display: flex; align-items: center; gap: 16px;">
+            <button class="menu-toggle" (click)="toggleMenu()">
+              <i class="fa fa-bars"></i>
+            </button>
             <div>
               <h2 style="margin: 0;">Reportes</h2>
               <p style="margin: 0;">Generación de reportes dinámicos del sistema de inventario.</p>
@@ -19,8 +24,8 @@
           </div>
 
           <div class="acciones-top">
-            <button class="btn-generar" (click)="generarReporte()">
-              <i class="fa fa-sync-alt" [class.fa-spin]="loading"></i> Actualizar
+            <button class="btn-excel" (click)="exportarExcel()">
+              <i class="fa fa-file-excel"></i> Exportar Excel
             </button>
             <button class="btn-agregar-pill" (click)="descargarPDF()">
               <i class="fa fa-file-pdf"></i> Exportar PDF
@@ -70,7 +75,8 @@
               <label>RANGO TEMPORAL</label>
               <mat-form-field appearance="outline" class="custom-datepicker">
                 <mat-date-range-input [rangePicker]="picker">
-                  <input matStartDate placeholder="Inicio" [(ngModel)]="filtroFechaInicio" (dateChange)="generarReporte()">
+                  <input matStartDate placeholder="Inicio" [(ngModel)]="filtroFechaInicio"
+                    (dateChange)="generarReporte()">
                   <input matEndDate placeholder="Fin" [(ngModel)]="filtroFechaFin" (dateChange)="generarReporte()">
                 </mat-date-range-input>
                 <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
@@ -132,8 +138,8 @@
 
             <!-- TARJETAS DE RESUMEN DINÁMICAS -->
             <div class="kpi-grid">
-              <div class="kpi-card" *ngFor="let kpi of kpis; let i = index" 
-                   [ngClass]="i === 0 ? 'color-verde' : (i === 1 ? 'color-azul' : 'color-light-blue')">
+              <div class="kpi-card" *ngFor="let kpi of kpis; let i = index"
+                [ngClass]="i === 0 ? 'color-verde' : (i === 1 ? 'color-azul' : 'color-light-blue')">
                 <span class="kpi-label">{{ kpi.label }}</span>
                 <h2 class="kpi-value">{{ kpi.value }}</h2>
               </div>
@@ -195,9 +201,14 @@
                       <tr *ngFor="let item of tablaDatos | paginate: { itemsPerPage: 5, currentPage: p }">
                         <!-- Tab 0: Inventario -->
                         <ng-container *ngIf="activeTab === 0">
-                          <td><div class="nombre-principal">{{item.nombreArticulo}}</div><div class="nombre-sub">ID: {{item.id}}</div></td>
+                          <td>
+                            <div class="nombre-principal">{{item.nombreArticulo}}</div>
+                            <div class="nombre-sub">ID: {{item.id}}</div>
+                          </td>
                           <td>{{item.ubicacion}}</td>
-                          <td><span class="badge" [ngClass]="item.estado === 'Nuevo' ? 'badge-nuevo' : 'badge-usado'">{{item.estado}}</span></td>
+                          <td><span class="badge"
+                              [ngClass]="item.estado === 'Nuevo' ? 'badge-nuevo' : 'badge-usado'">{{item.estado}}</span>
+                          </td>
                           <td class="text-right"><span class="precio-fuerte">S/ {{item.valor}}</span></td>
                         </ng-container>
 
@@ -206,7 +217,9 @@
                           <td>{{item.nombreArticulo}}</td>
                           <td>{{item.solicitante}}</td>
                           <td>{{item.fecha}}</td>
-                          <td class="text-right"><span class="badge" [ngClass]="item.estado === 'Activo' ? 'badge-nuevo' : 'badge-usado'">{{item.estado}}</span></td>
+                          <td class="text-right"><span class="badge"
+                              [ngClass]="item.estado === 'Activo' ? 'badge-nuevo' : 'badge-usado'">{{item.estado}}</span>
+                          </td>
                         </ng-container>
 
                         <!-- Tab 2: Mantenimiento -->
@@ -214,7 +227,9 @@
                           <td>{{item.nombreArticulo}}</td>
                           <td>{{item.proveedor}}</td>
                           <td>S/ {{item.costo}}</td>
-                          <td class="text-right"><span class="badge" [ngClass]="item.estado === 'Pendiente' ? 'badge-danado' : 'badge-nuevo'">{{item.estado}}</span></td>
+                          <td class="text-right"><span class="badge"
+                              [ngClass]="item.estado === 'Pendiente' ? 'badge-danado' : 'badge-nuevo'">{{item.estado}}</span>
+                          </td>
                         </ng-container>
 
                         <!-- Tab 3: Traslados -->
@@ -232,12 +247,8 @@
                   </table>
 
                   <div class="pagination-wrapper" *ngIf="tablaDatos.length > 5">
-                    <pagination-controls 
-                      (pageChange)="p = $event"
-                      previousLabel="Anterior"
-                      nextLabel="Siguiente"
-                      screenReaderPaginationLabel="Paginación"
-                      screenReaderPageLabel="página"
+                    <pagination-controls (pageChange)="p = $event" previousLabel="Anterior" nextLabel="Siguiente"
+                      screenReaderPaginationLabel="Paginación" screenReaderPageLabel="página"
                       screenReaderCurrentLabel="página actual">
                     </pagination-controls>
                   </div>
@@ -246,7 +257,8 @@
             </div>
 
             <!-- TABLA OCULTA PARA EXPORTACIÓN (SIN PAGINACIÓN) -->
-            <div id="tablaCompletaPDF" style="position: absolute; left: -9999px; top: -9999px; width: 1000px; background: white;">
+            <div id="tablaCompletaPDF"
+              style="position: absolute; left: -9999px; top: -9999px; width: 1000px; background: white;">
               <h3 style="padding: 20px; color: #0f172a; border-bottom: 2px solid #f1f5f9;">DETALLE COMPLETO</h3>
               <table class="tabla-clean" style="width: 100%;">
                 <thead>
