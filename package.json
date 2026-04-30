@@ -34,6 +34,7 @@
     "select2": "^4.1.0-rc.0",
     "sweetalert2": "^11.26.4",
     "tslib": "^2.3.0",
+    "xlsx": "^0.18.5",
     "zone.js": "~0.15.0"
   },
   "devDependencies": {
