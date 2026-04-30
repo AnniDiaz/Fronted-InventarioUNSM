@@ -50,7 +50,7 @@
                                 <td>{{ p.fechaDevolucion | date:'dd/MM/yyyy' }}</td>
                                 <td>
                                     <span class="badge"
-                                        [ngClass]="{'badge-activo': p.estadoPrestamo === 1, 'badge-devuelto': p.estadoPrestamo === 0}">
+                                        [ngClass]="{'badge-activo': p.estado === 1, 'badge-devuelto': p.estado === 0}">
                                         {{ p.estado === 1 ? 'ACTIVO' : 'DEVUELTO' }}
                                     </span>
                                 </td>

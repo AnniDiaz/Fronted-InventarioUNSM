@@ -27,13 +27,7 @@
           </div>
         </div>
         <div class="dash-actions">
-          <button class="btn btn-outline">
-            <svg viewBox="0 0 24 24" fill="none" class="btn-icon">
-              <path d="M12 16v-8m0 8l-4-4m4 4l4-4m-9 5h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                stroke-linejoin="round" />
-            </svg>
-            Exportar PDF
-          </button>
+
           <button class="btn btn-primary">
             <svg viewBox="0 0 24 24" fill="none" class="btn-icon">
               <path d="M12 5v14m-7-7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -130,7 +124,7 @@
         </div>
 
         <div class="chart-card flex-col">
-          <h3 class="card-title mb-4">Distribución por Categoría</h3>
+          <h3 class="card-title mb-4">Distribución por Tipo de Artículo</h3>
           <div class="chart-wrapper flex-center flex-1 position-relative mb-4">
             <canvas id="pieChart"></canvas>
           </div>
@@ -149,18 +143,16 @@
       <div class="table-card">
         <div class="table-header flex-between mb-4">
           <h3 class="card-title">Últimos Artículos Registrados</h3>
-          <a href="#" class="text-green text-sm font-medium hover-link">Ver todo ></a>
         </div>
         <div class="table-responsive">
           <table class="w-full text-left table-custom">
             <thead>
               <tr class="text-xs text-gray uppercase tracking-wide border-b">
                 <th class="py-3 px-4 font-medium" style="width: 15%;">CÓDIGO</th>
-                <th class="py-3 px-4 font-medium" style="width: 25%;">ARTÍCULO</th>
+                <th class="py-3 px-4 font-medium" style="width: 30%;">ARTÍCULO</th>
                 <th class="py-3 px-4 font-medium" style="width: 20%;">UBICACIÓN</th>
                 <th class="py-3 px-4 font-medium" style="width: 15%;">ESTADO</th>
-                <th class="py-3 px-4 font-medium" style="width: 15%;">FECHA</th>
-                <th class="py-3 px-4 font-medium text-right" style="width: 10%;">ACCIONES</th>
+                <th class="py-3 px-4 font-medium" style="width: 20%;">FECHA</th>
               </tr>
             </thead>
             <tbody>
@@ -189,8 +181,6 @@
                 </td>
                 <td class="py-3 px-4 text-sm text-gray">
                   {{ item.fecha }}
-                </td>
-                <td class="py-3 px-4 text-right">
                 </td>
               </tr>
             </tbody>

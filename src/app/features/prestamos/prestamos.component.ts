@@ -104,6 +104,7 @@ registrarPrestamo() {
       ArticuloId: Number(this.nuevoPrestamo.ArticuloId),
       NombreSolicitante: this.nuevoPrestamo.NombreSolicitante,
       FechaPrestamo: new Date(this.nuevoPrestamo.FechaPrestamo).toISOString(),
+      FechaDevolucion: this.nuevoPrestamo.FechaDevolucion ? new Date(this.nuevoPrestamo.FechaDevolucion).toISOString() : null,
       Estado: 1,
       EstadoPrestamo: true
     };

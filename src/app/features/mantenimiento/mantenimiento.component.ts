@@ -39,8 +39,9 @@ export class MantenimientoComponent implements OnInit {
 
   cargarArticulosParaSelect(): void {
     this._articuloService.getArticulos().subscribe({
-      next: (data) => {
-        this.articulosDisponibles = data;
+      next: (res: any) => {
+        // Manejamos el wrapper ApiResponse { success, message, data }
+        this.articulosDisponibles = Array.isArray(res) ? res : res?.data ?? [];
       },
       error: (err) => {
         console.error('Error al cargar artículos', err);

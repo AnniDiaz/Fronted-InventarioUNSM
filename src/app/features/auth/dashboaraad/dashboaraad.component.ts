@@ -3,6 +3,8 @@ import { SidebarComponent } from '../../../shared/components/sidebar/sidebar.com
 import { HeaderComponent } from "../../../shared/components/header/header.component";
 import { CommonModule } from '@angular/common';
 import Chart from 'chart.js/auto';
+import { ReportesService, ReporteRequest } from '../../../core/services/reportes.service';
+import { UbicacionService } from '../../../core/services/ubicacion.service';
 
 const centerTextPlugin: any = {
   id: 'centerText',
@@ -50,75 +52,120 @@ const centerTextPlugin: any = {
 })
 export class DashboardComponent implements OnInit {
 
-  // Cambiado de isSidebarOpen a menuAbierto para mantener coherencia
   menuAbierto = false;
 
-  totalArticulos = 4;
-  totalUbicaciones = 4;
+  totalArticulos = 0;
+  totalUbicaciones = 0;
   totalTraslados = 0;
-  totalValor = 2210;
+  totalValor = 0;
 
-  categorias = [
-    { nombre: 'Laptops', valor: 25, color: '#10b981' },
-    { nombre: 'Monitores', valor: 25, color: '#3b82f6' },
-    { nombre: 'Accesorios', valor: 25, color: '#f59e0b' },
-    { nombre: 'Multimedia', valor: 25, color: '#ef4444' }
-  ];
+  categorias: any[] = [];
+  articulos: any[] = [];
 
-  articulos = [
-    { codigo: 'FISI-004', nombre: 'Proyector Epson', categoria: 'Multimedia', ubicacion: 'Auditorio', estado: 'dañado', fecha: '2025-12-19' },
-    { codigo: 'FISI-003', nombre: 'Mouse Logitech G502', categoria: 'Accesorios', ubicacion: 'Lab de Redes', estado: 'nuevo', fecha: '2025-12-18' },
-    { codigo: 'FISI-002', nombre: 'Monitor LG 24"', categoria: 'Monitores', ubicacion: 'Aula 1', estado: 'usado', fecha: '2025-12-17' },
-    { codigo: 'FISI-001', nombre: 'Laptop Dell Latitude', categoria: 'Laptops', ubicacion: 'Lab de Sistemas', estado: 'nuevo', fecha: '2025-12-16' }
-  ];
+  barChart: any;
+  pieChart: any;
+
+  constructor(
+    private reportesService: ReportesService,
+    private ubicacionService: UbicacionService
+  ) { }
 
   ngOnInit() {
-    new Chart('barChart', {
+    this.cargarDatosDashboard();
+  }
+
+  cargarDatosDashboard() {
+    // 1. Obtener datos de Inventario General
+    this.reportesService.generarReporte({ tipo: 0 }).subscribe(res => {
+      // KPIs
+      const kpiActivos = res.kpis.find(k => k.label === 'TOTAL ACTIVOS');
+      const kpiValor = res.kpis.find(k => k.label === 'VALORACIÓN TOTAL');
+
+      this.totalArticulos = kpiActivos ? parseInt(kpiActivos.value) : 0;
+      this.totalValor = kpiValor ? parseFloat(kpiValor.value.replace('S/ ', '').replace(',', '')) : 0;
+
+      // Tabla de Artículos Recientes
+      this.articulos = res.tabla.slice(0, 4).map(a => ({
+        codigo: a.codigo,
+        nombre: a.nombreArticulo,
+        categoria: a.categoria,
+        ubicacion: a.ubicacion,
+        estado: a.estado?.toLowerCase() || 'nuevo',
+        fecha: a.fecha
+      }));
+
+      // Procesar datos para Gráfico de Barras (Por Ubicación)
+      this.inicializarBarChart(res.tabla);
+
+      // Procesar datos para Gráfico de Dona (Por Categoría)
+      this.inicializarPieChart(res.tabla);
+    });
+
+    // 2. Obtener Total de Ubicaciones
+    this.ubicacionService.getUbicaciones().subscribe((res: any) => {
+      const data = Array.isArray(res) ? res : res?.data ?? [];
+      this.totalUbicaciones = data.length;
+    });
+
+    // 3. Obtener Traslados Realizados
+    this.reportesService.generarReporte({ tipo: 3 }).subscribe(res => {
+      const kpiTraslados = res.kpis.find(k => k.label === 'TRASLADOS REALIZADOS');
+      this.totalTraslados = kpiTraslados ? parseInt(kpiTraslados.value) : 0;
+    });
+  }
+
+  inicializarBarChart(data: any[]) {
+    const ubicacionesCounts = data.reduce((acc: any, curr: any) => {
+      acc[curr.ubicacion] = (acc[curr.ubicacion] || 0) + 1;
+      return acc;
+    }, {});
+
+    const labels = Object.keys(ubicacionesCounts);
+    const valores = Object.values(ubicacionesCounts);
+
+    if (this.barChart) this.barChart.destroy();
+
+    this.barChart = new Chart('barChart', {
       type: 'bar',
       data: {
-        labels: ['Lab de Sistemas', 'Aula 1', 'Lab de Redes', 'Auditorio'],
+        labels: labels,
         datasets: [{
-          data: [1, 1, 1, 1],
+          data: valores,
           backgroundColor: '#10b981',
           barPercentage: 0.6,
-          categoryPercentage: 0.8,
           borderRadius: 4
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false }
-        },
+        plugins: { legend: { display: false } },
         scales: {
-          y: {
-            beginAtZero: true,
-            max: 1.25,
-            ticks: {
-              stepSize: 0.25,
-              color: '#9ca3af',
-              font: { family: 'Inter, sans-serif', size: 11 }
-            },
-            grid: {
-              color: '#f3f4f6',
-              drawTicks: false
-            },
-            border: { display: false }
-          },
-          x: {
-            ticks: {
-              color: '#9ca3af',
-              font: { family: 'Inter, sans-serif', size: 11 }
-            },
-            grid: { display: false },
-            border: { display: false }
-          }
+          y: { beginAtZero: true, ticks: { stepSize: 1 } }
         }
       }
     });
+  }
 
-    new Chart('pieChart', {
+  inicializarPieChart(data: any[]) {
+    const catCounts = data.reduce((acc: any, curr: any) => {
+      const cat = curr.categoria || 'Sin Categoría';
+      acc[cat] = (acc[cat] || 0) + 1;
+      return acc;
+    }, {});
+
+    const colors = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+    const total = data.length;
+
+    this.categorias = Object.keys(catCounts).map((key, index) => ({
+      nombre: key,
+      valor: Math.round((catCounts[key] / total) * 100),
+      color: colors[index % colors.length]
+    }));
+
+    if (this.pieChart) this.pieChart.destroy();
+
+    this.pieChart = new Chart('pieChart', {
       type: 'doughnut',
       plugins: [centerTextPlugin],
       data: {
@@ -126,22 +173,18 @@ export class DashboardComponent implements OnInit {
         datasets: [{
           data: this.categorias.map(c => c.valor),
           backgroundColor: this.categorias.map(c => c.color),
-          borderWidth: 0,
-          hoverOffset: 4
+          borderWidth: 0
         }]
       },
       options: {
         cutout: '75%',
         responsive: true,
         maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false }
-        }
+        plugins: { legend: { display: false } }
       }
     });
   }
 
-  // Cambiado de toggleSidebar a toggleMenu para mantener coherencia
   toggleMenu() {
     this.menuAbierto = !this.menuAbierto;
   }
