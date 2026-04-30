@@ -62,7 +62,6 @@
                                             </div>
                                             <div class="art-details">
                                                 <strong>{{ getNombreArticulo(p.articuloId) }}</strong>
-                                                <span class="art-category">Patrimonio: {{ p.articuloId }}</span>
                                             </div>
                                         </div>
                                     </td>
@@ -95,13 +94,16 @@
 
                     <div class="footer-paginacion" *ngIf="prestamosFiltrados.length > 0">
                         <div class="pag-info">
-                            Mostrando <strong>{{ registrosPaginados.length }}</strong> de <strong>{{ prestamosFiltrados.length }}</strong> préstamos
+                            Mostrando <strong>{{ registrosPaginados.length }}</strong> de <strong>{{
+                                prestamosFiltrados.length }}</strong> préstamos
                         </div>
                         <div class="pag-botones">
-                            <button class="btn-pag-nav" [disabled]="paginaActual === 1" (click)="cambiarPagina(paginaActual - 1)">
+                            <button class="btn-pag-nav" [disabled]="paginaActual === 1"
+                                (click)="cambiarPagina(paginaActual - 1)">
                                 Anterior
                             </button>
-                            <button class="btn-pag-nav active" [disabled]="paginaActual === totalPaginas" (click)="cambiarPagina(paginaActual + 1)">
+                            <button class="btn-pag-nav active" [disabled]="paginaActual === totalPaginas"
+                                (click)="cambiarPagina(paginaActual + 1)">
                                 Siguiente
                             </button>
                         </div>
