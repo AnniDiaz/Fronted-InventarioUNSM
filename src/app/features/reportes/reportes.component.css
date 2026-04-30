@@ -1,105 +1,479 @@
+/* =========================================================
+   ESTILOS DE DASHBOARD DE REPORTES
+   ========================================================= */
 
-.titulo {
-  font-size: 27px;
-  font-weight: 600;
-  margin-bottom: 25px;
-  color: #151b25;
-  text-align: center;
+.report-dashboard {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 30px;
+  margin-top: 25px;
+  animation: fadeIn 0.4s ease-out;
 }
 
-/* ───────── BOTONES Y SELECT ───────── */
-.filtros {
+/* ───────── SIDEBAR DE FILTROS ───────── */
+.report-sidebar {
+  background: white;
+  border-radius: 24px;
+  padding: 30px;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
   display: flex;
-  gap: 15px;
-  margin-bottom: 25px;
-  flex-wrap: wrap;        /* se acomodan si la pantalla es chica */
-  align-items: center;
+  flex-direction: column;
+  gap: 25px;
+  height: fit-content;
 }
 
-.select-reporte {
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-  width: 240px;
-  outline: none;
+.sidebar-header h3 {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 4px;
 }
 
-.btn-generar {
-  background: #28a745;
-  color: white;
-  padding: 10px 18px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  font-weight: 500;
-  transition: 0.2s;
+.sidebar-header p {
+  font-size: 12px;
+  color: #94a3b8;
 }
 
-.btn-generar:hover {
-  background: #218838;
-  transform: scale(1.03);
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.btn-pdf {
-  background: #d9534f;
-  color: white;
-  padding: 10px 18px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  transition: 0.2s;
-  margin-left: auto;   /* 🔥 Esto lo envía a la derecha */
+.filter-group label {
+  font-size: 11px;
+  font-weight: 800;
+  color: #94a3b8;
+  letter-spacing: 0.5px;
 }
 
-.btn-pdf:hover {
-  background: #c9302c;
-  transform: scale(1.03);
-}
-/* ───────── GRÁFICO ───────── */
-.grafico-contenedor {
-  margin-top: 10px;
-  background: #fff;
-  padding: 10px;
+.custom-select {
+  background: #f8fafc;
+  border: 1px solid transparent;
+  padding: 12px 16px;
   border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(8, 8, 8, 0.08);
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
 
-  width: 850px;          /* ANCHO SUPER REDUCIDO */
-  margin-left: auto;
-  margin-right: auto;
+.custom-select:focus {
+  background: white;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
 
+.btn-reset {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: color 0.2s;
+  letter-spacing: 0.5px;
+}
+
+.btn-reset:hover {
+  color: #ef4444;
+}
+
+/* ───────── KPI CARDS ───────── */
+.report-main {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.kpi-card {
+  padding: 24px;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: white;
+  border: 1px solid #f1f5f9;
+}
+
+.kpi-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.kpi-value {
+  font-size: 28px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.color-verde { border-bottom: 4px solid #10b981; background: #f0fdf4; .kpi-label { color: #059669; } }
+.color-azul { border-bottom: 4px solid #3b82f6; background: #eff6ff; .kpi-label { color: #2563eb; } }
+.color-light-blue { border-bottom: 4px solid #06b6d4; background: #ecfeff; .kpi-label { color: #0891b2; } }
+.color-rojo { border-bottom: 4px solid #ef4444; background: #fef2f2; .kpi-label { color: #dc2626; } }
+.color-amarillo { border-bottom: 4px solid #f59e0b; background: #fffbeb; .kpi-label { color: #d97706; } }
+
+/* ───────── MAIN REPORT CARD ───────── */
+.report-data-card {
+  background: white;
+  border-radius: 24px;
+  padding: 30px;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+}
+
+.data-card-header {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
+  margin-bottom: 30px;
 }
 
-canvas {
-  width: 400px !important;    /* ancho del lienzo */
-  height: 245px !important;   /* alto del gráfico */
+.title-group h3 {
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 4px;
 }
 
+.title-group p {
+  font-size: 14px;
+  color: #94a3b8;
+}
 
-/* ───────── TABLA ───────── */
-.tabla-reportes {
+.view-toggle {
+  background: #f1f5f9;
+  padding: 4px;
+  border-radius: 12px;
+  display: flex;
+  gap: 4px;
+}
+
+.view-toggle button {
+  background: transparent;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.view-toggle button.active {
+  background: white;
+  color: #0f172a;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* ───────── TABLE STYLES ───────── */
+.tabla-clean {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 25px;
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  max-width: 800px;
-  margin-left: auto;
-  margin-right: auto;
 }
 
-.tabla-reportes th {
-  background: #f4f4f4;
-  padding: 10px;
+.tabla-clean th {
   text-align: left;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 800;
+  color: #94a3b8;
+  text-transform: uppercase;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #f1f5f9;
 }
 
-.tabla-reportes td {
-  padding: 10px;
-  border-bottom: 1px solid #e5e5e5;
+.tabla-clean td {
+  padding: 20px 0;
+  border-bottom: 1px solid #f8fafc;
+  font-size: 14px;
+  color: #1e293b;
+  vertical-align: middle;
+}
+
+.nombre-principal {
+  font-weight: 800;
+  color: #0f172a;
+}
+
+/* =========================================================
+   ESTILOS DE TABS (ESTILO PILL / MODERNO)
+   ========================================================= */
+
+::ng-deep .report-tabs-modern {
+  background: #f1f6fa;
+  padding: 6px;
+  border-radius: 50px;
+  margin: 20px 0;
+  display: block;
+}
+
+::ng-deep .report-tabs-modern .mat-mdc-tab-header {
+  border-bottom: none !important;
+}
+
+::ng-deep .report-tabs-modern .mat-mdc-tab-labels {
+  display: flex !important;
+  justify-content: space-around !important;
+}
+
+::ng-deep .report-tabs-modern .mdc-tab {
+  height: 44px !important;
+  flex: 1;
+  max-width: none !important;
+  border-radius: 40px;
+  transition: all 0.3s ease-out;
+  opacity: 1 !important;
+}
+
+/* Tab activo (el blanco con sombra) */
+::ng-deep .report-tabs-modern .mdc-tab--active {
+  background: white !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+::ng-deep .report-tabs-modern .mdc-tab__text-label {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  color: #94a3b8 !important; /* Gris para inactivos */
+  letter-spacing: 0.5px;
+}
+
+::ng-deep .report-tabs-modern .mdc-tab--active .mdc-tab__text-label {
+  color: #1e293b !important; /* Oscuro para activo */
+}
+
+/* Iconos de los tabs */
+.tab-icon {
+  font-size: 16px;
+  margin-bottom: 0 !important;
+}
+
+::ng-deep .report-tabs-modern .mat-mdc-tab-ink-bar {
+  display: none !important; /* Escondemos la línea púrpura/azul de Material */
+}
+
+/* Quitar ripple effect para que se vea más limpio */
+::ng-deep .report-tabs-modern .mat-mdc-tab-ripple {
+  display: none !important;
+}
+
+/* ───────── PERSONALIZACIÓN DATEPICKER ───────── */
+::ng-deep .custom-datepicker {
+  width: 100%;
+  margin-top: 5px;
+}
+
+::ng-deep .custom-datepicker .mat-mdc-text-field-wrapper {
+  background: #f8fafc !important;
+  border-radius: 12px !important;
+  padding: 0 12px !important;
+  transition: all 0.2s;
+}
+
+::ng-deep .custom-datepicker .mat-mdc-form-field-flex {
+  height: 48px !important;
+  align-items: center !important;
+}
+
+::ng-deep .custom-datepicker .mat-mdc-form-field-infix {
+  padding: 0 !important;
+  border-top: none !important;
+  display: flex;
+  align-items: center;
+}
+
+::ng-deep .custom-datepicker .mat-mdc-form-field-subscript-wrapper {
+  display: none !important;
+}
+
+::ng-deep .custom-datepicker .mdc-notched-outline {
+  display: none !important;
+}
+
+::ng-deep .custom-datepicker input {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  color: #1e293b !important;
+}
+
+::ng-deep .custom-datepicker .mat-mdc-datepicker-toggle {
+  color: #94a3b8 !important;
+}
+
+/* Hover effect similar to selects */
+::ng-deep .custom-datepicker:hover .mat-mdc-text-field-wrapper {
+  background: #f1f5f9 !important;
+}
+
+.nombre-sub {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.precio-fuerte {
+  font-weight: 800;
+  color: #0f172a;
+}
+
+/* ───────── EXPORT BANNER ───────── */
+.export-banner {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  border-radius: 24px;
+  padding: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+}
+
+.export-content h3 {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.export-content p {
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+.btn-export-dark {
+  background: white;
+  color: #0f172a;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.btn-export-dark:hover {
+  transform: translateY(-2px);
+}
+
+/* ───────── RESPONSIVE ───────── */
+@media (max-width: 1200px) {
+  .report-dashboard {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Reutilizando animaciones y badges de otros componentes si no son globales */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.badge-nuevo { background: #f0fdf4; color: #16a34a; }
+.badge-usado { background: #eff6ff; color: #2563eb; }
+.badge-danado { background: #fef2f2; color: #dc2626; }
+
+.sidebar-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.btn-generar-sidebar {
+  background: #0f172a;
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 1px;
+}
+
+.btn-generar-sidebar:hover {
+  background: #1e293b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.no-data-msg {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 20px;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.text-center { text-align: center; }
+
+.fa-spin {
+  animation: fa-spin 2s infinite linear;
+}
+
+@keyframes fa-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(359deg); }
+}
+
+.pagination-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid #f1f5f9;
+}
+
+::ng-deep .ngx-pagination {
+  margin-bottom: 0 !important;
+  padding-left: 0 !important;
+}
+
+::ng-deep .ngx-pagination li {
+  border-radius: 8px !important;
+  transition: all 0.2s !important;
+  font-weight: 700 !important;
+  color: #64748b !important;
+}
+
+::ng-deep .ngx-pagination .current {
+  background: #0f172a !important;
+  border-radius: 8px !important;
+  color: white !important;
+}
+
+::ng-deep .ngx-pagination a:hover {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+  text-decoration: none !important;
+  border-radius: 8px !important;
 }

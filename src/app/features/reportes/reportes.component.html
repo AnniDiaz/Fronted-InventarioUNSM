@@ -1,4 +1,5 @@
 <div class="container">
+
   <div class="barra-lateral">
     <app-sidebar></app-sidebar>
   </div>
@@ -7,56 +8,314 @@
     <app-header></app-header>
 
     <div class="contenido-principal">
+      <div class="card-inventario">
 
-      <!-- TÍTULO -->
-      <h2 class="titulo">Gestión de Reportes del Sistema</h2>
+        <div class="header-inventario">
+          <div class="textos-inventario" style="display: flex; align-items: center; gap: 16px;">
+            <div>
+              <h2 style="margin: 0;">Reportes</h2>
+              <p style="margin: 0;">Generación de reportes dinámicos del sistema de inventario.</p>
+            </div>
+          </div>
 
-      <!-- FILA DE OPCIONES -->
-      <div class="filtros">
-        <select [(ngModel)]="reporteSeleccionado" class="select-reporte">
-          <option value="" disabled selected>Seleccione un reporte</option>
-          <option value="articulos-ubicacion">Artículos por Ubicación</option>
-          <option value="articulos-tipo">Artículos por Tipo</option>
-        </select>
-
-        <button class="btn-generar" (click)="generarReporte()">
-          <i class="fa fa-chart-bar"></i> Generar Reporte
-        </button>
-
-        <!-- Botón PDF arriba -->
-        <button *ngIf="mostrarGrafico"
-                class="btn-pdf"
-                (click)="descargarPDF()">
-          <i class="fa fa-file-pdf"></i> Descargar PDF
-        </button>
-      </div>
-
-      <!-- CONTENIDO DEL REPORTE (sin scroll) -->
-      <div class="reportes-contenido">
-
-        <!-- GRÁFICO -->
-        <div class="grafico-contenedor" *ngIf="mostrarGrafico">
-          <canvas id="graficoReporte"></canvas>
+          <div class="acciones-top">
+            <button class="btn-generar" (click)="generarReporte()">
+              <i class="fa fa-sync-alt" [class.fa-spin]="loading"></i> Actualizar
+            </button>
+            <button class="btn-agregar-pill" (click)="descargarPDF()">
+              <i class="fa fa-file-pdf"></i> Exportar PDF
+            </button>
+          </div>
         </div>
 
-        <!-- TABLA -->
-        <table class="tabla-reportes" *ngIf="mostrarTabla">
-          <thead>
-            <tr>
-              <th>{{ columna1 }}</th>
-              <th>{{ columna2 }}</th>
-            </tr>
-          </thead>
+        <!-- TIPOS DE REPORTE (TABS) -->
+        <mat-tab-group class="report-tabs-modern" animationDuration="0ms" (selectedTabChange)="onTabChange($event)">
+          <mat-tab label="INVENTARIO GENERAL">
+            <ng-template mat-tab-label>
+              <i class="fa fa-box tab-icon"></i>
+              <span>INVENTARIO GENERAL</span>
+            </ng-template>
+          </mat-tab>
+          <mat-tab label="CONTROL DE PRÉSTAMOS">
+            <ng-template mat-tab-label>
+              <i class="fa fa-handshake tab-icon"></i>
+              <span>CONTROL DE PRÉSTAMOS</span>
+            </ng-template>
+          </mat-tab>
+          <mat-tab label="MANTENIMIENTO">
+            <ng-template mat-tab-label>
+              <i class="fa fa-wrench tab-icon"></i>
+              <span>MANTENIMIENTO</span>
+            </ng-template>
+          </mat-tab>
+          <mat-tab label="HISTORIAL TRASLADOS">
+            <ng-template mat-tab-label>
+              <i class="fa fa-exchange-alt tab-icon"></i>
+              <span>HISTORIAL TRASLADOS</span>
+            </ng-template>
+          </mat-tab>
+        </mat-tab-group>
 
-          <tbody>
-            <tr *ngFor="let item of tablaDatos">
-              <td>{{ item.label }}</td>
-              <td>{{ item.valor }}</td>
-            </tr>
-          </tbody>
-        </table>
+        <!-- DASHBOARD LAYOUT -->
+        <div class="report-dashboard">
+
+          <!-- SIDEBAR DE FILTROS -->
+          <aside class="report-sidebar">
+            <div class="sidebar-header">
+              <h3>Configuración</h3>
+              <p>Filtros aplicados al reporte actual</p>
+            </div>
+
+            <div class="filter-group">
+              <label>RANGO TEMPORAL</label>
+              <mat-form-field appearance="outline" class="custom-datepicker">
+                <mat-date-range-input [rangePicker]="picker">
+                  <input matStartDate placeholder="Inicio" [(ngModel)]="filtroFechaInicio" (dateChange)="generarReporte()">
+                  <input matEndDate placeholder="Fin" [(ngModel)]="filtroFechaFin" (dateChange)="generarReporte()">
+                </mat-date-range-input>
+                <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                <mat-date-range-picker #picker></mat-date-range-picker>
+              </mat-form-field>
+            </div>
+
+            <div class="filter-group" *ngIf="activeTab !== 3">
+              <label>UBICACIÓN</label>
+              <select class="custom-select" [(ngModel)]="filtroUbicacionId" (change)="generarReporte()">
+                <option [value]="0">Todas</option>
+                <option *ngFor="let u of ubicaciones" [value]="u.id">{{ u.nombre }}</option>
+              </select>
+            </div>
+
+            <ng-container *ngIf="activeTab === 3">
+              <div class="filter-group">
+                <label>UBICACIÓN ORIGEN</label>
+                <select class="custom-select" [(ngModel)]="filtroUbicacionOrigenId" (change)="generarReporte()">
+                  <option [value]="0">Todas</option>
+                  <option *ngFor="let u of ubicaciones" [value]="u.id">{{ u.nombre }}</option>
+                </select>
+              </div>
+              <div class="filter-group">
+                <label>UBICACIÓN DESTINO</label>
+                <select class="custom-select" [(ngModel)]="filtroUbicacionDestinoId" (change)="generarReporte()">
+                  <option [value]="0">Todas</option>
+                  <option *ngFor="let u of ubicaciones" [value]="u.id">{{ u.nombre }}</option>
+                </select>
+              </div>
+            </ng-container>
+
+            <div class="filter-group">
+              <label>CATEGORÍA</label>
+              <select class="custom-select" [(ngModel)]="filtroCategoriaId" (change)="generarReporte()">
+                <option [value]="0">Todas</option>
+                <option *ngFor="let t of tipos" [value]="t.id">{{ t.nombre }}</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label>ESTADO DE ACTIVOS</label>
+              <select class="custom-select" [(ngModel)]="filtroEstado" (change)="generarReporte()">
+                <option value="Todos">Todos</option>
+                <option value="Nuevo">Nuevo</option>
+                <option value="Usado">Usado</option>
+                <option value="Dañado">Dañado</option>
+              </select>
+            </div>
+
+            <div class="sidebar-actions">
+              <button class="btn-generar-sidebar" (click)="generarReporte()">GENERAR REPORTE</button>
+              <button class="btn-reset" (click)="reiniciarFiltros()">REINICIAR FILTROS</button>
+            </div>
+          </aside>
+
+          <!-- CONTENIDO PRINCIPAL -->
+          <main class="report-main">
+
+            <!-- TARJETAS DE RESUMEN DINÁMICAS -->
+            <div class="kpi-grid">
+              <div class="kpi-card" *ngFor="let kpi of kpis; let i = index" 
+                   [ngClass]="i === 0 ? 'color-verde' : (i === 1 ? 'color-azul' : 'color-light-blue')">
+                <span class="kpi-label">{{ kpi.label }}</span>
+                <h2 class="kpi-value">{{ kpi.value }}</h2>
+              </div>
+              <div *ngIf="kpis.length === 0" class="no-data-msg">Cargando indicadores...</div>
+            </div>
+
+            <!-- CARD PRINCIPAL: GRÁFICO / TABLA -->
+            <div class="report-data-card">
+              <div class="data-card-header">
+                <div class="title-group">
+                  <h3 [ngSwitch]="activeTab">
+                    <span *ngSwitchCase="0">Análisis de Inventario</span>
+                    <span *ngSwitchCase="1">Estado de Préstamos</span>
+                    <span *ngSwitchCase="2">Costos de Mantenimiento</span>
+                    <span *ngSwitchCase="3">Movimientos de Traslados</span>
+                  </h3>
+                  <p>Basado en los filtros seleccionados</p>
+                </div>
+                <div class="view-toggle">
+                  <button [class.active]="viewMode === 'visual'" (click)="viewMode = 'visual'">VISUAL</button>
+                  <button [class.active]="viewMode === 'tabla'" (click)="viewMode = 'tabla'">TABLA</button>
+                </div>
+              </div>
+
+              <div class="data-content">
+                <div [hidden]="viewMode !== 'visual'" class="visual-container">
+                  <canvas id="graficoReporte"></canvas>
+                </div>
+
+                <div [hidden]="viewMode !== 'tabla'" class="table-container">
+                  <table class="tabla-clean">
+                    <thead>
+                      <tr *ngIf="activeTab === 0">
+                        <th>ARTÍCULO</th>
+                        <th>UBICACIÓN</th>
+                        <th>ESTADO</th>
+                        <th class="text-right">VALOR</th>
+                      </tr>
+                      <tr *ngIf="activeTab === 1">
+                        <th>ARTÍCULO</th>
+                        <th>SOLICITANTE</th>
+                        <th>FECHA</th>
+                        <th class="text-right">ESTADO</th>
+                      </tr>
+                      <tr *ngIf="activeTab === 2">
+                        <th>ARTÍCULO</th>
+                        <th>PROVEEDOR</th>
+                        <th>COSTO</th>
+                        <th class="text-right">ESTADO</th>
+                      </tr>
+                      <tr *ngIf="activeTab === 3">
+                        <th>ARTÍCULO</th>
+                        <th>ORIGEN</th>
+                        <th>DESTINO</th>
+                        <th class="text-right">FECHA</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let item of tablaDatos | paginate: { itemsPerPage: 5, currentPage: p }">
+                        <!-- Tab 0: Inventario -->
+                        <ng-container *ngIf="activeTab === 0">
+                          <td><div class="nombre-principal">{{item.nombreArticulo}}</div><div class="nombre-sub">ID: {{item.id}}</div></td>
+                          <td>{{item.ubicacion}}</td>
+                          <td><span class="badge" [ngClass]="item.estado === 'Nuevo' ? 'badge-nuevo' : 'badge-usado'">{{item.estado}}</span></td>
+                          <td class="text-right"><span class="precio-fuerte">S/ {{item.valor}}</span></td>
+                        </ng-container>
+
+                        <!-- Tab 1: Prestamos -->
+                        <ng-container *ngIf="activeTab === 1">
+                          <td>{{item.nombreArticulo}}</td>
+                          <td>{{item.solicitante}}</td>
+                          <td>{{item.fecha}}</td>
+                          <td class="text-right"><span class="badge" [ngClass]="item.estado === 'Activo' ? 'badge-nuevo' : 'badge-usado'">{{item.estado}}</span></td>
+                        </ng-container>
+
+                        <!-- Tab 2: Mantenimiento -->
+                        <ng-container *ngIf="activeTab === 2">
+                          <td>{{item.nombreArticulo}}</td>
+                          <td>{{item.proveedor}}</td>
+                          <td>S/ {{item.costo}}</td>
+                          <td class="text-right"><span class="badge" [ngClass]="item.estado === 'Pendiente' ? 'badge-danado' : 'badge-nuevo'">{{item.estado}}</span></td>
+                        </ng-container>
+
+                        <!-- Tab 3: Traslados -->
+                        <ng-container *ngIf="activeTab === 3">
+                          <td>{{item.nombreArticulo}}</td>
+                          <td>{{item.origen}}</td>
+                          <td>{{item.destino}}</td>
+                          <td class="text-right">{{item.fecha}}</td>
+                        </ng-container>
+                      </tr>
+                      <tr *ngIf="tablaDatos.length === 0">
+                        <td colspan="5" class="text-center">No se encontraron datos para este reporte.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  <div class="pagination-wrapper" *ngIf="tablaDatos.length > 5">
+                    <pagination-controls 
+                      (pageChange)="p = $event"
+                      previousLabel="Anterior"
+                      nextLabel="Siguiente"
+                      screenReaderPaginationLabel="Paginación"
+                      screenReaderPageLabel="página"
+                      screenReaderCurrentLabel="página actual">
+                    </pagination-controls>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- TABLA OCULTA PARA EXPORTACIÓN (SIN PAGINACIÓN) -->
+            <div id="tablaCompletaPDF" style="position: absolute; left: -9999px; top: -9999px; width: 1000px; background: white;">
+              <h3 style="padding: 20px; color: #0f172a; border-bottom: 2px solid #f1f5f9;">DETALLE COMPLETO</h3>
+              <table class="tabla-clean" style="width: 100%;">
+                <thead>
+                  <tr *ngIf="activeTab === 0">
+                    <th>ARTÍCULO</th>
+                    <th>UBICACIÓN</th>
+                    <th>ESTADO</th>
+                    <th style="text-align: right;">VALOR</th>
+                  </tr>
+                  <tr *ngIf="activeTab === 1">
+                    <th>ARTÍCULO</th>
+                    <th>SOLICITANTE</th>
+                    <th>FECHA</th>
+                    <th style="text-align: right;">ESTADO</th>
+                  </tr>
+                  <tr *ngIf="activeTab === 2">
+                    <th>ARTÍCULO</th>
+                    <th>PROVEEDOR</th>
+                    <th>COSTO</th>
+                    <th style="text-align: right;">ESTADO</th>
+                  </tr>
+                  <tr *ngIf="activeTab === 3">
+                    <th>ARTÍCULO</th>
+                    <th>ORIGEN</th>
+                    <th>DESTINO</th>
+                    <th style="text-align: right;">FECHA</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of tablaDatos">
+                    <!-- Tab 0: Inventario -->
+                    <ng-container *ngIf="activeTab === 0">
+                      <td>{{item.nombreArticulo}}</td>
+                      <td>{{item.ubicacion}}</td>
+                      <td>{{item.estado}}</td>
+                      <td style="text-align: right;">S/ {{item.valor}}</td>
+                    </ng-container>
+
+                    <!-- Tab 1: Prestamos -->
+                    <ng-container *ngIf="activeTab === 1">
+                      <td>{{item.nombreArticulo}}</td>
+                      <td>{{item.solicitante}}</td>
+                      <td>{{item.fecha}}</td>
+                      <td style="text-align: right;">{{item.estado}}</td>
+                    </ng-container>
+
+                    <!-- Tab 2: Mantenimiento -->
+                    <ng-container *ngIf="activeTab === 2">
+                      <td>{{item.nombreArticulo}}</td>
+                      <td>{{item.proveedor}}</td>
+                      <td>S/ {{item.costo}}</td>
+                      <td style="text-align: right;">{{item.estado}}</td>
+                    </ng-container>
+
+                    <!-- Tab 3: Traslados -->
+                    <ng-container *ngIf="activeTab === 3">
+                      <td>{{item.nombreArticulo}}</td>
+                      <td>{{item.origen}}</td>
+                      <td>{{item.destino}}</td>
+                      <td style="text-align: right;">{{item.fecha}}</td>
+                    </ng-container>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </main>
+        </div>
       </div>
-
-
+    </div>
   </div>
 </div>

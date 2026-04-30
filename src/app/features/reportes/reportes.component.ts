@@ -1,155 +1,269 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import Chart from 'chart.js/auto';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatIconModule } from '@angular/material/icon';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { provideNativeDateAdapter } from '@angular/material/core';
+import { NgxPaginationModule } from 'ngx-pagination';
 
 import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
 import { HeaderComponent } from '../../shared/components/header/header.component';
-import { ReportesService } from '../../core/services/reportes.service';
+import { ReportesService, ReporteRequest } from '../../core/services/reportes.service';
+import { TipoArticuloService } from '../../core/services/tipo-articulos.service';
+import { UbicacionService } from '../../core/services/ubicacion.service';
 
 @Component({
   selector: 'app-reportes',
-  imports: [CommonModule, FormsModule, SidebarComponent, HeaderComponent],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    SidebarComponent, 
+    HeaderComponent, 
+    MatTabsModule, 
+    MatIconModule,
+    MatDatepickerModule,
+    MatFormFieldModule,
+    MatInputModule,
+    NgxPaginationModule
+  ],
+  providers: [provideNativeDateAdapter()],
   templateUrl: './reportes.component.html',
   styleUrls: ['./reportes.component.css']
 })
-export class ReportesComponent {
-  reporteSeleccionado: string = '';
+export class ReportesComponent implements OnInit {
+  menuAbierto = false;
+  viewMode: 'visual' | 'tabla' = 'visual';
+  activeTab: number = 0;
+  p: number = 1; // Página actual para paginación
 
-  mostrarGrafico = false;
-  mostrarTabla = false;
+  // Filtros
+  filtroFechaInicio: Date | null = null;
+  filtroFechaFin: Date | null = null;
+  filtroUbicacionId: number = 0;
+  filtroUbicacionOrigenId: number = 0;
+  filtroUbicacionDestinoId: number = 0;
+  filtroCategoriaId: number = 0;
+  filtroEstado: string = 'Todos';
 
-  columna1 = '';
-  columna2 = '';
+  tipos: any[] = [];
+  ubicaciones: any[] = [];
 
+  // Datos recibidos
+  kpis: any[] = [];
   tablaDatos: any[] = [];
-
+  columnasTabla: string[] = [];
+  
   chart: any;
+  loading: boolean = false;
 
-  constructor(private reportesService: ReportesService) {}
+  constructor(
+    private reportesService: ReportesService,
+    private tipoService: TipoArticuloService,
+    private ubicService: UbicacionService
+  ) { }
+
+  ngOnInit(): void {
+    this.cargarTipos();
+    this.cargarUbicaciones();
+    this.generarReporte(); // Cargar inicial
+  }
+
+  cargarTipos() {
+    this.tipoService.getTipoArticulos().subscribe((res: any) => {
+      this.tipos = Array.isArray(res) ? res : res?.data ?? [];
+    });
+  }
+
+  cargarUbicaciones() {
+    this.ubicService.getUbicaciones().subscribe((res: any) => {
+      this.ubicaciones = Array.isArray(res) ? res : res?.data ?? [];
+    });
+  }
+
+  onTabChange(event: any) {
+    this.activeTab = event.index;
+    this.reiniciarFiltros(); // Resetear filtros al cambiar de pestaña
+  }
 
   generarReporte() {
-    if (!this.reporteSeleccionado) return;
+    // Si se está seleccionando un rango, esperar a que ambas fechas estén presentes
+    if (this.filtroFechaInicio && !this.filtroFechaFin) return;
 
+    this.loading = true;
+    this.p = 1; // Resetear página al filtrar
+    const request: ReporteRequest = {
+      tipo: this.activeTab,
+      fechaInicio: this.filtroFechaInicio?.toISOString(),
+      fechaFin: this.filtroFechaFin?.toISOString(),
+      ubicacionId: this.filtroUbicacionId > 0 ? this.filtroUbicacionId : undefined,
+      ubicacionOrigenId: this.filtroUbicacionOrigenId > 0 ? this.filtroUbicacionOrigenId : undefined,
+      ubicacionDestinoId: this.filtroUbicacionDestinoId > 0 ? this.filtroUbicacionDestinoId : undefined,
+      categoriaId: this.filtroCategoriaId > 0 ? this.filtroCategoriaId : undefined,
+      estado: this.filtroEstado
+    };
+
+    console.log("Enviando filtros al backend:", request);
+
+    this.reportesService.generarReporte(request).subscribe({
+      next: (res) => {
+        console.log("Datos recibidos del backend:", res);
+        this.kpis = res.kpis;
+        this.tablaDatos = res.tabla;
+        this.renderChart(res.grafico.labels, res.grafico.valores);
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error("Error al generar reporte", err);
+        this.loading = false;
+      }
+    });
+  }
+
+  renderChart(labels: string[], valores: number[]) {
     if (this.chart) this.chart.destroy();
 
-    if (this.reporteSeleccionado === 'articulos-ubicacion') {
-      this.cargarArticulosPorUbicacion();
-    } else if (this.reporteSeleccionado === 'articulos-tipo') {
-      this.cargarArticulosPorTipo();
-    }
-  }
-
-  cargarArticulosPorUbicacion() {
-    this.reportesService.getArticulosPorUbicacion().subscribe(data => {
-      const labels = data.map((d: any) => d.ubicacion);
-      const valores = data.map((d: any) => d.cantidad);
-
-      this.tablaDatos = data.map((d: any) => ({
-        label: d.ubicacion,
-        valor: d.cantidad
-      }));
-
-      this.columna1 = "Ubicación";
-      this.columna2 = "Cantidad";
-
-      this.renderChart(labels, valores);
-    });
-  }
-
-  cargarArticulosPorTipo() {
-    this.reportesService.getArticulosPorTipo().subscribe(data => {
-      const labels = data.map((d: any) => d.tipo);
-      const valores = data.map((d: any) => d.cantidad);
-
-      this.tablaDatos = data.map((d: any) => ({
-        label: d.tipo,
-        valor: d.cantidad
-      }));
-
-      this.columna1 = "Tipo de Artículo";
-      this.columna2 = "Cantidad";
-
-      this.renderChart(labels, valores);
-    });
-  }
-
-  renderChart(labels: any[], valores: any[]) {
-    this.mostrarGrafico = true;
-    this.mostrarTabla = true;
-setTimeout(() => {
-  this.renderChart(labels, valores);
-}, 0);
     const ctx = document.getElementById('graficoReporte') as HTMLCanvasElement;
+    if (!ctx) return;
 
     this.chart = new Chart(ctx, {
       type: 'bar',
       data: {
         labels: labels,
         datasets: [{
-          label: 'Cantidad',
+          label: 'Métricas del Reporte',
           data: valores,
-          backgroundColor: '#28a745cc',
-          borderColor: '#1e7e34',
-          borderWidth: 2
+          backgroundColor: [
+            'rgba(59, 130, 246, 0.8)',
+            'rgba(16, 185, 129, 0.8)',
+            'rgba(245, 158, 11, 0.8)',
+            'rgba(239, 68, 68, 0.8)',
+            'rgba(139, 92, 246, 0.8)'
+          ],
+          borderRadius: 8,
+          borderWidth: 0
         }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          y: { beginAtZero: true, grid: { display: false } },
+          x: { grid: { display: false } }
+        }
       }
     });
   }
 
+  reiniciarFiltros() {
+    this.filtroFechaInicio = null;
+    this.filtroFechaFin = null;
+    this.filtroUbicacionId = 0;
+    this.filtroUbicacionOrigenId = 0;
+    this.filtroUbicacionDestinoId = 0;
+    this.filtroCategoriaId = 0;
+    this.filtroEstado = 'Todos';
+    this.generarReporte();
+  }
+
   descargarPDF() {
-  const grafico: any = document.getElementById('graficoReporte');
-  const tabla: any = document.querySelector('.tabla-reportes');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    let currentY = 20;
 
-  if (!grafico || !tabla) return;
+    // 1. Encabezado con Logos
+    const logoUni = 'assets/logo_unsm.png'; // Asegúrate de que las rutas sean correctas
+    const logoFacu = 'assets/logo_fisi.png';
+    
+    pdf.addImage(logoUni, 'PNG', 15, 10, 20, 20);
+    pdf.addImage(logoFacu, 'PNG', pageWidth - 35, 10, 20, 20);
 
-  html2canvas(grafico).then(canvasGrafico => {
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(18);
+    const titulos = ['INVENTARIO GENERAL', 'CONTROL DE PRÉSTAMOS', 'MANTENIMIENTO', 'HISTORIAL DE TRASLADOS'];
+    pdf.text(titulos[this.activeTab], pageWidth / 2, 22, { align: 'center' });
+    
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('Sistema de Gestión de Inventario - UNSM', pageWidth / 2, 28, { align: 'center' });
 
-    html2canvas(tabla).then(canvasTabla => {
+    currentY = 45;
 
-      const pdf = new jsPDF('p', 'mm', 'a4');
+    // 2. Leyenda de Filtros
+    pdf.setDrawColor(200, 200, 200);
+    pdf.line(15, currentY - 5, pageWidth - 15, currentY - 5);
+    
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(11);
+    pdf.text('FILTROS APLICADOS:', 15, currentY);
+    
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(9);
+    let filtrosText = `Fecha: ${this.filtroFechaInicio?.toLocaleDateString() || 'Inicio'} - ${this.filtroFechaFin?.toLocaleDateString() || 'Fin'} | `;
+    filtrosText += `Estado: ${this.filtroEstado} | `;
+    filtrosText += `Categoría: ${this.filtroCategoriaId > 0 ? 'Filtrada' : 'Todas'}`;
+    
+    pdf.text(filtrosText, 15, currentY + 5);
+    currentY += 15;
 
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const margin = 15;
-      const fullWidth = pageWidth - margin * 2;
+    // 3. Captura de KPIs, Gráfico y Tabla
+    const kpiElement = document.querySelector('.kpi-grid') as HTMLElement;
+    const chartElement = document.querySelector('.visual-container') as HTMLElement;
+    const tableElement = document.getElementById('tablaCompletaPDF') as HTMLElement;
 
-      // Logos
-      const logoUni = '/assets/logo_unsm.png';
-      const logoFacu = '/assets/logo_fisi.png';
+    const captureAndAdd = async (el: HTMLElement, y: number, width: number) => {
+      if (!el) return y;
+      
+      // Guardar estado original de visibilidad
+      const wasHidden = el.parentElement?.hasAttribute('hidden') || el.hasAttribute('hidden');
+      if (wasHidden) {
+        if (el.parentElement) el.parentElement.removeAttribute('hidden');
+        el.removeAttribute('hidden');
+      }
 
-      // Header
-      pdf.addImage(logoUni, 'PNG', margin, 10, 25, 25);
-      pdf.addImage(logoFacu, 'PNG', pageWidth - margin - 25, 10, 25, 25);
+      const canvas = await html2canvas(el, { 
+        scale: 2,
+        useCORS: true,
+        logging: false
+      });
 
-      // Título
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(16);
-      pdf.text('Reporte del Sistema de Inventario', pageWidth / 2, 25, { align: 'center' });
+      // Restaurar estado original
+      if (wasHidden && el.parentElement) {
+        el.parentElement.setAttribute('hidden', 'true');
+      }
 
-      // --- Insertar gráfico ---
-      const imgGraficoData = canvasGrafico.toDataURL('image/png');
-      const graficoHeight = (canvasGrafico.height * fullWidth) / canvasGrafico.width;
-
-      let y = 45;
-      pdf.addImage(imgGraficoData, 'PNG', margin, y, fullWidth, graficoHeight);
-
-      // --- Insertar tabla ---
-      y += graficoHeight + 10;
-
-      const imgTablaData = canvasTabla.toDataURL('image/png');
-      const tablaHeight = (canvasTabla.height * fullWidth) / canvasTabla.width;
-
-      if (y + tablaHeight > pdf.internal.pageSize.getHeight() - 15) {
+      const imgData = canvas.toDataURL('image/png');
+      const imgHeight = (canvas.height * width) / canvas.width;
+      
+      // Verificar si cabe en la página
+      if (y + imgHeight > 280) {
         pdf.addPage();
         y = 20;
       }
+      
+      pdf.addImage(imgData, 'PNG', (pageWidth - width) / 2, y, width, imgHeight);
+      return y + imgHeight + 10;
+    };
 
-      pdf.addImage(imgTablaData, 'PNG', margin, y, fullWidth, tablaHeight);
+    const runExport = async () => {
+      currentY = await captureAndAdd(kpiElement, currentY, 180);
+      
+      if (this.viewMode === 'visual') {
+        currentY = await captureAndAdd(chartElement, currentY, 160);
+      }
+      
+      currentY = await captureAndAdd(tableElement, currentY, 180);
+      
+      pdf.save(`Reporte_${titulos[this.activeTab].replace(' ', '_')}_${new Date().getTime()}.pdf`);
+    };
 
-      pdf.save('reporte.pdf');
-    });
-  });
-}
+    runExport();
+  }
 }
