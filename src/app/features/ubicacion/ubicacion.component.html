@@ -74,7 +74,29 @@
                     </option>
                   </select>
                 </div>
+<div class="form-group-full">
+  <label>Piso</label>
+  <input type="number"
+         [(ngModel)]="nuevaUbicacion.piso"
+         name="piso"
+         placeholder="Ej: 1, 2, 3..."
+         required>
+</div>
 
+<div class="form-group-full">
+  <label>Ubicación Padre</label>
+
+  <select [(ngModel)]="nuevaUbicacion.padreId" name="padreId">
+
+    <option [ngValue]="null">Sin padre</option>
+
+    <!-- SOLO FACULTAD DEL USUARIO -->
+    <option *ngIf="facultadUsuario" [ngValue]="facultadUsuario.id">
+      {{ facultadUsuario.nombre }}
+    </option>
+
+  </select>
+</div>
                 <div class="modal-footer-modern">
                   <button type="submit" class="btn-guardar-md" [disabled]="ubicacionForm.invalid">
                     {{ editando ? 'Actualizar' : 'Guardar' }}
@@ -100,14 +122,22 @@
                   <i class="fa fa-ellipsis-v"></i>
                 </button>
 
-                <div class="options-menu" *ngIf="menuAbiertoId === u.id">
-                  <button class="op-edit" (click)="editarUbicacion(u)">
-                    <i class="fa fa-pen"></i> Editar
-                  </button>
-                  <button class="op-delete" (click)="eliminarUbicacion(u.id)">
-                    <i class="fa fa-trash"></i> Eliminar
-                  </button>
-                </div>
+               <div class="options-menu" *ngIf="menuAbiertoId === u.id">
+
+  <button class="op-edit" (click)="editarUbicacion(u)">
+    <i class="fa fa-pen"></i> Editar
+  </button>
+
+  <button class="op-delete" (click)="eliminarUbicacion(u.id)">
+    <i class="fa fa-trash"></i> Eliminar
+  </button>
+
+  <!-- 🔥 NUEVO BOTÓN -->
+  <button class="op-assign" (click)="asignarUsuario(u)">
+    <i class="fa fa-user-plus"></i> Asignar usuario
+  </button>
+
+</div>
               </div>
             </div>
 
@@ -150,5 +180,47 @@
 
       </div>
     </div>
+  </div>
+</div>
+
+
+<!-- MODAL ASIGNAR USUARIO -->
+<div class="modal-overlay" *ngIf="mostrarModalUsuario">
+  <div class="modal-modern">
+
+    <div class="modal-header">
+      <h3>Asignar Usuario</h3>
+      <button class="btn-cerrar" (click)="cerrarModalUsuario()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+
+      <p style="margin-bottom:10px;">
+        Ubicación: <b>{{ ubicacionSeleccionada?.nombre }}</b>
+      </p>
+
+      <label>Seleccionar usuario</label>
+<select [(ngModel)]="usuarioSeleccionadoId">
+  <option [ngValue]="0">-- Seleccione usuario --</option>
+
+  <option *ngFor="let u of usuarios" [ngValue]="u.id">
+    {{ u.nombre }} {{ u.apellido }}
+  </option>
+</select>
+
+    </div>
+
+    <div class="modal-footer-modern1">
+
+      <button class="btn-guardar-md" (click)="guardarAsignacionUsuario()">
+        Asignar
+      </button>
+
+      <button class="btn-cancelar-md" (click)="cerrarModalUsuario()">
+        Cancelar
+      </button>
+
+    </div>
+
   </div>
 </div>

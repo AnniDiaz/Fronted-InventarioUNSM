@@ -1,12 +1,18 @@
 <div class="sidebar">
-  <div class="cont-logo">
-    <img src="/assets/logo_fisi.png" alt="Logo">
-    <div class="cont-text">
-      <h1>FISI</h1>
-      <p>Facultad de Ingenieria de sistemas e informatica</p>
-    </div>
+<div class="cont-logo">
+
+
+<div class="cont-text">
+ <img
+      *ngIf="ubicacionLogo"
+      [src]="ubicacionLogo"
+      alt="Ubicación logo"
+      class="ubicacion-logo"
+    >
+    <p>{{ ubicacionNombre }}</p>
   </div>
 
+</div>
   <ul>
     <!-- Módulos dinámicos -->
     <li *ngFor="let mod of modulos">

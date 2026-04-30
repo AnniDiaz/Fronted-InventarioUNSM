@@ -370,7 +370,7 @@
   background: #ffffff;
   border-radius: 16px;
   width: 500px;
-  max-width: 95%;
+  max-width: 100%;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
   animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
@@ -392,7 +392,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24px 32px;
+  padding: 18px 32px;
   background: #f8fafc;
   border-bottom: 1px solid #f1f5f9;
 }
@@ -422,7 +422,6 @@
   max-height: 75vh;
   overflow-y: auto;
   margin-top: -40px !important;
-  overflow-x: hidden;
 }
 
 .form-ubicacion {
@@ -441,7 +440,7 @@
   font-size: 13px;
   font-weight: 700;
   color: #475569;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .form-group-full input,
@@ -475,7 +474,15 @@
   display: flex;
   justify-content: flex-end;
   gap: 16px;
-  margin-top: 10px;
+}
+
+.modal-footer-modern1 {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: -16px;
+  padding-right: 30px;
+  padding-bottom: 20px;
 }
 .page-container {
   display: flex;
@@ -540,4 +547,43 @@
     padding-top: 8px;
     margin-top: 4px;
   }
+}
+.card-image {
+  width: 100%;
+  height: 140px;
+  overflow: hidden;
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+
+.card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.op-assign {
+  color: #2563eb;
+}
+
+.op-assign:hover {
+  background: rgba(37, 99, 235, 0.1);
+}
+
+
+/* SELECT */
+.modal-body select {
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  font-size: 14px;
+  outline: none;
+  background: #fff;
+  transition: 0.2s;
+}
+
+.modal-body select:focus {
+  border-color: #00a468;
+  box-shadow: 0 0 0 3px rgba(0, 164, 104, 0.15);
 }

@@ -234,7 +234,8 @@
 .form-grid-modern {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
+  column-gap: 24px;  /* horizontal */
+  row-gap: 1px;     /* vertical (menos espacio entre filas) */
 }
 
 .form-group label {
@@ -262,7 +263,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 15px;
-  margin-top: 25px;
+  margin-top: 8px;
 }
 
 .btn-guardar-md {

@@ -25,10 +25,9 @@ export class ArticuloTipoArticuloComponent implements OnInit {
   tipoArticuloId!: number;
   nombreTipoArticulo: string = '';
   encabezados: string[] = [];
-
+ubicacionUsuarioId!: number;
   camposDefinidos: { id: number, nombreCampo: string, tipoDato: string, tipoArticuloId: number }[] = [];
-  ubicaciones: { id: number, nombre: string }[] = [];
-
+ubicaciones: any[] = [];
   mostrarFormulario = false;
   modoFormulario: 'crear' | 'editar' = 'crear';
   formulario: any = {};
@@ -39,6 +38,7 @@ columnaAlias: Record<string, string> = {
   QRCodeBase64: 'QR',
   CodigoPatrimonial: 'Código',
   Nombre: 'Nombre',
+
   FechaAdquision: 'Fecha',
   ValorAdquisitivo: 'Valor',
   Condicion: 'Condición',
@@ -55,28 +55,35 @@ columnaAlias: Record<string, string> = {
     private ubicacionService: UbicacionService
   ) {}
 
-  ngOnInit(): void {
-    this.tipoArticuloId = Number(this.route.snapshot.paramMap.get('id'));
-    this.cargarArticulos(this.tipoArticuloId);
-    this.cargarUbicaciones();
-this.tipoArticuloService.getTipoArticuloById(this.tipoArticuloId).subscribe({
-  next: (response: any) => {
+async ngOnInit(): Promise<void> {
+  this.tipoArticuloId = Number(this.route.snapshot.paramMap.get('id'));
 
-const data = response?.data;
+  const usuario = JSON.parse(localStorage.getItem('user') || 'null');
+  this.ubicacionUsuarioId = usuario?.data?.ubicacionId ?? 0;
 
-const tipo = Array.isArray(data)
-  ? data.find((x: any) => Number(x.id) === Number(this.tipoArticuloId))
-  : data && Number(data.id) === Number(this.tipoArticuloId)
-    ? data
-    : null;
+  // 1️⃣ primero ubicaciones
+  await this.cargarUbicaciones();
 
-    this.nombreTipoArticulo = tipo?.nombre ?? `Tipo ID ${this.tipoArticuloId}`;
-  },
-  error: () => {
-    this.nombreTipoArticulo = `Tipo ID ${this.tipoArticuloId}`;
-  }
-});
-  }
+  // 2️⃣ luego artículos (ya con data lista)
+  this.cargarArticulos(this.tipoArticuloId);
+
+  this.tipoArticuloService.getTipoArticuloById(this.tipoArticuloId).subscribe({
+    next: (response: any) => {
+      const data = response?.data;
+
+      const tipo = Array.isArray(data)
+        ? data.find((x: any) => Number(x.id) === Number(this.tipoArticuloId))
+        : data && Number(data.id) === Number(this.tipoArticuloId)
+          ? data
+          : null;
+
+      this.nombreTipoArticulo = tipo?.nombre ?? `Tipo ID ${this.tipoArticuloId}`;
+    },
+    error: () => {
+      this.nombreTipoArticulo = `Tipo ID ${this.tipoArticuloId}`;
+    }
+  });
+}
 get safeEncabezados(): string[] {
   return Array.isArray(this.encabezados)
     ? this.encabezados
@@ -99,7 +106,6 @@ cargarArticulos(id: number) {
 
       const dataRaw = res?.data;
 
-      // 🔥 FORZAR ARRAY SIEMPRE
       const data = Array.isArray(dataRaw)
         ? dataRaw
         : dataRaw
@@ -113,21 +119,30 @@ cargarArticulos(id: number) {
         return;
       }
 
-      const cleanedData = data.map((item: any) => {
-        const newItem: any = {};
-        Object.keys(item || {}).forEach(k => {
-          newItem[k.trim()] = item[k];
-        });
-        return newItem;
+      // 🔥 si no hay usuario válido → mostrar todo (IMPORTANTE)
+      if (!this.ubicacionUsuarioId || this.ubicacionUsuarioId <= 0) {
+        const cleaned = this.limpiar(data);
+        this.setData(cleaned);
+        return;
+      }
+
+      // 🔥 jerarquía segura
+      const ubicacionesHijas = this.getHijosRecursivo(Number(this.ubicacionUsuarioId));
+
+      const idsPermitidos = new Set<number>([
+        Number(this.ubicacionUsuarioId),
+        ...ubicacionesHijas
+      ]);
+
+      const filtrados = data.filter((item: any) => {
+        const id = Number(item?.UbicacionId ?? 0);
+        return idsPermitidos.has(id);
       });
 
-      // 🔥 ENCABEZADOS SIEMPRE ARRAY
-      this.encabezados = Object.keys(cleanedData[0] || {});
-
-      // 🔥 FORZAR ARRAYS
-      this.articulos = [...cleanedData];
-      this.articulosFiltrados = [...cleanedData];
+      const cleaned = this.limpiar(filtrados);
+      this.setData(cleaned);
     },
+
     error: (err) => {
       console.error('Error al obtener artículos pivot', err);
       this.articulos = [];
@@ -135,6 +150,34 @@ cargarArticulos(id: number) {
       this.encabezados = [];
     }
   });
+}
+limpiar(data: any[]) {
+  return data.map((item: any) => {
+    const newItem: any = {};
+    Object.keys(item || {}).forEach(k => {
+      newItem[k.trim()] = item[k];
+    });
+    return newItem;
+  });
+}
+setData(cleanedData: any[]) {
+  this.encabezados = Object.keys(cleanedData[0] || {});
+  this.articulos = [...cleanedData];
+  this.articulosFiltrados = [...cleanedData];
+}
+getHijosRecursivo(id: number, visitados = new Set<number>()): number[] {
+  if (!id || visitados.has(id)) return [];
+
+  visitados.add(id);
+
+  const hijos = this.ubicaciones
+    .filter(u => Number(u.PadreId) === Number(id))
+    .map(u => Number(u.id));
+
+  return [
+    ...hijos,
+    ...hijos.flatMap(h => this.getHijosRecursivo(h, visitados))
+  ];
 }
   aplicarFiltro() {
     if (!this.filtro.trim()) {
@@ -294,25 +337,27 @@ guardarArticulo() {
     };
     reader.readAsDataURL(file);
   }
-cargarUbicaciones() {
-  this.ubicacionService.getUbicaciones().subscribe({
-    next: (res: any) => {
+async cargarUbicaciones(): Promise<void> {
+  return new Promise((resolve) => {
+    this.ubicacionService.getUbicaciones().subscribe({
+      next: (res: any) => {
 
-      const raw = res?.data?.data ?? res?.data ?? res;
+        const raw = res?.data?.data ?? res?.data ?? res;
+        const lista = Array.isArray(raw) ? raw : [];
 
-      const lista = Array.isArray(raw) ? raw : [];
+        this.ubicaciones = lista.map((u: any) => ({
+          id: Number(u.id ?? u.Id),
+          nombre: u.nombre ?? u.Nombre,
+          PadreId: Number(u.PadreId ?? u.padreId ?? 0)
+        }));
 
-      this.ubicaciones = lista.map((u: any) => ({
-        id: u.id ?? u.Id,
-        nombre: u.nombre ?? u.Nombre
-      }));
-
-      console.log('UBICACIONES OK:', this.ubicaciones);
-    },
-    error: (err) => {
-      console.error('Error al cargar ubicaciones', err);
-      this.ubicaciones = [];
-    }
+        resolve();
+      },
+      error: () => {
+        this.ubicaciones = [];
+        resolve();
+      }
+    });
   });
 }
 

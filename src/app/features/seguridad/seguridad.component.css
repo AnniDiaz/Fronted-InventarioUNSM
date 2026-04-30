@@ -111,6 +111,7 @@
   background: linear-gradient(135deg, #0f172a, #1e293b);
   border-radius: 25px;
   padding: 30px;
+  margin-top: 15px;
   color: white;
   display: flex;
   justify-content: space-between;

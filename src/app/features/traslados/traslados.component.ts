@@ -70,15 +70,54 @@ cargarTraslados(): void {
       error: () => console.error('Error cargando artículos')
     });
   }
+cargarUbicaciones(): void {
 
-  cargarUbicaciones(): void {
-    this.ubicacionService.getUbicaciones().subscribe({
-      next: (resp: any) => {
-        this.listaUbicaciones = resp.data || [];
-      },
-      error: () => console.error('Error cargando ubicaciones')
-    });
+  // 🔥 Obtener usuario desde localStorage o servicio
+  const usuario = JSON.parse(localStorage.getItem('user') || 'null');
+
+  const usuarioId = usuario?.data?.id;
+
+  if (!usuarioId) {
+    console.error('No hay usuario logueado');
+    return;
   }
+
+  // 🔥 1. Obtener ubicaciones del usuario
+  this.ubicacionService.getUbicacionesPorUsuario(usuarioId).subscribe({
+    next: (resp: any) => {
+
+      const ubicacionesUsuario = Array.isArray(resp) ? resp : resp?.data ?? [];
+
+      console.log('📌 Ubicaciones del usuario:', ubicacionesUsuario);
+
+      if (ubicacionesUsuario.length === 0) {
+        console.warn('El usuario no tiene ubicaciones');
+        return;
+      }
+
+      // 🔥 2. Tomamos la primera ubicación (ajústalo si tienes varias)
+      const idUbicacion = ubicacionesUsuario[0].id;
+
+      console.log('✅ ID UBICACION DEL USUARIO:', idUbicacion);
+
+      // 🔥 3. Buscar hijos por padreId
+      this.ubicacionService.getUbicacionesPorPadre(idUbicacion).subscribe({
+        next: (res: any) => {
+
+          const ubicacionesHijas = Array.isArray(res) ? res : res?.data ?? [];
+
+          console.log('📌 UBICACIONES HIJAS:', ubicacionesHijas);
+
+          // 🔥 opcional: guardarlas para usar en selects
+          this.listaUbicaciones = ubicacionesHijas;
+        },
+        error: (err) => console.error('Error obteniendo ubicaciones por padre', err)
+      });
+
+    },
+    error: (err) => console.error('Error obteniendo ubicaciones del usuario', err)
+  });
+}
 
   // FILTROS
   get trasladosFiltrados(): any[] {

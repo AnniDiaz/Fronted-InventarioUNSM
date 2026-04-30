@@ -137,7 +137,7 @@
                 <div class="form-group">
                   <label>DESTINO</label>
                   <select [(ngModel)]="nuevoTraslado.destino" name="destino" required>
-                    <option value="" disabled selected>Seleccionar destino...</option>
+<option value="" disabled>Seleccionar destino...</option>
                     <option *ngFor="let u of listaUbicaciones" [value]="u.id">{{ u.nombre }}</option>
                   </select>
                 </div>

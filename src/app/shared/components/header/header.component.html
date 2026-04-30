@@ -18,18 +18,25 @@
     <!-- Separador -->
     <div class="separador"></div>
 
-    <!-- Perfil del usuario -->
-    <div class="perfil-info" (click)="irAPerfil()">
-      <div class="textos-perfil">
-        <span class="nombre-perfil">{{ usuarioActual?.data.nombre || usuarioActual?.username || 'Usuario' }}</span>
-        <span class="rol-perfil">{{ rolActual?.data.nombre || 'Rol no definido' }}</span>
-      </div>
-      <div class="avatar-container">
-        <img
-          [src]="usuarioActual?.imagenPath ? 'http://localhost:7000/' + usuarioActual?.imagenPath : 'assets/perfil.png'"
-          alt="Perfil">
-      </div>
-    </div>
+<div class="perfil-info" (click)="irAPerfil()">
+
+  <div class="textos-perfil">
+    <span class="nombre-perfil">
+      {{ usuarioActual?.data?.nombre || 'Usuario' }}
+    </span>
+
+  <span class="rol-perfil">
+  {{ rolActual?.rol?.nombre || 'Rol no definido' }}
+</span>
+  </div>
+
+  <div class="avatar-container">
+    <img
+      [src]="usuarioActual?.data?.imagenUrl || 'assets/perfil.png'"
+      alt="Perfil">
+  </div>
+
+</div>
 
   </div>
 </div>
