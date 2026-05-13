@@ -6,83 +6,174 @@
   <div class="main-section">
     <app-header></app-header>
 
-    <div class="contenido-principal">
+    <div class="contenido-principal" *ngIf="articulo; else cargando">
+      <div class="page-wrapper-modern">
 
-      <!-- Detalles del Artículo -->
-      <div class="card">
-        <h2>Detalles del Artículo</h2>
-        <div *ngIf="articulo; else cargando" class="detalle-articulo-grid">
-          <div class="detalle-item">
-            <span class="label">ID</span>
-            <span class="value">{{ articulo.id }}</span>
+        <!-- Header Superior -->
+        <div class="detail-header-premium">
+          <div class="header-left">
+            <button class="btn-regresar-minimal" (click)="irAtras()" title="Regresar">
+              <i class="fa fa-arrow-left"></i>
+            </button>
+            <div class="header-titles">
+              <h1>{{ articulo.nombre }}</h1>
+              <span class="badge-patrimonio-minimal">{{ articulo.codigoPatrimonial }}</span>
+            </div>
           </div>
-          <div class="detalle-item">
-            <span class="label">Nombre</span>
-            <span class="value">{{ articulo.nombre }}</span>
-          </div>
-          <div class="detalle-item">
-            <span class="label">Código Patrimonial</span>
-            <span class="value">{{ articulo.codigoPatrimonial }}</span>
-          </div>
-          <div class="detalle-item">
-            <span class="label">Fecha de Adquisición</span>
-            <span class="value">{{ articulo.fechaAdquision | date:'mediumDate' }}</span>
-          </div>
-          <div class="detalle-item">
-            <span class="label">Valor Adquisitivo</span>
-            <span class="value">{{ articulo.valorAdquisitivo }}</span>
-          </div>
-          <div class="detalle-item">
-            <span class="label">Condición</span>
-            <span class="value">{{ articulo.condicion }}</span>
-          </div>
-          <div class="detalle-item">
-            <span class="label">Tipo de Artículo ID</span>
-            <span class="value">{{ articulo.tipoArticuloId }}</span>
-          </div>
-          <div class="detalle-item">
-            <span class="label">Ubicación ID</span>
-            <span class="value">{{ articulo.ubicacionId }}</span>
-          </div>
-          <div class="detalle-item">
-            <span class="label">Vida útil</span>
-            <span class="value">{{ articulo.vidaUtil }}</span>
-          </div>
-          <div class="detalle-item">
-            <span class="label">Estado</span>
-            <span class="value">{{ articulo.estado }}</span>
+          <div class="header-badges">
+            <span class="status-pill" [ngClass]="articulo.condicion?.toLowerCase()">
+              <i class="fa fa-circle"></i> {{ articulo.condicion || 'Sin Estado' }}
+            </span>
           </div>
         </div>
 
-        <ng-template #cargando>
-          <p>Cargando artículo...</p>
-        </ng-template>
-      </div>
+        <div class="detail-grid-modern">
 
-      <!-- Botón para mostrar el formulario -->
-      <div class="card">
-        <button class="btn-reporte" (click)="mostrarReporte = !mostrarReporte">
-          {{ mostrarReporte ? 'Ocultar Formulario' : 'Generar Reporte' }}
-        </button>
+          <!-- Columna Izquierda: Tarjetas de Información -->
+          <div class="col-main">
 
-        <!-- Formulario Generar Reporte -->
-        <form *ngIf="mostrarReporte" (ngSubmit)="guardarReporte()" #reporteForm="ngForm" class="form-reporte">
-          <div class="form-group">
-            <label>Grado de Dificultad</label>
-            <input type="text" name="gradoDificultad" [(ngModel)]="reporte.gradoDificultad" required>
+            <!-- Tarjeta de Identidad Visual -->
+            <div class="glass-card identity-card">
+              <div class="card-icon-wrapper">
+                <i class="fa fa-file-invoice"></i>
+              </div>
+              <div class="identity-info">
+                <label>TIPO DE ACTIVO</label>
+                <h3>{{ articulo.tipoArticulo?.nombre || 'General' }}</h3>
+                <p>Registrado el {{ articulo.fechaAdquision | date:'longDate' }}</p>
+              </div>
+            </div>
+
+            <!-- Sección de Características Técnicas (Dinámica) -->
+            <div class="specs-section">
+              <h3 class="section-subtitle"><i class="fa fa-microchip"></i> Características Técnicas</h3>
+              <div class="specs-grid-modern">
+                <div class="spec-card-modern" *ngFor="let campo of articulo.camposValores">
+                  <div class="spec-icon-mini">
+                    <i class="fa" [ngClass]="{
+                      'fa-tag': !campo.nombreCampo?.toLowerCase().includes('ram') && !campo.nombreCampo?.toLowerCase().includes('disco'),
+                      'fa-memory': campo.nombreCampo?.toLowerCase().includes('ram'),
+                      'fa-hdd': campo.nombreCampo?.toLowerCase().includes('disco') || campo.nombreCampo?.toLowerCase().includes('almacenamiento'),
+                      'fa-desktop': campo.nombreCampo?.toLowerCase().includes('pantalla'),
+                      'fa-cpu': campo.nombreCampo?.toLowerCase().includes('procesador')
+                    }"></i>
+                  </div>
+                  <div class="spec-content">
+                    <label>{{ campo.nombreCampo }}</label>
+                    <p>{{ campo.valor }}</p>
+                  </div>
+                </div>
+
+                <!-- Si no hay campos, mostrar mensaje -->
+                <div class="no-specs" *ngIf="!articulo.camposValores || articulo.camposValores.length === 0">
+                  No se registraron especificaciones adicionales para este tipo de artículo.
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div class="form-group">
-            <label>Descripción</label>
-            <textarea name="descripcion" [(ngModel)]="reporte.descripcion" rows="4" required></textarea>
+          <!-- Columna Derecha: Resumen y Acciones -->
+          <div class="col-side">
+
+            <div class="glass-card stats-card">
+              <div class="stat-item">
+                <div class="stat-icon loc"><i class="fa fa-location-dot"></i></div>
+                <div class="stat-text">
+                  <label>UBICACIÓN ACTUAL</label>
+                  <p>{{ articulo.ubicacion?.nombre || 'Sin asignar' }}</p>
+                </div>
+              </div>
+
+              <div class="stat-item">
+                <div class="stat-icon life"><i class="fa fa-hourglass-half"></i></div>
+                <div class="stat-text">
+                  <label>VIDA ÚTIL ESTIMADA</label>
+                  <p>{{ articulo.vidaUtil }} Años</p>
+                </div>
+              </div>
+
+              <div class="stat-item">
+                <div class="stat-icon cost"><i class="fa fa-hand-holding-dollar"></i></div>
+                <div class="stat-text">
+                  <label>VALOR DE ADQUISICIÓN</label>
+                  <p class="cost-value">S/ {{ articulo.valorAdquisitivo | number:'1.2-2' }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Banner de Reporte Compacto -->
+            <div class="action-card-report">
+              <div class="report-content">
+                <div class="report-icon">
+                  <i class="fa fa-triangle-exclamation"></i>
+                </div>
+                <div class="report-text">
+                  <h4>Reportar Incidencia</h4>
+                  <p>Notifica fallas técnicas o daños en el equipo.</p>
+                </div>
+              </div>
+              <button class="btn-reportar-modern" (click)="toggleModalReporte()">
+                INICIAR REPORTE
+              </button>
+            </div>
+
           </div>
 
-          <button type="submit" [disabled]="!reporteForm.form.valid" class="btn-reporte">
-            Guardar Reporte
-          </button>
-        </form>
-      </div>
+        </div>
 
+        <!-- Modal de Reporte (Estilo Imagen Anterior) -->
+        <div class="modal-overlay" *ngIf="mostrarModalReporte">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3>Registrar Incidencia Técnica</h3>
+              <button class="btn-cerrar" (click)="toggleModalReporte()">&times;</button>
+            </div>
+
+            <form (ngSubmit)="guardarReporte()" #reporteForm="ngForm" class="modal-body">
+              <div class="form-group">
+                <label>ARTÍCULO</label>
+                <div class="fake-input">{{ articulo.codigoPatrimonial }} - {{ articulo.nombre }}</div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>TIPO DE SERVICIO</label>
+                  <select name="tipo" [(ngModel)]="reporte.tipo" required>
+                    <option value="Correctivo">Correctivo (Reparación)</option>
+                    <option value="Preventivo">Preventivo (Revisión)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>FECHA ESTIMADA</label>
+                  <input type="date" name="fecha" [(ngModel)]="reporte.fecha" required>
+                </div>
+              </div>
+
+              <div class="form-group full">
+                <label>DESCRIPCIÓN DEL PROBLEMA</label>
+                <textarea name="descripcion" [(ngModel)]="reporte.descripcion" rows="4"
+                  placeholder="Detalle el problema técnico encontrado..." required></textarea>
+              </div>
+
+              <div class="modal-footer-btns">
+                <button type="button" class="btn-cancelar" (click)="toggleModalReporte()">Cancelar</button>
+                <button type="submit" [disabled]="!reporteForm.form.valid" class="btn-registrar">
+                  Confirmar Reporte
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+      </div>
     </div>
+
+    <ng-template #cargando>
+      <div class="loader-container">
+        <div class="spinner"></div>
+        <p>Cargando ficha técnica...</p>
+      </div>
+    </ng-template>
+
   </div>
 </div>

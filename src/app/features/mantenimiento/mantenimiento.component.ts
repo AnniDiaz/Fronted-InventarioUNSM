@@ -23,6 +23,8 @@ export class MantenimientoComponent implements OnInit {
   mantenimientos: any[] = [];
   mantenimientosFiltrados: any[] = [];
   articulosDisponibles: any[] = [];
+  editando = false;
+  idMantenimientoEditar: number | null = null;
 
   filtroTexto: string = '';
   filtroFecha: string = '';
@@ -38,7 +40,8 @@ export class MantenimientoComponent implements OnInit {
     tipo: 'Preventivo',
     fecha: new Date().toISOString().split('T')[0],
     proveedor: '',
-    costo: 0
+    costo: 0,
+    observaciones: ''
   };
 
   constructor(private _mantenimientoService: MantenimientoService, private _articuloService: ArticuloService) { }
@@ -88,36 +91,31 @@ export class MantenimientoComponent implements OnInit {
       // 2. Construcción del Payload Limpio
       // Ajustamos los nombres para que coincidan con los DTOs típicos de C# (PascalCase)
       const payload = {
+        Id: this.editando ? this.idMantenimientoEditar : 0,
         ArticuloId: Number(this.nuevoMantenimiento.idArticulo),
         TipoMantenimiento: this.nuevoMantenimiento.tipo,
-        // Forzamos formato ISO completo para evitar el Error 400 de DateTime
         FechaMantenimiento: new Date(this.nuevoMantenimiento.fecha).toISOString(),
         ProveedorServicion: this.nuevoMantenimiento.proveedor,
         Costo: Number(this.nuevoMantenimiento.costo),
-        Estado: 'PENDIENTE' // O el valor inicial que use tu lógica
+        Observaciones: this.nuevoMantenimiento.observaciones,
+        EstadoMantenimiento: true // Se mantiene pendiente si se edita
       };
 
       console.log("🚀 Enviando a API:", payload);
 
-      this._mantenimientoService.addMantenimiento(payload).subscribe({
+      const request = this.editando
+        ? this._mantenimientoService.updateEstadoMantenimiento(this.idMantenimientoEditar!, payload)
+        : this._mantenimientoService.addMantenimiento(payload);
+
+      request.subscribe({
         next: (res) => {
-          console.log("✅ Servidor respondió:", res);
-          Swal.fire('¡Programado!', 'El mantenimiento ha sido registrado.', 'success');
+          Swal.fire('Éxito', this.editando ? 'Mantenimiento actualizado' : 'Mantenimiento registrado', 'success');
           this.cargarMantenimientos();
           this.toggleFormulario();
         },
         error: (err) => {
-          console.group("❌ ERROR EN MANTENIMIENTO");
-          console.error("Status:", err.status);
-          console.error("Detalles:", err.error);
-
-          // Si el error es 400, imprimimos los campos que .NET rechaza
-          if (err.status === 400 && err.error?.errors) {
-            console.table(err.error.errors);
-          }
-          console.groupEnd();
-
-          Swal.fire('Error', 'Hubo un problema al registrar. Revisa la consola.', 'error');
+          console.error("Error en API:", err);
+          Swal.fire('Error', 'Hubo un problema al procesar la solicitud.', 'error');
         }
       });
 
@@ -125,6 +123,20 @@ export class MantenimientoComponent implements OnInit {
       console.error("💥 Error antes de enviar:", error);
       Swal.fire('Error', 'Formato de fecha inválido', 'error');
     }
+  }
+
+  prepararEdicion(mantenimiento: any): void {
+    this.editando = true;
+    this.idMantenimientoEditar = mantenimiento.id || mantenimiento.idMantenimiento;
+    this.nuevoMantenimiento = {
+      idArticulo: mantenimiento.articuloId.toString(),
+      tipo: mantenimiento.tipoMantenimiento,
+      fecha: mantenimiento.fechaMantenimiento ? mantenimiento.fechaMantenimiento.split('T')[0] : '',
+      proveedor: mantenimiento.proveedorServicion,
+      costo: mantenimiento.costo,
+      observaciones: mantenimiento.observaciones
+    };
+    this.mostrarFormulario = true;
   }
 
   marcarCompletado(mantenimiento: any): void {
@@ -182,28 +194,31 @@ export class MantenimientoComponent implements OnInit {
   toggleFormulario(): void {
     this.mostrarFormulario = !this.mostrarFormulario;
     if (!this.mostrarFormulario) {
+      this.editando = false;
+      this.idMantenimientoEditar = null;
       this.nuevoMantenimiento = {
         idArticulo: '',
         tipo: 'Preventivo',
         fecha: new Date().toISOString().split('T')[0],
         proveedor: '',
-        costo: 0
+        costo: 0,
+        observaciones: ''
       };
     }
   }
 
   aplicarFiltro(): void {
     const texto = this.filtroTexto.toLowerCase();
-    
+
     this.mantenimientosFiltrados = this.mantenimientos.filter(m => {
-      const cumpleTexto = !texto || 
+      const cumpleTexto = !texto ||
         (m.articulo?.codigoPatrimonial?.toLowerCase().includes(texto)) ||
         (m.tipoMantenimiento?.toLowerCase().includes(texto)) ||
         (m.proveedorServicion?.toLowerCase().includes(texto));
-        
-      const cumpleFecha = !this.filtroFecha || 
+
+      const cumpleFecha = !this.filtroFecha ||
         (m.fechaMantenimiento && m.fechaMantenimiento.split('T')[0] === this.filtroFecha);
-        
+
       return cumpleTexto && cumpleFecha;
     });
 
@@ -214,7 +229,7 @@ export class MantenimientoComponent implements OnInit {
   actualizarPaginacion(): void {
     this.totalPaginas = Math.ceil(this.mantenimientosFiltrados.length / this.pageSize);
     if (this.paginaActual > this.totalPaginas) this.paginaActual = 1;
-    
+
     const inicio = (this.paginaActual - 1) * this.pageSize;
     const fin = inicio + this.pageSize;
     this.registrosPaginados = this.mantenimientosFiltrados.slice(inicio, fin);
