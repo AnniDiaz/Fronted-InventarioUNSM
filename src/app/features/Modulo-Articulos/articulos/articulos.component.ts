@@ -37,7 +37,7 @@ export class ArticuloFormComponent implements OnInit {
   tipos: any[] = [];
   ubicaciones: any[] = [];
   camposDelTipo: any[] = [];
-
+ubicacionUsuarioId: number = 0;
   articulo: any = this.crearArticuloVacio();
   editando = false;
 
@@ -140,28 +140,38 @@ export class ArticuloFormComponent implements OnInit {
     this.actualizarPaginacion();
   }
 
-  listarArticulos() {
-    this.articuloService.getArticulosConCampos().subscribe({
-     next: (res: any) => {
+listarArticulos() {
+  this.articuloService.getArticulosConCampos().subscribe({
+    next: (res: any) => {
 
-  const data = Array.isArray(res) ? res : res.data ?? [];
+      const data = Array.isArray(res) ? res : res.data ?? [];
 
-  this.articulos = data.map((a: any) => {
-    if (a.id) {
-      const urlQR = `http://localhost:4200/tipos-articulos/articulo/${a.id}`;
-      a.qrCodeBase64 = this.generarQR(urlQR);
+      // 🔥 obtener IDs de ubicaciones hijas
+      const idsUbicaciones = this.ubicaciones.map(u => u.id);
+
+      console.log('✅ IDS PERMITIDOS:', idsUbicaciones);
+
+      // 🔥 FILTRAR ARTICULOS
+      this.articulos = data
+        .filter((a: any) => idsUbicaciones.includes(a.ubicacionId))
+        .map((a: any) => {
+          if (a.id) {
+            const urlQR = `http://localhost:4200/tipos-articulos/articulo/${a.id}`;
+            a.qrCodeBase64 = this.generarQR(urlQR);
+          }
+          return a;
+        });
+
+      console.log('📦 ARTICULOS FILTRADOS:', this.articulos);
+
+      this.aplicarFiltro();
+    },
+    error: (err) => {
+      console.error('Error al listar artículos:', err);
+      Swal.fire('Error', 'No se pudieron cargar los artículos', 'error');
     }
-    return a;
   });
-
-  this.aplicarFiltro();
-},
-      error: (err) => {
-        console.error('Error al listar artículos:', err);
-        Swal.fire('Error', 'No se pudieron cargar los artículos', 'error');
-      }
-    });
-  }
+}
 
   getBadgeClass(condicion: string): string {
     if (!condicion) return 'badge-default';
@@ -182,15 +192,38 @@ next: (res: any) => {
 },      error: () => Swal.fire('Error', 'No se pudieron cargar los tipos', 'error')
     });
   }
+cargarUbicaciones(): void {
 
-  cargarUbicaciones() {
-this.ubicService.getUbicaciones().subscribe({
-  next: (res: any) => {
-    this.ubicaciones = Array.isArray(res) ? res : res?.data ?? [];
-  },
-  error: () => this.ubicaciones = []
-});
-  }
+  const usuario = JSON.parse(localStorage.getItem('user') || 'null');
+  const usuarioId = usuario?.data?.id;
+
+  if (!usuarioId) return;
+
+  this.ubicService.getUbicacionesPorUsuario(usuarioId).subscribe({
+    next: (resp: any) => {
+
+      const ubicacionesUsuario = Array.isArray(resp) ? resp : resp?.data ?? [];
+
+      if (ubicacionesUsuario.length === 0) {
+        this.ubicaciones = [];
+        return;
+      }
+
+      const padreId = ubicacionesUsuario[0].id;
+      this.ubicacionUsuarioId = padreId;
+
+      this.ubicService.getUbicacionesPorPadre(padreId).subscribe({
+        next: (res: any) => {
+
+          this.ubicaciones = Array.isArray(res) ? res : res?.data ?? [];
+
+          // 🔥 AQUÍ recién listar artículos
+          this.listarArticulos();
+        }
+      });
+    }
+  });
+}
 
   obtenerTipoArticulo(id: number) {
     return this.tipos.find(t => t.id === id)?.nombre || '-';

@@ -36,7 +36,7 @@ export class LoginComponent implements OnInit {
       Swal.fire({
         icon: 'warning',
         title: 'Campos requeridos',
-        text: 'Usuario y contraseña son obligatorios',
+        text: 'El usuario y contraseña son obligatorios',
         confirmButtonText: 'Aceptar'
       });
       return;

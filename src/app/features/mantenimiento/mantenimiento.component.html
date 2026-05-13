@@ -11,20 +11,20 @@
     <div class="contenido-principal">
       <div class="page-container">
         <div class="tabla-container">
-          
+
           <div class="main-header-wrapper">
-            <div class="header-titulo-wrapper" style="display: flex; align-items: center; gap: 15px;">
+            <div class="header-titulo-wrapper">
               <button class="menu-toggle" (click)="toggleMenu()">
                 <i class="fa fa-bars"></i>
               </button>
               <div class="titulos-header">
-                <h2 style="margin: 0;">Gestión de Mantenimiento</h2>
-                <p style="margin: 0;">Seguimiento y programación de servicios técnicos.</p>
+                <h2>Gestión de Mantenimiento</h2>
+                <p>Seguimiento y programación de servicios técnicos.</p>
               </div>
             </div>
 
             <button class="btn-principal" (click)="toggleFormulario()">
-              <i class="fa fa-wrench"></i> Programar Mantenimiento
+              <i class="fa fa-wrench"></i> {{ editando ? 'Editando Registro' : 'Programar Mantenimiento' }}
             </button>
           </div>
 
@@ -32,7 +32,7 @@
             <div class="search-box">
               <i class="fa fa-search"></i>
               <input type="text" [(ngModel)]="filtroTexto" (input)="aplicarFiltro()"
-                placeholder="Buscar por código, tipo o proveedor...">
+                placeholder="Buscar por código, tipo o técnico...">
             </div>
 
             <div class="date-box">
@@ -48,8 +48,10 @@
                   <th>ARTÍCULO</th>
                   <th>TIPO</th>
                   <th>FECHA</th>
-                  <th>COSTO</th>
-                  <th>ESTADO</th>
+                  <th>Técnico/Proveedor</th>
+                  <th>Costo</th>
+                  <th>Descripción</th>
+                  <th>Estado</th>
                   <th class="text-right">ACCIONES</th>
                 </tr>
               </thead>
@@ -57,9 +59,6 @@
                 <tr *ngFor="let m of registrosPaginados">
                   <td>
                     <div class="art-card-mini">
-                      <div class="art-icon-placeholder">
-                        <i class="fa fa-tools"></i>
-                      </div>
                       <div class="art-details">
                         <strong>{{ m.articulo?.codigoPatrimonial }}</strong>
                         <span class="art-category">{{ m.articulo?.nombre }}</span>
@@ -68,7 +67,11 @@
                   </td>
                   <td>{{ m.tipoMantenimiento }}</td>
                   <td>{{ m.fechaMantenimiento | date: 'dd/MM/yyyy' }}</td>
+                  <td>{{ m.proveedorServicion || 'No asignado' }}</td>
                   <td><strong>S/ {{ m.costo | number:'1.2-2' }}</strong></td>
+                  <td class="col-desc">
+                    <span class="desc-text" [title]="m.observaciones">{{ m.observaciones || 'Sin descripción' }}</span>
+                  </td>
                   <td>
                     <span class="badge"
                       [ngClass]="{'badge-completado': m.estadoMantenimiento === false, 'badge-pendiente': m.estadoMantenimiento === true}">
@@ -76,14 +79,19 @@
                     </span>
                   </td>
                   <td class="text-right">
-                    <button *ngIf="m.estadoMantenimiento === true" class="btn-action-done"
-                      (click)="marcarCompletado(m)">
-                      <i class="fa fa-check"></i> Finalizar
-                    </button>
+                    <div class="actions-wrapper">
+                      <button class="btn-action-edit" (click)="prepararEdicion(m)" title="Editar">
+                        <i class="fa fa-edit"></i>
+                      </button>
+                      <button *ngIf="m.estadoMantenimiento === true" class="btn-action-done"
+                        (click)="marcarCompletado(m)" title="Finalizar">
+                        <i class="fa fa-check"></i>
+                      </button>
+                    </div>
                   </td>
                 </tr>
                 <tr *ngIf="registrosPaginados.length === 0">
-                  <td colspan="6" class="empty-state">
+                  <td colspan="8" class="empty-state">
                     <i class="fa fa-toolbox" style="font-size: 40px; color: #e2e8f0; margin-bottom: 15px; display: block;"></i>
                     <p>No se encontraron registros de mantenimiento</p>
                   </td>
@@ -94,7 +102,7 @@
 
           <div class="footer-paginacion" *ngIf="mantenimientosFiltrados.length > 0">
             <div class="pag-info">
-              Mostrando <strong>{{ registrosPaginados.length }}</strong> de <strong>{{ mantenimientosFiltrados.length }}</strong> mantenimientos
+              Mostrando <strong>{{ registrosPaginados.length }}</strong> de <strong>{{ mantenimientosFiltrados.length }}</strong> registros
             </div>
             <div class="pag-botones">
               <button class="btn-pag-nav" [disabled]="paginaActual === 1" (click)="cambiarPagina(paginaActual - 1)">
@@ -107,11 +115,11 @@
           </div>
         </div>
 
-        <!-- Modal Formulario -->
+        <!-- Modal -->
         <div class="modal-overlay" *ngIf="mostrarFormulario">
-          <div class="modal-modern">
+          <div class="modal-content">
             <div class="modal-header">
-              <h3>Programar Nuevo Mantenimiento</h3>
+              <h3>{{ editando ? 'Editar Registro de Mantenimiento' : 'Programar Nuevo Mantenimiento' }}</h3>
               <button class="btn-cerrar" (click)="toggleFormulario()">&times;</button>
             </div>
 
@@ -142,19 +150,26 @@
 
               <div class="form-row">
                 <div class="form-group">
-                  <label>PROVEEDOR / TÉCNICO</label>
-                  <input type="text" [(ngModel)]="nuevoMantenimiento.proveedor" name="proveedor" 
-                    placeholder="Nombre de la empresa o técnico" required>
+                  <label>TÉCNICO / PROVEEDOR</label>
+                  <input type="text" [(ngModel)]="nuevoMantenimiento.proveedor" name="proveedor"
+                    placeholder="Nombre del técnico responsable" required>
                 </div>
                 <div class="form-group">
-                  <label>COSTO ESTIMADO (S/)</label>
-                  <input type="number" [(ngModel)]="nuevoMantenimiento.costo" name="costo" step="0.01" required>
+                  <label>Costo Estimado</label>
+                  <input type="number" name="costo" [(ngModel)]="nuevoMantenimiento.costo" placeholder="0.00">
                 </div>
+              </div>
+
+              <div class="form-group full">
+                <label>Descripción / Observaciones</label>
+                <textarea name="observaciones" [(ngModel)]="nuevoMantenimiento.observaciones" rows="3" placeholder="Detalles del problema o trabajo realizado..."></textarea>
               </div>
 
               <div class="modal-footer-btns">
                 <button type="button" class="btn-cancelar" (click)="toggleFormulario()">Cancelar</button>
-                <button type="submit" class="btn-registrar" [disabled]="f.invalid">Programar Servicio</button>
+                <button type="submit" class="btn-registrar" [disabled]="f.invalid">
+                    {{ editando ? 'Actualizar Registro' : 'Programar Servicio' }}
+                </button>
               </div>
             </form>
           </div>

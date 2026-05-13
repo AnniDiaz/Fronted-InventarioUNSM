@@ -76,11 +76,12 @@
 
                 <div class="form-group">
                   <label for="ubicacion">Ubicación</label>
-                  <select id="ubicacion" name="ubicacionId" [(ngModel)]="articulo.ubicacionId" required
-                    [disabled]="!editando && articulo.id > 0">
-                    <option value="0" disabled>Seleccione ubicación</option>
-                    <option *ngFor="let u of ubicaciones" [value]="u.id">{{ u.nombre }}</option>
-                  </select>
+                <select id="ubicacion" name="ubicacionId" [(ngModel)]="articulo.ubicacionId" required>
+  <option value="0" disabled>Seleccione ubicación</option>
+  <option *ngFor="let u of ubicaciones" [value]="u.id">
+    {{ u.nombre }}
+  </option>
+</select>
                 </div>
 
                 <div class="form-group">

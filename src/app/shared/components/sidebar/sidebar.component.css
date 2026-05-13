@@ -1,260 +1,257 @@
-/* Sidebar Light Theme Redesign */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+:root {
+  --green-main: #16a34a;
+  --green-hover: #22c55e;
+  --green-soft: #dcfce7;
+  --green-dark: #15803d;
+  --green-glow: rgba(34,197,94,0.25);
+}
 
 .sidebar {
-  width: 260px;
-  background: #ffffff;
-  color: #64748b;
-  /* slate-500 */
-  font-family: 'Inter', sans-serif;
+  width: 280px;
   height: 100vh;
+  background: linear-gradient(180deg, #ffffff, #f8fafc);
+  font-family: 'Inter', sans-serif;
   display: flex;
   flex-direction: column;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.03);
-  /* Extremely subtle shadow */
-  transition: width 0.3s;
-  overflow-y: auto;
-  overflow-x: hidden;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+  border-right: 1px solid #eef2f6;
+  box-shadow: 10px 0 40px rgba(0, 0, 0, 0.05);
 }
 
-.sidebar::-webkit-scrollbar {
-  display: none;
+/* HEADER */
+.sidebar-header {
+  padding: 20px 18px;
+  margin-top: 10px;
+  border-bottom: 1px solid #f1f5f9;
 }
-.cont-logo{
+.logo-box {
   display: flex;
+  justify-content: center; /* 👈 centra vertical */
+  align-items: center;     /* 👈 centra horizontal */
+  gap: 10px;
 }
-/* Contenedor logo */
-.sidebar .cont-logo {
+
+.ubicacion-logo {
+  width: 50px;
+  height: 50px;
+  border-radius: 10px;
+  margin-top: -18px;
+  object-fit: cover;
+}
+
+.logo-text {
   display: flex;
-  align-items: center;
-  padding: 30px 24px;
-  gap: 16px;
-  margin-bottom: 8px;
+  flex-direction: column;
 }
 
+ .title {
+  font-size: 14px;
+  line-height: 16px;
+  font-weight: 700;
+  color: #0f172a;
+}
 
-
-.cont-logo p {
+.subtitle {
   font-size: 10px;
-  margin: 2px 0 0 0;
+  margin-top: -12px;
   color: #94a3b8;
-  /* text-slate-400 */
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-weight: 600;
-  line-height: 1.2;
 }
 
-/* Menú principal */
-.sidebar ul {
-  list-style: none;
-  padding: 0 166px; /* Wait, looking at previous view_file, it was 0 16px. I'll check again. */
-  margin: 0;
+/* MENU */
+.menu {
   flex: 1;
-}
-/* Re-checking padding 0 16px in my previous view_file output */
-/* Line 64: padding: 0 16px; */
-
-.sidebar ul {
   list-style: none;
-  padding: 0 16px;
   margin: 0;
-  flex: 1;
+  padding: 12px 8px;
+  overflow-y: auto;
 }
 
-.sidebar ul li {
-  margin-bottom: 6px;
+/* SCROLL BONITO */
+.menu::-webkit-scrollbar {
+  width:0px;
+}
+.menu::-webkit-scrollbar-thumb {
+  background: #cbd5f5;
+  border-radius: 10px;
+}
+.menu::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
-/* Cabecera de módulo y enlace directo */
-.sidebar ul li .menu-head,
-.sidebar ul li>a {
+/* ITEM */
+.menu-item {
+  width: 100%;
   display: flex;
   align-items: center;
-  text-decoration: none;
-  color: #64748b;
-  padding: 12px 20px;
+  justify-content: space-between;
+
+  padding: 10px 12px;
+  margin-bottom: 1px; /* 🔥 menos espacio */
+
   border-radius: 12px;
-  font-weight: 600;
-  font-size: 15px;
-  transition: all 0.2s ease;
+
+  color: #2e2e2eb8;
+  font-size: 14px;
+  font-weight: 500;
+  font-weight: 700;
   cursor: pointer;
+  text-decoration: none;
+
+  transition: all 0.2s ease;
+  position: relative;
 }
 
-.sidebar ul li .menu-head i,
-.sidebar ul li>a i {
-  margin-right: 14px;
-  font-size: 20px;
-  width: 24px;
+/* IZQUIERDA */
+.menu-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ICONOS */
+.menu-item i {
+  font-size: 13px;
+  padding: 7px;
+  border-radius: 8px;
+  color: #64748b;
+  transition: all 0.2s ease;
+}
+
+/* HOVER */
+.menu-item:hover {
+  background:  rgba(15, 171, 121, 0.85);
+  transform: translateX(4px);
+  color: white;
+  font-weight: 600;
+}
+
+.menu-item:hover i {
+  background: transparent;
+  color: white;
+}
+
+/* ACTIVE */
+.menu-item.active {
+  background: rgba(15, 171, 121, 0.85);
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 8px 20px var(--green-glow);
+}
+
+.menu-item.active i {
+  background: rgba(255,255,255,0.2);
+  color: white;
+}
+
+.menu-item.active::before {
+  content: "";
+  position: absolute;
+  left: -5px;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  border-radius: 10px;
+  background: var(--green-main);
+}
+
+/* ARROW */
+.arrow {
+  font-size: 10px;
   color: #94a3b8;
-  /* icon color */
-  text-align: center;
-  transition: color 0.2s ease;
+  transition: 0.3s;
 }
 
-.sidebar ul li .menu-head span {
-  margin-left: auto;
-  font-size: 12px;
-  transition: transform 0.3s ease;
-  color: #cbd5e1;
-}
-
-/* Flecha girando al expandir */
-.sidebar ul li .menu-head.expanded span {
+.menu-item.open .arrow {
   transform: rotate(90deg);
 }
 
-/* Hover efecto */
-.sidebar ul li>a:hover:not(.active),
-.sidebar ul li .menu-head:hover:not(.active) {
-  background-color: #f8fafc;
-  /* slate-50 */
-  color: #334155;
-  /* slate-700 */
+.submenu {
+  margin-left: 4px;
+  margin-top: 2px;
+  padding-left: 6px;
+  border-left: 2px dashed #e2e8f0;
 }
 
-.sidebar ul li>a:hover:not(.active) i,
-.sidebar ul li .menu-head:hover:not(.active) i {
-  color: #059669;
-  /* emerald-600 */
-}
-
-/* Estado Activo */
-.sidebar ul li>a.active,
-.sidebar ul li .menu-head.active {
-  background-color: #059669;
-  /* emerald-600 */
-  color: #ffffff;
-  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
-}
-
-.sidebar ul li>a.active i,
-.sidebar ul li .menu-head.active i {
-  color: #ffffff;
-}
-
-/* Punto blanco en elemento activo (como en la imagen para "Dashboard") */
-.sidebar ul li>a.active::after {
-  content: '';
-  margin-left: auto;
-  width: 6px;
-  height: 6px;
-  background-color: #ffffff;
-  border-radius: 50%;
-  display: block;
-}
-
-/* Submenú */
-.sidebar ul li .submenu {
-  list-style: none;
-  padding: 0;
-  margin: 4px 0 8px 0;
-}
-
-.sidebar ul li .submenu li a {
+/* SUBITEM (🔥 MÁS ANCHO) */
+.submenu-item {
   display: flex;
   align-items: center;
-  padding: 10px 20px 10px 54px;
-  /* Sangría visual para hijos */
+  gap: 10px;
+
+  width: 100%;
+  padding: 13px 14px;
+
+  margin-left: -6px; /* 🔥 se expande más */
+
+  border-radius: 10px;
+
+  font-size: 14px;
+  margin-top: 10px;
   color: #64748b;
   text-decoration: none;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s ease;
+
+  transition: all 0.18s ease;
 }
 
-.sidebar ul li .submenu li a i {
-  margin-right: 12px;
-  font-size: 16px;
-  width: auto;
-  color: #94a3b8;
+/* HOVER */
+.submenu-item:hover {
+  background: var(--green-soft);
+  transform: translateX(2px);
+  color: var(--green-dark);
 }
 
-.sidebar ul li .submenu li a:hover:not(.active) {
-  background-color: #f8fafc;
-  color: #334155;
-}
-
-.sidebar ul li .submenu li a:hover:not(.active) i {
-  color: #059669;
-}
-
-.sidebar ul li .submenu li a.active {
-  background-color: #059669;
-  color: #ffffff;
-  box-shadow: 0 4px 6px rgba(5, 150, 105, 0.15);
-}
-
-.sidebar ul li .submenu li a.active i {
-  color: #ffffff;
-}
-
-/* Sección del logout */
-.logout-section {
-  margin-top: auto;
-  padding: 20px 16px;
-  border-top: 1px solid #f1f5f9;
-  /* Línea tenue */
-}
-
-/* Botón de cerrar sesión */
-.btn-logout {
-  width: 100%;
-  background: transparent;
-  color: #64748b;
-  border: none;
-  padding: 12px 20px;
-  font-size: 15px;
+/* ACTIVE */
+.submenu-item.active {
+  background: rgba(15, 171, 121, 0.85);
+  color: white;
   font-weight: 600;
-  border-radius: 12px;
-  cursor: pointer;
+  box-shadow: 0 6px 16px var(--green-glow);
+  transform: translateX(2px);
+  position: relative;
+}
+
+.submenu-item.active i {
+  background: rgba(255,255,255,0.2);
+  color: white;
+}
+
+.submenu-item.active::before {
+  content: "";
+  position: absolute;
+  left: -6px;
+  top: 5px;
+  bottom: 5px;
+  width: 3px;
+  border-radius: 10px;
+  background: var(--green-main);
+}
+
+/* FOOTER */
+.sidebar-footer {
+  padding: 12px;
+  border-top: 1px solid #f1f5f9;
+}
+
+/* LOGOUT */
+.logout-btn {
+  width: 100%;
+  padding: 11px;
+  border-radius: 10px;
+  border: none;
+  background: #086a49;
+  color: white;
+  font-weight: 600;
+  font-size: 13px;
+
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
+  gap: 8px;
+
+  cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.btn-logout i {
-  margin-right: 14px;
-  font-size: 20px;
-  width: 24px;
-  text-align: center;
-  color: #94a3b8;
-  transition: color 0.2s ease;
-}
-
-/* Hover logout */
-.btn-logout:hover {
-  background-color: #fef2f2;
-  /* red-50 */
-  color: #ef4444;
-  /* red-500 */
-}
-
-.btn-logout:hover i {
-  color: #ef4444;
-}
-.ubicacion-logo {
-  width: 45px;
-  height: 45px;
-  border-radius: 8px;
-  margin-top: 5px;
-  object-fit: cover;
-}
-.cont-text{
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-
-}
-.cont-text p {
-  font-size: 11px;
-  margin-left: 8px ;
-  font-weight: 700;
-  color: #334155;
-    align-items: center;
-
+.logout-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.25);
 }

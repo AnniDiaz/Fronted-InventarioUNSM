@@ -18,6 +18,7 @@ import { PrestamoComponent } from './features/prestamos/prestamos.component';
 import { MantenimientoComponent } from './features/mantenimiento/mantenimiento.component';
 import { SeguridadComponent } from './features/seguridad/seguridad.component';
 import { SuperadminComponent } from './superadmin/superadmin.component';
+import { DocPrestamosComponent } from './features/doc-prestamos/doc-prestamos.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -40,6 +41,8 @@ export const routes: Routes = [
 
   { path: 'tipos-articulos/articulo/:id', component: DetallesArticuloComponent },
   { path: 'prestamos', component: PrestamoComponent },
+    { path: 'prestamos/generar-documento', component: DocPrestamosComponent },
+
   { path: 'mantenimiento', component: MantenimientoComponent },
   { path: 'gestion-institucional', component: SuperadminComponent },
 

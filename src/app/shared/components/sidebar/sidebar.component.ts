@@ -75,14 +75,11 @@ ngOnInit(): void {
 });
 
   // ==============================
-  // 🔥 2. CARGAR MÓDULOS
-  // ==============================
-  console.log('Cargando módulos para rolId:', rolId);
+
   this.cargarModulosPorRol(rolId);
 }
 
   cargarModulosPorRol(rolId: number) {
-    console.log("Iniciando carga de módulos para el rol:", rolId);
 
     this.modulosService.getSubModulosByRol(rolId).subscribe({
       next: (res: any) => {

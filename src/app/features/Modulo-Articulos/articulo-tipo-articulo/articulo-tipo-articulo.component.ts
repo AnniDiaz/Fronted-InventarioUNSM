@@ -58,30 +58,44 @@ columnaAlias: Record<string, string> = {
 async ngOnInit(): Promise<void> {
   this.tipoArticuloId = Number(this.route.snapshot.paramMap.get('id'));
 
-  const usuario = JSON.parse(localStorage.getItem('user') || 'null');
-  this.ubicacionUsuarioId = usuario?.data?.ubicacionId ?? 0;
+  // 🔥 PRIMERO CARGA UBICACIONES DEL USUARIO
+  await this.obtenerUbicacionUsuario();
 
-  // 1️⃣ primero ubicaciones
+  // luego todo normal
   await this.cargarUbicaciones();
-
-  // 2️⃣ luego artículos (ya con data lista)
   this.cargarArticulos(this.tipoArticuloId);
+}
+async obtenerUbicacionUsuario(): Promise<void> {
+  return new Promise((resolve) => {
 
-  this.tipoArticuloService.getTipoArticuloById(this.tipoArticuloId).subscribe({
-    next: (response: any) => {
-      const data = response?.data;
+    const usuario = JSON.parse(localStorage.getItem('user') || 'null');
+    const usuarioId = usuario?.data?.id ?? 0;
 
-      const tipo = Array.isArray(data)
-        ? data.find((x: any) => Number(x.id) === Number(this.tipoArticuloId))
-        : data && Number(data.id) === Number(this.tipoArticuloId)
-          ? data
-          : null;
-
-      this.nombreTipoArticulo = tipo?.nombre ?? `Tipo ID ${this.tipoArticuloId}`;
-    },
-    error: () => {
-      this.nombreTipoArticulo = `Tipo ID ${this.tipoArticuloId}`;
+    if (!usuarioId) {
+      console.warn('❌ Usuario sin ID');
+      this.ubicacionUsuarioId = 0;
+      resolve();
+      return;
     }
+
+    this.ubicacionService.getUbicacionesPorUsuario(usuarioId).subscribe({
+      next: (res: any) => {
+
+        const lista = res?.data ?? res ?? [];
+
+        console.log('📍 UBICACIONES USUARIO:', lista);
+
+        this.ubicacionUsuarioId = lista[0]?.id ?? 0;
+
+        console.log('✅ UBICACION USUARIO FINAL:', this.ubicacionUsuarioId);
+
+        resolve();
+      },
+      error: () => {
+        this.ubicacionUsuarioId = 0;
+        resolve();
+      }
+    });
   });
 }
 get safeEncabezados(): string[] {
@@ -101,10 +115,17 @@ get safeEncabezados(): string[] {
   return qr.toDataURL(); // 🔥 devuelve imagen completa
 }
 cargarArticulos(id: number) {
+  console.log('🔥 ENTRANDO A cargarArticulos con ID:', id);
+
   this.articuloService.getPivotPorTipo(id).subscribe({
     next: (res: any) => {
 
-      const dataRaw = res?.data;
+      // 🔥 DEBUG PRINCIPAL (RESPUESTA BACKEND)
+      console.log('📦 RESPUESTA BACKEND ARTICULOS:', res);
+
+      const dataRaw = res?.data?.data ?? res?.data;
+
+      console.log('📦 DATA RAW:', dataRaw);
 
       const data = Array.isArray(dataRaw)
         ? dataRaw
@@ -112,39 +133,56 @@ cargarArticulos(id: number) {
           ? [dataRaw]
           : [];
 
+      console.log('📦 DATA FINAL (ARRAY):', data);
+
       if (data.length === 0) {
+        console.warn('⚠️ NO HAY ARTICULOS');
         this.encabezados = [];
         this.articulos = [];
         this.articulosFiltrados = [];
         return;
       }
 
-      // 🔥 si no hay usuario válido → mostrar todo (IMPORTANTE)
+      console.log('👤 UBICACION USUARIO:', this.ubicacionUsuarioId);
+      console.log('📍 LISTA UBICACIONES:', this.ubicaciones);
+
+      // 🔥 si no hay usuario válido → mostrar todo
       if (!this.ubicacionUsuarioId || this.ubicacionUsuarioId <= 0) {
+        console.warn('⚠️ USUARIO SIN UBICACION → SE MUESTRA TODO');
         const cleaned = this.limpiar(data);
         this.setData(cleaned);
         return;
       }
 
-      // 🔥 jerarquía segura
-      const ubicacionesHijas = this.getHijosRecursivo(Number(this.ubicacionUsuarioId));
-
-      const idsPermitidos = new Set<number>([
-        Number(this.ubicacionUsuarioId),
-        ...ubicacionesHijas
-      ]);
-
+      // 🔥 FILTRO REAL
       const filtrados = data.filter((item: any) => {
-        const id = Number(item?.UbicacionId ?? 0);
-        return idsPermitidos.has(id);
+        const ubicacionArticulo = Number(item?.UbicacionId ?? 0);
+
+        const ubicacion = this.ubicaciones.find(u => u.id === ubicacionArticulo);
+
+        console.log('---------------------------');
+        console.log('Articulo UbicacionId:', ubicacionArticulo);
+        console.log('Ubicacion encontrada:', ubicacion);
+        console.log('PadreId:', ubicacion?.PadreId);
+        console.log('Usuario UbicacionId:', this.ubicacionUsuarioId);
+
+        const cumple =
+          ubicacion &&
+          Number(ubicacion.PadreId) === Number(this.ubicacionUsuarioId);
+
+        console.log('¿PASA FILTRO?', cumple);
+
+        return cumple;
       });
+
+      console.log('✅ ARTICULOS FILTRADOS:', filtrados);
 
       const cleaned = this.limpiar(filtrados);
       this.setData(cleaned);
     },
 
     error: (err) => {
-      console.error('Error al obtener artículos pivot', err);
+      console.error('❌ ERROR AL OBTENER ARTICULOS:', err);
       this.articulos = [];
       this.articulosFiltrados = [];
       this.encabezados = [];
