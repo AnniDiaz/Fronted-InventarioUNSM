@@ -176,10 +176,6 @@ export class ArticuloFormComponent implements OnInit {
     if (cond.includes('dañado') || cond.includes('deteriorado')) return 'badge-danado';
     return 'badge-default';
   }
-
-  // ---------------------------
-  // TIPOS Y UBICACIONES
-  // ---------------------------
   cargarTipos() {
     this.tipoService.getTipoArticulos().subscribe({
       next: (res: any) => {
