@@ -74,8 +74,6 @@ ngOnInit(): void {
   }
 });
 
-  // ==============================
-
   this.cargarModulosPorRol(rolId);
 }
 
@@ -85,21 +83,17 @@ ngOnInit(): void {
       next: (res: any) => {
         console.log('Datos recibidos del backend:', res);
 
-        // 1. Validamos que res.data exista y que res.data.modulos sea el array
         if (res && res.success && res.data && Array.isArray(res.data.modulos)) {
 
-          // 2. Mapeamos desde res.data.modulos
           this.modulos = res.data.modulos.map((mod: any) => ({
             id: mod.id,
             nombre: mod.nombre,
             ruta: mod.ruta,
             icon: mod.icon || 'fas fa-folder',
             estado: mod.estado,
-            // Aquí ya vienen tus subModulos agrupados (Array de 2 elementos en tu log)
             subModulos: mod.subModulos || []
           }));
 
-          console.log('Módulos mapeados con éxito:', this.modulos);
         } else {
           console.warn('Estructura de datos no reconocida:', res);
           this.modulos = [];
@@ -115,8 +109,7 @@ ngOnInit(): void {
 onClickModulo(mod: any) {
   // 1. Si tiene ruta → SIEMPRE navega primero
   if (mod.ruta && mod.ruta.trim() !== '') {
-    this.router.navigate([mod.ruta]);
-  }
+this.router.navigateByUrl(mod.ruta);  }
 
   // 2. Si tiene submódulos → también expande
   if (mod.subModulos && mod.subModulos.length > 0) {

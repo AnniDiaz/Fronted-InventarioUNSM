@@ -240,7 +240,6 @@ aplicarFiltro() {
 
 
     editarUsuario(usuario: any) {
-  const urlBase = "http://localhost:4200/"; // sin "usuarios/"
 
   this.nuevoUsuario = {
     id: usuario.id,
@@ -251,7 +250,7 @@ aplicarFiltro() {
     password: '',
     rolId: usuario.rolId,
     imagen: null,
-    imagenPreview: usuario.imagenPath ? urlBase + usuario.imagenPath : null,
+    imagenPreview: usuario.imagenPath ?  usuario.imagenPath : null,
     imagenPath: usuario.imagenPath
   };
 

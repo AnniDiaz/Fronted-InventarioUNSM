@@ -12,111 +12,138 @@
 
     <div class="contenido">
 
-      <!-- FORMULARIO -->
+
+
       <div class="panel-formulario">
 
         <div class="card-formulario">
 
-          <!-- TITULO -->
           <div class="titulo-formulario">
 
             <div>
               <h2>Generar Solicitud</h2>
-              <p>Documento institucional</p>
+              <p>Solicitud de préstamo y/o uso de equipos</p>
             </div>
-
-
-          </div>
-
-          <!-- EQUIPO -->
-          <div class="grupo">
-
-            <label>EQUIPO / ARTÍCULO</label>
-
-      <select [(ngModel)]="equipo">
-
-  <option value="">
-    Seleccione un artículo
-  </option>
-
-  <option
-    *ngFor="let a of articulos"
-    [value]="a.nombre">
-
-    {{ a.nombre }}
-    -
-    {{ a.codigoPatrimonial }}
-
-  </option>
-
-</select>
 
           </div>
 
           <!-- DESTINATARIO -->
+
           <div class="grupo">
 
             <label>DESTINATARIO</label>
 
             <textarea
-              rows="4"
+              rows="3"
               [(ngModel)]="destinatario"
-              placeholder="Escriba el destinatario">
+              placeholder="Ejemplo: Señor Decano de la Facultad de Ingeniería de Sistemas e Informática">
             </textarea>
 
           </div>
 
-          <!-- SOLICITANTE -->
+          <!-- REPRESENTANTE -->
+
+      <div class="grupo">
+  <label>REPRESENTANTE RESPONSABLE</label>
+
+ <input
+  type="text"
+  placeholder="Buscar solicitante..."
+  [(ngModel)]="nombreSolicitanteCtrl"
+  [matAutocomplete]="auto">
+
+<mat-autocomplete
+  #auto="matAutocomplete"
+  [displayWith]="mostrarSolicitante"
+  (optionSelected)="seleccionarSolicitante($event.option.value)">
+
+  <mat-option
+    *ngFor="let s of solicitantesFiltrados"
+    [value]="s">
+
+    {{ s.nombres }} {{ s.apellidos }} - {{ s.codigo }}
+
+  </mat-option>
+
+</mat-autocomplete>
+
+  <div class="grid-2">
+    <input type="text" [(ngModel)]="dni" placeholder="DNI">
+    <input type="text" [(ngModel)]="ciclo" placeholder="Ciclo">
+
+  </div>
+    <input type="text" [(ngModel)]="telefono" placeholder="Teléfono">
+
+  <input type="email" [(ngModel)]="correo" placeholder="Correo institucional">
+</div>
+
+          <!-- ACTIVIDAD -->
+
           <div class="grupo">
 
-            <label>SOLICITANTE</label>
+            <label>ACTIVIDAD / PROYECTO</label>
 
             <input
               type="text"
-              [(ngModel)]="nombre"
-              placeholder="Nombre completo">
+              [(ngModel)]="actividad"
+              placeholder="Nombre del proyecto, concurso o actividad">
 
-            <div class="grid-2">
+          </div>
 
-              <input
-                type="text"
-                [(ngModel)]="dni"
-                placeholder="DNI">
+          <!-- EQUIPO -->
 
-              <input
-                type="text"
-                [(ngModel)]="ciclo"
-                placeholder="Ciclo">
+          <div class="grupo">
 
-            </div>
+            <label>EQUIPO / ARTÍCULO SOLICITADO</label>
+<select [(ngModel)]="articuloId">
+
+  <option [ngValue]="0">
+    Seleccione un artículo
+  </option>
+
+  <option
+    *ngFor="let a of articulos"
+    [ngValue]="a.id">
+
+    {{a.nombre}} - {{a.codigoPatrimonial}}
+
+  </option>
+
+</select>
+          </div>
+
+          <!-- LUGAR -->
+
+          <div class="grupo">
+
+            <label>LUGAR DE UTILIZACIÓN</label>
 
             <input
               type="text"
-              [(ngModel)]="escuela"
-              placeholder="Escuela profesional">
-
-            <input
-              type="text"
-              [(ngModel)]="direccion"
-              placeholder="Dirección">
-
-            <input
-              type="email"
-              [(ngModel)]="correo"
-              placeholder="Correo institucional">
+              [(ngModel)]="lugarUso"
+              placeholder="Laboratorio, institución, evento, etc.">
 
           </div>
 
           <!-- DETALLE -->
+
           <div class="grupo">
 
-            <label>DETALLE DE LA SOLICITUD</label>
+            <label>MOTIVO DE LA SOLICITUD</label>
 
             <textarea
               rows="7"
               [(ngModel)]="detalle"
-              placeholder="Escriba el detalle de la solicitud">
+              placeholder="Describa detalladamente el motivo de la solicitud">
             </textarea>
+
+          </div>
+
+          <!-- FECHAS -->
+
+          <div class="grupo">
+
+            <label>PERIODO SOLICITADO</label>
 
             <div class="grid-2">
 
@@ -144,41 +171,66 @@
 
           </div>
 
-          <!-- ACOMPAÑANTES -->
+          <!-- PARTICIPANTES -->
+
           <div class="grupo">
 
-            <div class="titulo-acompanantes">
+            <label>PARTICIPANTES</label>
 
-              <label>ACOMPAÑANTES</label>
-
-            </div>
-
-            <div class="add-acompanante">
+            <div class="grid-2">
 
               <input
                 type="text"
-                [(ngModel)]="nuevoAcompanante"
-                placeholder="Nombre del acompañante">
+                [(ngModel)]="nuevoParticipante.nombre"
+                placeholder="Nombre completo">
 
-              <button
-                class="btn-add"
-                (click)="agregarAcompanante()">
-
-                <i class="fa fa-plus"></i>
-
-              </button>
+              <input
+                type="text"
+                [(ngModel)]="nuevoParticipante.dni"
+                placeholder="DNI">
 
             </div>
 
+            <div class="grid-2">
+
+              <input
+                type="text"
+                [(ngModel)]="nuevoParticipante.codigo"
+                placeholder="Código universitario">
+
+              <input
+                type="email"
+                [(ngModel)]="nuevoParticipante.correo"
+                placeholder="Correo institucional">
+
+            </div>
+
+            <button
+              class="btn-add"
+              (click)="agregarParticipante()">
+
+              <i class="fa fa-plus"></i>
+              Agregar Participante
+
+            </button>
+
             <div
-              class="acompanante"
-              *ngFor="let a of acompanantes; let i = index">
+              class="participante-item"
+              *ngFor="let p of participantes; let i = index">
 
-              <span>{{i + 1}}</span>
+              <div class="participante-info">
 
-              <input type="text" [value]="a">
+                <strong>{{p.nombre}}</strong>
 
-              <button (click)="eliminarAcompanante(i)">
+                <small>
+                  DNI: {{p.dni}}
+                </small>
+
+              </div>
+
+              <button
+                class="btn-delete"
+                (click)="eliminarParticipante(i)">
 
                 <i class="fa fa-trash"></i>
 
@@ -189,9 +241,10 @@
           </div>
 
           <!-- UBICACION -->
+
           <div class="grupo">
 
-            <label>UBICACIÓN Y FECHA</label>
+            <label>UBICACIÓN Y FECHA DEL DOCUMENTO</label>
 
             <div class="grid-2">
 
@@ -209,12 +262,14 @@
           </div>
 
           <!-- BOTON -->
+
           <button
             class="btn-generar"
-            (click)="imprimir()">
+(click)="generarPrestamo()"
+            >
 
             <i class="fa fa-print"></i>
-            Imprimir Documento
+            Generar Prestamo
 
           </button>
 
@@ -222,7 +277,10 @@
 
       </div>
 
+      <!-- ========================= -->
       <!-- PREVIEW -->
+      <!-- ========================= -->
+
       <div class="panel-preview">
 
         <div class="header-preview">
@@ -239,7 +297,6 @@
 
         </div>
 
-        <!-- DOCUMENTO -->
         <div class="documento">
 
           <div class="hoja">
@@ -252,33 +309,71 @@
               <i class="fa fa-file-o"></i>
             </div>
 
+            <h2 class="titulo-documento">
+
+              SOLICITUD DE PRÉSTAMO Y/O USO DE EQUIPOS
+
+            </h2>
+
+            <p>
+
+              <strong>ASUNTO:</strong>
+
+              Solicitud de autorización para el préstamo y/o uso de equipos institucionales.
+
+            </p>
+
+            <br>
+
             <h3>
+
               {{destinatario || 'DESTINATARIO'}}
+
             </h3>
 
             <p>
 
-              Yo
-
-              <strong>
-                {{nombre || 'NOMBRE COMPLETO'}}
-              </strong>,
-
-              identificado con DNI N°
-
-              {{dni || '00000000'}},
-
-              estudiante del
-
-              {{ciclo || 'CICLO'}},
-
-              perteneciente a
-
-              {{escuela || 'ESCUELA PROFESIONAL'}}.
+              De mi mayor consideración:
 
             </p>
 
             <p>
+  Yo,
+  <strong>{{nombre || 'NOMBRE COMPLETO'}}</strong>,
+  identificado(a) con DNI N.°
+  <strong>{{dni || '00000000'}}</strong>,
+  del ciclo académico
+  <strong>{{ciclo || '---'}}</strong>,
+  con correo institucional
+  <strong>{{correo || 'correo@unsm.edu.pe'}}</strong>
+  y teléfono
+  <strong>{{telefono || '---'}}</strong>,
+
+              en calidad de representante responsable del grupo solicitante,
+              me dirijo a usted para solicitar la autorización para el préstamo
+              y/o uso del siguiente equipo:
+
+              <strong>
+                {{equipo || 'EQUIPO SOLICITADO'}}
+              </strong>.
+
+            </p>
+
+            <p>
+
+              <strong>
+                Actividad o Proyecto:
+              </strong>
+
+              {{actividad || 'ACTIVIDAD O PROYECTO'}}
+
+            </p>
+
+            <p>
+
+              <strong>
+                Motivo de la Solicitud:
+              </strong>
 
               {{detalle || 'DETALLE DE LA SOLICITUD'}}
 
@@ -286,32 +381,81 @@
 
             <p>
 
-              Por lo expuesto, solicito se me otorgue
-              el permiso correspondiente para el uso
-              de
+              <strong>
+                Lugar de utilización:
+              </strong>
+
+              {{lugarUso || 'LUGAR DE UTILIZACIÓN'}}
+
+            </p>
+
+            <p>
 
               <strong>
-                {{equipo || 'EQUIPO'}}
-              </strong>.
+                Periodo solicitado:
+              </strong>
+
+              Desde
+
+              {{fechaInicio || 'FECHA INICIO'}}
+
+              hasta
+
+              {{fechaFin || 'FECHA FIN'}}
 
             </p>
 
-            <ul>
+            <p>
 
-              <li *ngFor="let a of acompanantes">
-
-                {{a}}
-
-              </li>
-
-            </ul>
-
-            <p class="despedida">
-
-              Esperando una respuesta favorable,
-              me despido de usted.
+              Nos comprometemos al adecuado uso, custodia,
+              conservación y devolución de los bienes
+              institucionales asignados, respetando las normas
+              y reglamentos establecidos por la Universidad.
 
             </p>
+
+            <h4 class="subtitulo-tabla">
+
+              RELACIÓN DE PARTICIPANTES
+
+            </h4>
+
+            <table class="tabla-participantes">
+
+              <thead>
+
+                <tr>
+
+                  <th>N°</th>
+                  <th>Apellidos y Nombres</th>
+                  <th>DNI</th>
+                  <th>Código</th>
+                  <th>Correo</th>
+
+                </tr>
+
+              </thead>
+
+              <tbody>
+
+                <tr
+                  *ngFor="let p of participantes; let i = index">
+
+                  <td>{{i + 1}}</td>
+
+                  <td>{{p.nombre}}</td>
+
+                  <td>{{p.dni}}</td>
+
+                  <td>{{p.codigo}}</td>
+
+                  <td>{{p.correo}}</td>
+
+                </tr>
+
+              </tbody>
+
+            </table>
 
             <div class="fecha-doc">
 
@@ -333,14 +477,20 @@
 
               <p>
 
-                DNI N°
+                REPRESENTANTE RESPONSABLE
+
+              </p>
+
+              <p>
+
+                DNI N.°
                 {{dni || '00000000'}}
 
               </p>
 
               <small>
 
-                {{correo || 'correo@correo.com'}}
+                {{correo || 'correo@unsm.edu.pe'}}
 
               </small>
 

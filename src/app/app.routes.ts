@@ -19,6 +19,7 @@ import { MantenimientoComponent } from './features/mantenimiento/mantenimiento.c
 import { SeguridadComponent } from './features/seguridad/seguridad.component';
 import { SuperadminComponent } from './superadmin/superadmin.component';
 import { DocPrestamosComponent } from './features/doc-prestamos/doc-prestamos.component';
+import { SolicitantesComponent } from './features/solicitantes/solicitantes.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -45,6 +46,7 @@ export const routes: Routes = [
 
   { path: 'mantenimiento', component: MantenimientoComponent },
   { path: 'gestion-institucional', component: SuperadminComponent },
+  {path: 'solicitantes', component: SolicitantesComponent},
 
   { path: '**', redirectTo: 'login' },
 ];

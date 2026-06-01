@@ -1,0 +1,358 @@
+<div class="container" [class.menu-activo]="menuAbierto">
+
+    <div class="sidebar-overlay"
+         *ngIf="menuAbierto"
+         (click)="toggleMenu()">
+    </div>
+
+    <div class="barra-lateral">
+        <app-sidebar></app-sidebar>
+    </div>
+
+    <div class="main-section">
+
+        <app-header></app-header>
+
+        <div class="contenido-principal">
+
+            <div class="page-container">
+
+                <div class="tabla-container">
+
+                    <!-- HEADER -->
+                    <div class="main-header-wrapper">
+
+                        <div class="header-titulo-wrapper"
+                             style="display:flex;align-items:center;gap:15px;">
+
+                            <button class="menu-toggle"
+                                    (click)="toggleMenu()">
+                                <i class="fa fa-bars"></i>
+                            </button>
+
+                            <div class="titulos-header">
+                                <h2>Solicitantes</h2>
+                                <p>
+                                    Gestión de personas autorizadas para solicitar equipos.
+                                </p>
+                            </div>
+
+                        </div>
+
+                        <button
+                            class="btn-principal"
+                            (click)="toggleFormulario()">
+
+                            <i class="fa fa-user-plus"></i>
+                            Registrar Solicitante
+
+                        </button>
+
+                    </div>
+
+                    <!-- FILTRO -->
+                    <div class="tabla-header-tools">
+
+                        <div class="search-box">
+                            <i class="fa fa-search"></i>
+
+                            <input
+                                type="text"
+                                placeholder="Buscar solicitante..."
+                                [(ngModel)]="filtroTexto"
+                                (input)="aplicarFiltro()">
+                        </div>
+
+                    </div>
+
+                    <!-- TABLA -->
+                    <div class="table-responsive">
+
+                        <table class="tabla-moderna">
+
+                            <thead>
+                                <tr>
+                                    <th>NOMBRES</th>
+                                    <th>APELLIDOS</th>
+                                    <th>DNI</th>
+                                    <th>CORREO</th>
+                                    <th>TELÉFONO</th>
+                                    <th>CARGO</th>
+                                    <th>CICLO</th>
+                                    <th class="text-right">ACCIONES</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                <tr *ngFor="let s of registrosPaginados">
+
+                                    <td>{{ s.nombres }}</td>
+                                    <td>{{ s.apellidos }}</td>
+                                    <td>{{ s.codigo }}</td>
+                                    <td>{{ s.correo }}</td>
+                                    <td>{{ s.telefono }}</td>
+                                    <td>{{ s.cargo }}</td>
+                                    <td>{{ s.ciclo }}</td>
+
+<td class="text-right">
+<div class="acciones-botones">
+
+    <button class="btn-icon btn-ver"
+            (click)="verSolicitante(s)"
+            title="Ver">
+        <i class="fa fa-eye"></i>
+    </button>
+
+    <button class="btn-icon btn-editar"
+            (click)="editarSolicitante(s)"
+            title="Editar">
+        <i class="fa fa-pen"></i>
+    </button>
+
+    <button class="btn-icon btn-eliminar"
+            (click)="eliminarSolicitante(s.id)"
+            title="Eliminar">
+        <i class="fa fa-trash"></i>
+    </button>
+
+</div>
+
+</td>
+
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+<!-- PAGINACIÓN -->
+<div class="paginacion-container">
+
+    <button (click)="paginaAnterior()" [disabled]="paginaActual === 1">
+        Anterior
+    </button>
+
+    <span>
+        Página {{ paginaActual }} de {{ totalPaginas }}
+    </span>
+
+    <button (click)="paginaSiguiente()" [disabled]="paginaActual === totalPaginas">
+        Siguiente
+    </button>
+
+</div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- MODAL -->
+<div
+    class="modal-overlay"
+    *ngIf="mostrarFormulario">
+
+    <div class="modal-modern">
+
+        <div class="modal-header">
+
+            <h3>
+                {{ modoEdicion ? 'Editar Solicitante' : 'Registrar Solicitante' }}
+            </h3>
+
+            <button
+                class="btn-cerrar"
+                (click)="toggleFormulario()">
+                ×
+            </button>
+
+        </div>
+
+        <form class="modal-body">
+
+            <div class="form-row">
+     <div class="form-group">
+                <label>NOMBRES</label>
+
+                <input
+                    type="text"
+                    [(ngModel)]="solicitante.nombres"
+                    name="nombres"
+                        [readonly]="modoVer">
+
+            </div>
+
+            <div class="form-group">
+                <label>APELLIDOS</label>
+
+                <input
+                    type="text"
+                    [(ngModel)]="solicitante.apellidos"
+                        [readonly]="modoVer"
+                    name="apellidos">
+            </div>
+            </div>
+
+
+            <div class="form-row">
+
+                <div class="form-group">
+                    <label>DNI</label>
+
+                    <input
+                        type="text"
+                        [(ngModel)]="solicitante.codigo"
+                            [readonly]="modoVer"
+                        name="codigo">
+                </div>
+
+                <div class="form-group">
+                    <label>TELÉFONO</label>
+
+                    <input
+                        type="text"
+                        [(ngModel)]="solicitante.telefono"
+                        name="telefono"
+                            [readonly]="modoVer">
+                </div>
+
+            </div>
+
+            <div class="form-group">
+                <label>CORREO</label>
+
+                <input
+                    type="email"
+                    [(ngModel)]="solicitante.correo"
+                    name="correo">
+            </div>
+
+            <div class="form-row">
+
+                 <div class="form-group">
+        <label>CARGO</label>
+
+        <select
+            [(ngModel)]="solicitante.cargo"
+            name="cargo"
+            (change)="onCargoChange()">
+
+            <option value="">
+                Seleccione un cargo
+            </option>
+
+            <option value="Estudiante">
+                Estudiante
+            </option>
+
+            <option value="Docente">
+                Docente
+            </option>
+
+            <option value="Otro">
+                Otro
+            </option>
+
+        </select>
+    </div>
+
+    <!-- CICLO SOLO PARA ESTUDIANTE -->
+    <div
+        class="form-group"
+        *ngIf="solicitante.cargo === 'Estudiante'">
+
+        <label>CICLO</label>
+
+        <select
+            [(ngModel)]="solicitante.ciclo"
+            name="ciclo">
+
+            <option value="">
+                Seleccione ciclo
+            </option>
+
+            <option value="I">I</option>
+            <option value="II">II</option>
+            <option value="III">III</option>
+            <option value="IV">IV</option>
+            <option value="V">V</option>
+            <option value="VI">VI</option>
+            <option value="VII">VII</option>
+            <option value="VIII">VIII</option>
+            <option value="IX">IX</option>
+            <option value="X">X</option>
+
+        </select>
+
+    </div>
+
+<div
+    class="form-group"
+    *ngIf="solicitante.cargo === 'Otro'">
+
+    <label>ESPECIFIQUE EL CARGO</label>
+
+    <input
+        type="text"
+        [(ngModel)]="cargoPersonalizado"
+        name="cargoPersonalizado"
+        placeholder="Ingrese el cargo">
+</div>
+            </div>
+
+            <div class="form-group">
+                <label>UBICACIÓN</label>
+
+                <select
+                    [(ngModel)]="solicitante.ubicacionId"
+                    name="ubicacionId">
+
+                    <option [ngValue]="0">
+                        Seleccione una ubicación
+                    </option>
+
+                    <option
+                        *ngFor="let u of ubicaciones"
+                        [ngValue]="u.id">
+
+                        {{ u.nombre }}
+
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div class="modal-footer-btns">
+
+                <button
+                    type="button"
+                    class="btn-cancelar"
+                    (click)="toggleFormulario()">
+
+                    Cancelar
+
+                </button>
+
+                <button
+                    type="button"
+                    class="btn-registrar"
+                    (click)="guardarSolicitante()">
+
+                    Guardar
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>

@@ -1,13 +1,12 @@
-/* =========================================================
-   LAYOUT PRINCIPAL
-   ========================================================= */
+
 .dashboard-layout {
   display: flex;
-  height: 100vh;
-  background-color: #f8fafc;
-  font-family: 'Poppins', sans-serif;
+  width: 100%;
+  min-height: 85vh;
+  background: #f8fafc;
   position: relative;
-  overflow: hidden;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #111827;
 }
 .main-content {
   flex: 1;
@@ -28,12 +27,11 @@
   align-items: center;
   padding-top: 20px;
 }
-/* =========================================================
-   BARRA LATERAL, HAMBURGUESA Y OVERLAY
-   ========================================================= */
+
 .barra-lateral {
   width: 250px;
   flex-shrink: 0;
+  margin-right: 30px;
   height: 100vh;
   background: #fff;
   border-right: 1px solid #e2e8f0;

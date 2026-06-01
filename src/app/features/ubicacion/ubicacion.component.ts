@@ -42,7 +42,7 @@ ubicacionSeleccionada: any = null;
 usuarioSeleccionadoId: number = 0;
 usuarios: any[] = [];
   menuAbiertoId: number | null = null;
-
+rolId: number = 0;
   nuevaUbicacion = {
     id: 0,
     nombre: '',
@@ -61,14 +61,28 @@ usuarios: any[] = [];
   private loginService: LoginService,
   private usuariosService: UsuariosService
   ) { }
+
 ngOnInit(): void {
 
-  this.usuarioActual = this.loginService.getUser()
-    || JSON.parse(localStorage.getItem('user') || 'null');
+  this.rolId = Number(localStorage.getItem('rolId')); // 🔥 PRIMERO
+
+  this.usuarioActual =
+    this.loginService.getUser() ||
+    JSON.parse(localStorage.getItem('user') || 'null');
 
   if (!this.usuarioActual) return;
 
   const usuarioId = this.usuarioActual.data.id;
+
+  if (this.esAdministrador()) {
+
+    this.cargarTodasLasUbicaciones();
+    this.cargarTiposUbicacion();
+    this.cargarUsuarios();
+
+    return;
+  }
+
 
   this.ubicacionService.getUbicacionesPorUsuario(usuarioId).subscribe({
     next: (res: any) => {
@@ -78,21 +92,68 @@ ngOnInit(): void {
         this.facultadUsuario = res[0];
         this.ubicacionesPadre = [this.facultadUsuario];
 
-        // 🔥 SOLO HIJOS DE SU FACULTAD
         this.cargarSubUbicaciones(this.facultadUsuario.id);
 
       } else {
+
         this.facultadUsuario = null;
         this.ubicacionesPadre = [];
         this.ubicaciones = [];
         this.ubicacionesFiltradas = [];
+
       }
 
       this.cargarTiposUbicacion();
-           // 🔥 FALTABA ESTO
       this.cargarUsuarios();
+    },
+    error: () => {
+
+      this.facultadUsuario = null;
+      this.ubicacionesPadre = [];
+      this.ubicaciones = [];
+      this.ubicacionesFiltradas = [];
+
     }
   });
+
+}
+private esAdministrador(): boolean {
+  const rolId = Number(localStorage.getItem('rolId'));
+  return rolId === 1;
+}
+
+recargarUbicaciones(): void {
+  if (this.esAdministrador()) {
+    this.cargarTodasLasUbicaciones();
+  } else if (this.facultadUsuario?.id) {
+    this.cargarSubUbicaciones(this.facultadUsuario.id);
+  }
+}
+cargarTodasLasUbicaciones() {
+
+  this.ubicacionService.getUbicaciones().subscribe({
+    next: (res: any) => {
+
+      const data = res?.data ?? res;
+      const lista = Array.isArray(data) ? data : [];
+
+      const esAdmin = this.rolId === 1;
+
+      if (esAdmin) {
+        this.ubicaciones = lista.filter((u: any) => {
+          const nombre = (u.nombre || '').toLowerCase().trim();
+
+          return nombre.includes('facultad') ||
+                 nombre.includes('oficina');
+        });
+      } else {
+        this.ubicaciones = lista;
+      }
+
+      this.aplicarFiltro();
+    }
+  });
+
 }
 cargarUsuarios() {
   this.usuariosService.getUsuarios().subscribe({
@@ -137,22 +198,31 @@ cargarSubUbicaciones(padreId: number) {
     event.stopPropagation();
     this.menuAbiertoId = this.menuAbiertoId === id ? null : id;
   }
+
 cargarTiposUbicacion(): Promise<void> {
   return new Promise((resolve) => {
     this.tipoUbicacionService.getTipoUbicaciones().subscribe({
       next: (res: any) => {
         const data = res?.data ?? res;
-
         const tipos = Array.isArray(data) ? data : [];
 
-        // 🔥 EXCLUIR "FACULTADES"
-        this.tiposUbicacion = tipos.filter(
-          (t: any) => t.nombre?.toLowerCase() !== 'facultades'
-        );
+        const esAdmin = this.esAdministrador();
 
-        this.idFacultades = tipos.find(
-          (t: any) => t.nombre?.toLowerCase() === 'facultades'
-        )?.id || null;
+        this.tiposUbicacion = tipos.filter((t: any) => {
+          const nombre = (t.nombre || '').toLowerCase().trim();
+
+          const esFacultadUOficina =
+            nombre.includes('facultad') ||
+            nombre.includes('oficina');
+
+          if (esAdmin) {
+            // 👑 SOLO facultades y oficinas
+            return esFacultadUOficina;
+          } else {
+            // 👤 NO admin: excluir facultades y oficinas
+            return !esFacultadUOficina;
+          }
+        });
 
         resolve();
       }
@@ -256,10 +326,7 @@ if (this.nuevaUbicacion.padreId !== null && this.nuevaUbicacion.padreId !== unde
 
   Swal.fire('OK', 'Guardado correctamente', 'success');
 
-  // 🔥 RECARGAR DATA SIN REFRESH
-  if (this.facultadUsuario?.id) {
-    this.cargarSubUbicaciones(this.facultadUsuario.id);
-  }
+this.recargarUbicaciones();
 
       },
       error: () => {
@@ -300,8 +367,7 @@ guardarAsignacionUsuario() {
         this.cerrarModalUsuario();
 
         // 🔥 refrescar SIN F5
-        this.cargarSubUbicaciones(this.facultadUsuario.id);
-      },
+this.recargarUbicaciones();      },
       error: () => {
         Swal.fire('Error', 'No se pudo asignar usuario', 'error');
       }
@@ -320,10 +386,7 @@ eliminarUbicacion(id: number) {
 
         Swal.fire('Eliminado', 'Se eliminó correctamente', 'success');
 
-        // 🔥 RECARGAR LISTA SIN F5
-        if (this.facultadUsuario?.id) {
-          this.cargarSubUbicaciones(this.facultadUsuario.id);
-        }
+      this.recargarUbicaciones();
 
       });
 

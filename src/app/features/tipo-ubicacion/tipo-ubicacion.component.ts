@@ -21,7 +21,7 @@ export class TipoUbicacionComponent implements OnInit {
   mostrarFormulario = false;
   editando = false;
   menuAbierto: boolean = false;
-
+rolId: number = 0;
   // Se agregó 'descripcion' para coincidir con la UI
   nuevaUbicacion = {
     id: 0,
@@ -37,9 +37,12 @@ export class TipoUbicacionComponent implements OnInit {
     private router: Router
   ) { }
 
-  ngOnInit(): void {
-    this.cargarUbicaciones();
-  }
+ngOnInit(): void {
+  const rol = localStorage.getItem('rolId');
+  this.rolId = rol ? Number(rol) : 0;
+
+  this.cargarUbicaciones();
+}
   toggleMenu() { this.menuAbierto = !this.menuAbierto; }
 
   verUbicaciones(tipoId: number) {
@@ -51,11 +54,22 @@ cargarUbicaciones() {
     next: (resp: any) => {
       console.log('RESPUESTA:', resp);
 
-this.ubicaciones = Array.isArray(resp.data)
-  ? resp.data.filter((u: any) =>
-      u.nombre.toLowerCase() !== 'facultades'
-    )
-  : [];
+      const data = Array.isArray(resp.data) ? resp.data : [];
+
+ this.ubicaciones = data.filter((u: any) => {
+  const nombre = (u.nombre || '').toLowerCase();
+
+  if (this.rolId === 1) {
+    // 👑 ADMIN: SOLO facultades y oficinas
+    return nombre === 'facultades' || nombre === 'oficinas';
+  }
+
+  // 👤 otros roles: ocultar esas 2
+  return nombre !== 'facultades'
+      && nombre !== 'oficinas'
+      && nombre !== '';
+});
+
       this.aplicarFiltro();
     },
     error: (err) => {

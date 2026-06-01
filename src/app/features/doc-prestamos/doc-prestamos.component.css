@@ -1,23 +1,28 @@
-/* =========================
-   RESET
-========================= */
 
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:'Inter',sans-serif;
-}
-
-body{
-  background:#f1f5f9;
-  color:#0f172a;
-  overflow:hidden;
-}
 
 /* =========================
-   APP
+   SCROLLBAR
 ========================= */
+
+::-webkit-scrollbar{
+  width:8px;
+  height:8px;
+}
+
+::-webkit-scrollbar-track{
+  background:transparent;
+}
+
+::-webkit-scrollbar-thumb{
+  background:#94a3b8;
+  border-radius:20px;
+}
+
+::-webkit-scrollbar-thumb:hover{
+  background:#64748b;
+}
+
+
 
 .container-app{
   display:flex;
@@ -26,20 +31,15 @@ body{
   overflow:hidden;
 }
 
-/* =========================
-   SIDEBAR
-========================= */
+
 
 .barra-lateral{
   width:240px;
   min-width:240px;
-  background:#0f172a;
   border-right:1px solid #1e293b;
 }
 
-/* =========================
-   MAIN
-========================= */
+
 
 .main-section{
   flex:1;
@@ -48,64 +48,51 @@ body{
   overflow:hidden;
 }
 
-
-
 .contenido{
   flex:1;
   display:flex;
-  gap:18px;
-  padding:20px 50px;
+  gap:20px;
+  padding:20px 40px;
   overflow:hidden;
 }
 
-/* =========================
-   PANEL FORMULARIO
-========================= */
+
 
 .panel-formulario{
-  width:360px;
-  min-width:360px;
+  width:400px;
+  margin-left: 20px;
+  min-width:400px;
   overflow-y:auto;
-  padding-right:4px;
+  padding-right:6px;
 }
-
-/* =========================
-   CARD
-========================= */
 
 .card-formulario{
   background:white;
-  border-radius:20px;
-  padding:20px;
+  border-radius:18px;
+  padding:22px;
   border:1px solid #e2e8f0;
 
   box-shadow:
-  0 4px 18px rgba(15,23,42,.05);
+  0 10px 25px rgba(0,0,0,.05);
 }
 
-/* =========================
-   HEADER
-========================= */
 
 .titulo-formulario{
-  margin-bottom:22px;
+  margin-bottom:25px;
 }
 
 .titulo-formulario h2{
-  font-size:22px;
+  font-size:24px;
   font-weight:800;
   color:#0f172a;
 }
 
 .titulo-formulario p{
-  margin-top:4px;
   color:#64748b;
+  margin-top:4px;
   font-size:13px;
 }
 
-/* =========================
-   GRUPOS
-========================= */
 
 .grupo{
   margin-bottom:18px;
@@ -114,22 +101,18 @@ body{
 .grupo label{
   display:block;
   margin-bottom:8px;
-  font-size:11px;
+  font-size:12px;
   font-weight:700;
-  letter-spacing:.7px;
-  color:#475569;
+  letter-spacing:.5px;
+  color:#334155;
 }
 
 .grupo small{
   display:block;
-  margin-bottom:6px;
-  font-size:11px;
+  margin-bottom:5px;
   color:#64748b;
+  font-size:11px;
 }
-
-/* =========================
-   INPUTS
-========================= */
 
 input,
 textarea,
@@ -138,10 +121,6 @@ select{
   width:100%;
 
   border:1px solid #dbe2ea;
-
-  outline:none;
-
-  background:#fff;
 
   border-radius:12px;
 
@@ -153,29 +132,25 @@ select{
 
   margin-bottom:10px;
 
-  transition:.2s;
+  outline:none;
 
-  box-shadow:none;
+  transition:.2s;
 }
 
 textarea{
   resize:vertical;
-  min-height:90px;
 }
 
 input:focus,
 textarea:focus,
 select:focus{
 
-  border-color:#3b82f6;
+  border-color:#2563eb;
 
   box-shadow:
-  0 0 0 3px rgba(59,130,246,.10);
+  0 0 0 3px rgba(37,99,235,.12);
 }
 
-/* =========================
-   GRID
-========================= */
 
 .grid-2{
   display:grid;
@@ -183,47 +158,73 @@ select:focus{
   gap:10px;
 }
 
-/* =========================
-   ACOMPAÑANTES
-========================= */
-
-.add-acompanante{
-  display:flex;
-  gap:8px;
-  margin-bottom:10px;
-}
 
 .btn-add{
 
-  width:42px;
-  min-width:42px;
-
   border:none;
-
-  border-radius:10px;
 
   background:#2563eb;
 
   color:white;
 
+  border-radius:10px;
+
+  padding:12px 16px;
+
   cursor:pointer;
 
-  font-size:14px;
-}
-
-.acompanante{
   display:flex;
   align-items:center;
+  justify-content:center;
   gap:8px;
-  margin-bottom:8px;
+
+  margin-top:5px;
+
+  transition:.2s;
 }
 
-.acompanante span{
-  font-size:12px;
+.btn-add:hover{
+  opacity:.9;
+}
+
+/* =========================
+   PARTICIPANTES
+========================= */
+
+.participante-item{
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+
+  padding:12px;
+
+  border:1px solid #e2e8f0;
+
+  border-radius:12px;
+
+  margin-top:10px;
+
+  background:#f8fafc;
+}
+
+.participante-info{
+  display:flex;
+  flex-direction:column;
+}
+
+.participante-info strong{
+  font-size:13px;
+}
+
+.participante-info small{
+  margin-top:3px;
   color:#64748b;
 }
 
-.acompanante button{
+.btn-delete{
 
   width:38px;
   height:38px;
@@ -237,10 +238,16 @@ select:focus{
   color:#dc2626;
 
   cursor:pointer;
+
+  transition:.2s;
+}
+
+.btn-delete:hover{
+  background:#fecaca;
 }
 
 /* =========================
-   BOTON
+   BOTON PRINCIPAL
 ========================= */
 
 .btn-generar{
@@ -253,22 +260,24 @@ select:focus{
 
   padding:14px;
 
-  font-size:13px;
-
-  font-weight:700;
+  background:#0f172a;
 
   color:white;
 
-  background:#0f172a;
+  font-size:14px;
+
+  font-weight:700;
 
   cursor:pointer;
 
-  transition:.2s;
-
   display:flex;
-  align-items:center;
   justify-content:center;
+  align-items:center;
   gap:8px;
+
+  margin-top:15px;
+
+  transition:.2s;
 }
 
 .btn-generar:hover{
@@ -282,26 +291,21 @@ select:focus{
 .panel-preview{
   flex:1;
   overflow:auto;
+  padding-right:5px;
 }
 
-/* =========================
-   HEADER PREVIEW
-========================= */
-
 .header-preview{
-  margin-bottom:14px;
+  margin-bottom:15px;
 }
 
 .header-preview h2{
   font-size:24px;
   font-weight:800;
-  color:#0f172a;
 }
 
 .header-preview p{
-  margin-top:4px;
   color:#64748b;
-  font-size:13px;
+  margin-top:4px;
 }
 
 /* =========================
@@ -313,27 +317,23 @@ select:focus{
   justify-content:center;
 }
 
-/* =========================
-   HOJA
-========================= */
-
 .hoja{
 
   width:100%;
-  max-width:850px;
+  max-width:900px;
 
   background:white;
 
-  padding:55px;
+  border-radius:16px;
 
-  border-radius:18px;
+  padding:60px;
 
   position:relative;
 
   border:1px solid #e2e8f0;
 
   box-shadow:
-  0 10px 30px rgba(15,23,42,.06);
+  0 10px 30px rgba(15,23,42,.08);
 }
 
 /* =========================
@@ -349,9 +349,9 @@ select:focus{
 
   transform:
   translate(-50%,-50%)
-  rotate(-25deg);
+  rotate(-30deg);
 
-  font-size:120px;
+  font-size:140px;
 
   font-weight:900;
 
@@ -367,10 +367,14 @@ select:focus{
 ========================= */
 
 .icon-doc{
+
   position:absolute;
+
   top:25px;
   right:25px;
+
   font-size:30px;
+
   color:#cbd5e1;
 }
 
@@ -378,38 +382,83 @@ select:focus{
    TITULO DOCUMENTO
 ========================= */
 
-.hoja h3{
-  font-size:20px;
-  line-height:1.5;
-  margin-bottom:35px;
+.titulo-documento{
+
+  text-align:center;
+
+  font-size:22px;
+
+  font-weight:800;
+
+  margin-bottom:30px;
+
   color:#111827;
 }
 
-/* =========================
-   PARRAFOS
-========================= */
+.hoja h3{
+
+  font-size:18px;
+
+  margin-bottom:20px;
+
+  color:#111827;
+}
 
 .hoja p{
+
   font-size:15px;
+
   line-height:1.9;
+
   text-align:justify;
-  color:#1e293b;
-  margin-bottom:22px;
+
+  margin-bottom:18px;
 }
 
 /* =========================
-   LISTA
+   TABLA
 ========================= */
 
-.hoja ul{
-  margin-left:20px;
-  margin-bottom:25px;
+.subtitulo-tabla{
+
+  margin-top:30px;
+  margin-bottom:15px;
+
+  font-size:16px;
+
+  color:#111827;
 }
 
-.hoja li{
-  font-size:15px;
-  margin-bottom:8px;
-  line-height:1.7;
+.tabla-participantes{
+
+  width:100%;
+
+  border-collapse:collapse;
+
+  margin-bottom:35px;
+}
+
+.tabla-participantes th,
+.tabla-participantes td{
+
+  border:1px solid #cbd5e1;
+
+  padding:10px;
+
+  font-size:13px;
+}
+
+.tabla-participantes th{
+
+  background:#f8fafc;
+
+  text-align:center;
+
+  font-weight:700;
+}
+
+.tabla-participantes td{
+  text-align:left;
 }
 
 /* =========================
@@ -417,10 +466,12 @@ select:focus{
 ========================= */
 
 .fecha-doc{
+
+  margin-top:40px;
+
   text-align:right;
-  margin-top:60px;
+
   font-size:15px;
-  color:#111827;
 }
 
 /* =========================
@@ -428,30 +479,39 @@ select:focus{
 ========================= */
 
 .firma{
+
   margin-top:90px;
+
   text-align:center;
 }
 
 .linea{
-  width:220px;
+
+  width:260px;
+
   border-top:1px solid #111827;
+
   margin:auto;
+
   margin-bottom:12px;
 }
 
 .firma h4{
+
   font-size:18px;
+
   color:#111827;
 }
 
 .firma p{
+
   text-align:center;
+
   margin:4px 0;
 }
 
 .firma small{
   color:#64748b;
-  font-size:12px;
 }
 
 /* =========================
@@ -479,11 +539,6 @@ select:focus{
 
   .contenido{
     padding:10px;
-    gap:12px;
-  }
-
-  .card-formulario{
-    padding:16px;
   }
 
   .grid-2{
@@ -494,13 +549,12 @@ select:focus{
     padding:25px;
   }
 
-  .hoja h3{
-    font-size:17px;
+  .titulo-documento{
+    font-size:18px;
   }
 
-  .hoja p,
-  .hoja li{
-    font-size:14px;
+  .tabla-participantes{
+    font-size:11px;
   }
 
   .marca-agua{
@@ -526,13 +580,24 @@ select:focus{
   }
 
   .panel-preview{
+    width:100%;
     padding:0;
   }
 
   .hoja{
-    box-shadow:none;
-    border:none;
-    border-radius:0;
+
     max-width:100%;
+
+    border:none;
+
+    border-radius:0;
+
+    box-shadow:none;
+
+    padding:40px;
+  }
+
+  .marca-agua{
+    opacity:.04;
   }
 }

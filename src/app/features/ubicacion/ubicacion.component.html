@@ -84,11 +84,11 @@
 </div>
 
 <div class="form-group-full">
-  <label>Ubicación Padre</label>
+  <label>Facultad</label>
 
   <select [(ngModel)]="nuevaUbicacion.padreId" name="padreId">
 
-    <option [ngValue]="null">Sin padre</option>
+    <option [ngValue]="null">Sin facultad</option>
 
     <!-- SOLO FACULTAD DEL USUARIO -->
     <option *ngIf="facultadUsuario" [ngValue]="facultadUsuario.id">

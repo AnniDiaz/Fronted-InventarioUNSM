@@ -40,8 +40,14 @@ idsUbicacionesPermitidas: number[] = [];
 firmaResponsableImg: string = '';
 firmaSolicitanteImg: string = '';
 ngAfterViewInit() {
-  this.iniciarFirma(this.firmaResponsableCanvas.nativeElement);
-  this.iniciarFirma(this.firmaSolicitanteCanvas.nativeElement);
+
+  if (this.firmaResponsableCanvas?.nativeElement) {
+    this.iniciarFirma(this.firmaResponsableCanvas.nativeElement);
+  }
+
+  if (this.firmaSolicitanteCanvas?.nativeElement) {
+    this.iniciarFirma(this.firmaSolicitanteCanvas.nativeElement);
+  }
 }
 registrarTodo(){};
 iniciarFirma(canvas: HTMLCanvasElement) {
