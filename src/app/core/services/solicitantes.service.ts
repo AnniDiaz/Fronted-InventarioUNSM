@@ -14,6 +14,11 @@ export class SolicitantesService {
     return this.httpClient.get<any>(`${baseUrl}/Solicitantes`);
   }
 
+  getSolicitantesPorUsuario(usuarioId: number): Observable<any> {
+  return this.httpClient.get<any>(
+    `${baseUrl}/Solicitantes/por-usuario/${usuarioId}`
+  );
+}
   public getSolicitanteById(id: number): Observable<any> {
     return this.httpClient.get<any>(`${baseUrl}/Solicitantes/${id}`);
   }

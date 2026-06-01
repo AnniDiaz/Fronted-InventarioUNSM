@@ -22,7 +22,7 @@ import { RouterModule } from '@angular/router';
 export class PrestamoComponent implements OnInit {
 
   p: number = 1;
-  // --- Propiedades para el Layout Responsivo ---
+aprobado: boolean = false;  // --- Propiedades para el Layout Responsivo ---
   menuAbierto = false; // Controla si el menú lateral se muestra en móviles
 listaUbicaciones: any[] = [];
 idsUbicacionesPermitidas: number[] = [];
@@ -30,7 +30,6 @@ idsUbicacionesPermitidas: number[] = [];
   prestamos: any[] = [];
   prestamosFiltrados: any[] = [];
   articulosDisponibles: any[] = [];
-
   mostrarFormulario = false;
   filtroTexto: string = '';
   filtroFecha: string = '';
@@ -172,6 +171,107 @@ cargarPrestamos() {
       this.aplicarFiltro();
     }
   });
+}
+cambiarAEstado2(prestamo: any) {
+
+  Swal.fire({
+    title: '¿Cambiar estado?',
+    text: 'Se cambiará el estado a 2',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Sí, cambiar',
+    cancelButtonText: 'Cancelar'
+  }).then(result => {
+
+    if (result.isConfirmed) {
+
+      this._prestamosService
+        .cambiarEstado2(prestamo.id)
+        .subscribe({
+          next: () => {
+
+            Swal.fire('OK', 'Estado actualizado', 'success');
+            this.cargarPrestamos();
+
+          },
+          error: (err) => {
+
+            Swal.fire('Error', err?.error?.message || 'No se pudo actualizar', 'error');
+
+          }
+        });
+
+    }
+
+  });
+
+}
+verPDF(prestamo: any) {
+
+  if (!prestamo.rutaPdf) {
+    Swal.fire('Error', 'No hay PDF disponible', 'error');
+    return;
+  }
+
+  const url = `http://localhost:7000/${prestamo.rutaPdf}`;
+
+  Swal.fire({
+    title: 'Vista del documento',
+    html: `
+      <iframe
+        src="${url}"
+        width="100%"
+        height="500px"
+        style="border:none;">
+      </iframe>
+    `,
+    width: '800px',
+    showCloseButton: true,
+    showConfirmButton: false
+  });
+}
+aprobarPrestamo(p: any) {
+
+  Swal.fire({
+    title: '¿Estás seguro?',
+    text: 'Se aprobará el préstamo',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Sí, aprobar',
+    cancelButtonText: 'Cancelar',
+    confirmButtonColor: '#16a34a',
+    cancelButtonColor: '#ef4444'
+  }).then((result) => {
+
+    if (result.isConfirmed) {
+
+      this._prestamosService.cambiarEstado2(p.id).subscribe({
+        next: () => {
+
+          p.aprobado = true; // oculta botón
+
+          Swal.fire({
+            icon: 'success',
+            title: 'Aprobado',
+            text: 'El préstamo fue aprobado correctamente'
+          });
+
+        },
+        error: () => {
+
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo aprobar el préstamo'
+          });
+
+        }
+      });
+
+    }
+
+  });
+
 }
 aplicarFiltroPrestamos() {
 
@@ -337,7 +437,7 @@ const dataParaEnviar = {
         const updateData = {
           ...prestamo,
           Id: idFinal,
-          Estado: 0,
+          Estado: 1,
           EstadoPrestamo: false
         };
 

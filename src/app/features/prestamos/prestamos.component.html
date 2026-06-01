@@ -62,13 +62,32 @@
                                             {{ p.estadoPrestamo ? 'ACTIVO' : 'DEVUELTO' }}
                                         </span>
                                     </td>
-                                    <td class="text-right">
-                                        <button *ngIf="p.estadoPrestamo"
-                                            class="btn-action-devuelto"
-                                            (click)="marcarDevuelto(p)">
-                                            Devolver
-                                        </button>
-                                    </td>
+                      <td class="text-right">
+
+    <!-- VER PDF -->
+    <button class="btn-icon btn-pdf"
+        (click)="verPDF(p)"
+        title="Ver PDF">
+        <i class="fa fa-file-pdf"></i>
+    </button>
+
+    <!-- APROBAR -->
+    <button class="btn-icon btn-ok"
+        *ngIf="!p.aprobar"
+        (click)="aprobarPrestamo(p)"
+        title="Aprobar">
+        <i class="fa fa-check"></i>
+    </button>
+
+    <!-- DEVOLVER -->
+    <button class="btn-icon btn-return"
+        *ngIf="p.estadoPrestamo"
+        (click)="marcarDevuelto(p)"
+        title="Devolver">
+        <i class="fa fa-rotate-left"></i>
+    </button>
+
+</td>
                                 </tr>
                             </tbody>
                         </table>

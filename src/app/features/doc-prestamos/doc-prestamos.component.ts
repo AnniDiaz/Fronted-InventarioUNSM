@@ -14,7 +14,10 @@ import { ArticuloService } from '../../core/services/articulos.service';
 import { SolicitantesComponent } from '../solicitantes/solicitantes.component';
 import { SolicitantesService } from '../../core/services/solicitantes.service';
 import { PrestamosService } from '../../core/services/prestamos.service';
-
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import { Router } from '@angular/router';
+import Swal from 'sweetalert2';
 @Component({
   selector: 'app-doc-prestamos',
   standalone: true,
@@ -37,12 +40,16 @@ export class DocPrestamosComponent implements OnInit {
 solicitantes: any[] = [];
 solicitantesFiltrados: any[] = [];
 solicitanteSeleccionado: any = null;
+@ViewChild('documentoPDF', { static: false })
+documentoPDF!: ElementRef;
 
 nombreSolicitanteCtrl = '';
   constructor(
     private articuloService: ArticuloService,
     private solicitanteService: SolicitantesService,
-      private prestamoService: PrestamosService
+      private prestamoService: PrestamosService,
+        private router: Router
+
 
   ) {}
 
@@ -127,37 +134,94 @@ ngAfterViewInit(): void {
   // No hacemos nada si no hay referencia en HTML
 }
 
-generarPrestamo(): void {
-const prestamo = {
-  articuloId: this.articuloId,
-    solicitanteId: this.solicitanteId, // 👈 NUEVO
+async generarPrestamo(): Promise<void> {
 
-  nombreSolicitante: this.nombre,
-  fechaPrestamo: this.fechaInicio
-    ? new Date(this.fechaInicio).toISOString()
-    : new Date().toISOString(),
-
-  fechaDevolucion: this.fechaFin
-    ? new Date(this.fechaFin).toISOString()
-    : new Date().toISOString(),
-
-  estado: 0,
-  estadoPrestamo: true
-};
+  const prestamo = {
+    articuloId: this.articuloId,
+    solicitanteId: this.solicitanteId,
+    nombreSolicitante: this.nombre,
+    fechaPrestamo: this.fechaInicio
+      ? new Date(this.fechaInicio).toISOString()
+      : new Date().toISOString(),
+    fechaDevolucion: this.fechaFin
+      ? new Date(this.fechaFin).toISOString()
+      : new Date().toISOString(),
+    estado: 0,
+    estadoPrestamo: true
+  };
 
   this.prestamoService.addPrestamo(prestamo).subscribe({
-    next: (res) => {
-      this.prestamos.push(res);
-      alert('Préstamo generado correctamente');
-      this.limpiarFormulario();
+    next: async (res: any) => {
+
+      const pdfBlob = await this.generarPDFBlob();
+
+      const formData = new FormData();
+      formData.append('file', pdfBlob, 'prestamo.pdf');
+      formData.append('prestamoId', String(res.data?.id ?? res.id));
+
+      this.prestamoService.uploadPDF(formData).subscribe({
+        next: () => {
+
+          Swal.fire({
+            icon: 'success',
+            title: '¡Éxito!',
+            text: 'Préstamo y PDF guardados correctamente',
+             confirmButtonText: 'OK'
+
+          }).then(() => {
+            this.limpiarFormulario();
+            this.router.navigate(['/prestamos']);
+          });
+
+        },
+        error: (err) => {
+
+          console.error(err);
+
+          Swal.fire({
+            icon: 'error',
+            title: 'Error al subir PDF',
+            text: err?.error?.message || 'Ocurrió un problema al guardar el PDF'
+          });
+
+        }
+      });
+
     },
     error: (err) => {
+
       console.error(err);
-      alert('Error al generar préstamo');
+
+      Swal.fire({
+        icon: 'error',
+        title: 'Error al crear préstamo',
+        text: err?.error?.errors || 'No se pudo generar el préstamo'
+      });
+
     }
   });
 }
 
+async generarPDFBlob(): Promise<Blob> {
+  const element = this.documentoPDF.nativeElement;
+
+  const canvas = await html2canvas(element, {
+    scale: 2
+  });
+
+  const imgData = canvas.toDataURL('image/png');
+
+  const pdf = new jsPDF('p', 'mm', 'a4');
+
+  const imgProps = pdf.getImageProperties(imgData);
+
+  const pdfWidth = pdf.internal.pageSize.getWidth();
+  const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+  pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+
+  return pdf.output('blob'); // 🔥 importante
+}
 filtrarSolicitantes(event: any): void {
   const value = event.target.value.toLowerCase();
 

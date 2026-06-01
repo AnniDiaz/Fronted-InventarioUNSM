@@ -213,16 +213,17 @@ onArticuloChange(articuloId: any): void {
       Swal.fire('Atención', 'El destino no puede ser igual al origen', 'warning');
       return;
     }
+const usuario = JSON.parse(localStorage.getItem('user') || '{}');
+const usuarioId = usuario?.data?.id;
 
-    const payload = {
-      articuloId: this.nuevoTraslado.articulo,
-      ubicacionOrigenId: this.nuevoTraslado.origen,
-      ubicacionDestinoId: this.nuevoTraslado.destino,
-      fechaTraslado: new Date().toISOString(),
-      observaciones: this.nuevoTraslado.observaciones,
-      usuarioId: 1
-    };
-
+const payload = {
+  articuloId: Number(this.nuevoTraslado.articulo),
+  ubicacionOrigenId: Number(this.nuevoTraslado.origen),
+  ubicacionDestinoId: Number(this.nuevoTraslado.destino),
+  fechaTraslado: new Date().toISOString(),
+  observaciones: this.nuevoTraslado.observaciones,
+  usuarioId: usuarioId
+};
     this.trasladoService.realizarTraslado(payload).subscribe({
       next: () => {
         Swal.fire('¡Éxito!', 'Traslado registrado correctamente', 'success');

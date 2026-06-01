@@ -116,15 +116,15 @@ verSolicitante(item: any) {
 
   this.mostrarFormulario = true;
 }
- cargarSolicitantes() {
+cargarSolicitantes() {
 
-  this.solicitantesService.getSolicitantes().subscribe({
+  const usuario = this.loginService.getUser();
+  const usuarioId = usuario?.data?.id;
+
+  this.solicitantesService.getSolicitantesPorUsuario(usuarioId).subscribe({
     next: (res: any) => {
-
       this.solicitantes = res.data || [];
-
-      this.aplicarPaginacion(); // 👈 importante
-
+      this.aplicarPaginacion();
     },
     error: (err) => {
       console.error(err);

@@ -15,11 +15,21 @@ export class PrestamosService {
     public getPrestamos(): Observable<any> {
         return this.httpClient.get<any[]>(this.url);
     }
-
+public uploadPDF(formData: FormData): Observable<any> {
+  return this.httpClient.post<any>(
+    `${this.url}/upload-pdf`,
+    formData
+  );
+}
     public getPrestamoById(id: number): Observable<any> {
         return this.httpClient.get<any>(`${this.url}/${id}`);
     }
-
+public cambiarEstado2(id: number): Observable<any> {
+  return this.httpClient.put<any>(
+    `${this.url}/${id}/estado/2`,
+    {}
+  );
+}
     public addPrestamo(prestamo: any): Observable<any> {
         return this.httpClient.post<any>(this.url, prestamo);
     }

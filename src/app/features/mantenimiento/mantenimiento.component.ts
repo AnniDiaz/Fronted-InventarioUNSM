@@ -141,7 +141,7 @@ cargarMantenimientos(): void {
         TipoMantenimiento: this.nuevoMantenimiento.tipo,
         FechaMantenimiento: new Date(this.nuevoMantenimiento.fecha).toISOString(),
         ProveedorServicion: this.nuevoMantenimiento.proveedor,
-        Costo: Number(this.nuevoMantenimiento.costo),
+        Costo: 0,
         Observaciones: this.nuevoMantenimiento.observaciones,
         EstadoMantenimiento: true // Se mantiene pendiente si se edita
       };
@@ -158,10 +158,16 @@ cargarMantenimientos(): void {
           this.cargarMantenimientos();
           this.toggleFormulario();
         },
-        error: (err) => {
-          console.error("Error en API:", err);
-          Swal.fire('Error', 'Hubo un problema al procesar la solicitud.', 'error');
-        }
+error: (err) => {
+  console.error("Error completo:", err);
+
+  const mensaje =
+    err?.error?.Errors ||   // 👈 ESTE ES EL CORRECTO
+    err?.error?.Message ||
+    'Hubo un problema al procesar la solicitud.';
+
+  Swal.fire('Atención', mensaje, 'warning');
+}
       });
 
     } catch (error) {
@@ -178,7 +184,7 @@ cargarMantenimientos(): void {
       tipo: mantenimiento.tipoMantenimiento,
       fecha: mantenimiento.fechaMantenimiento ? mantenimiento.fechaMantenimiento.split('T')[0] : '',
       proveedor: mantenimiento.proveedorServicion,
-      costo: mantenimiento.costo,
+      costo: 0,
       observaciones: mantenimiento.observaciones
     };
     this.mostrarFormulario = true;
@@ -209,10 +215,11 @@ cargarMantenimientos(): void {
         const updateData = {
           Id: idFinal, // <--- Aquí ya no será undefined
           ArticuloId: mantenimiento.articuloId,
+          Observaciones: mantenimiento.observaciones,
           TipoMantenimiento: mantenimiento.tipoMantenimiento,
           FechaMantenimiento: mantenimiento.fechaMantenimiento,
           ProveedorServicion: mantenimiento.proveedorServicion,
-          Costo: mantenimiento.costo,
+          Costo: 0,
           Estado: true,
           EstadoMantenimiento: false
         };
