@@ -51,9 +51,11 @@ cargarUbicaciones() {
     next: (resp: any) => {
       console.log('RESPUESTA:', resp);
 
-      // 🔥 AQUÍ ESTÁ EL FIX
-      this.ubicaciones = Array.isArray(resp.data) ? resp.data : [];
-
+this.ubicaciones = Array.isArray(resp.data)
+  ? resp.data.filter((u: any) =>
+      u.nombre.toLowerCase() !== 'facultades'
+    )
+  : [];
       this.aplicarFiltro();
     },
     error: (err) => {

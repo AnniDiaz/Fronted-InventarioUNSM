@@ -25,10 +25,9 @@ export class ArticuloTipoArticuloComponent implements OnInit {
   tipoArticuloId!: number;
   nombreTipoArticulo: string = '';
   encabezados: string[] = [];
-
+ubicacionUsuarioId!: number;
   camposDefinidos: { id: number, nombreCampo: string, tipoDato: string, tipoArticuloId: number }[] = [];
-  ubicaciones: { id: number, nombre: string }[] = [];
-
+ubicaciones: any[] = [];
   mostrarFormulario = false;
   modoFormulario: 'crear' | 'editar' = 'crear';
   formulario: any = {};
@@ -39,6 +38,7 @@ columnaAlias: Record<string, string> = {
   QRCodeBase64: 'QR',
   CodigoPatrimonial: 'Código',
   Nombre: 'Nombre',
+
   FechaAdquision: 'Fecha',
   ValorAdquisitivo: 'Valor',
   Condicion: 'Condición',
@@ -55,28 +55,49 @@ columnaAlias: Record<string, string> = {
     private ubicacionService: UbicacionService
   ) {}
 
-  ngOnInit(): void {
-    this.tipoArticuloId = Number(this.route.snapshot.paramMap.get('id'));
-    this.cargarArticulos(this.tipoArticuloId);
-    this.cargarUbicaciones();
-this.tipoArticuloService.getTipoArticuloById(this.tipoArticuloId).subscribe({
-  next: (response: any) => {
+async ngOnInit(): Promise<void> {
+  this.tipoArticuloId = Number(this.route.snapshot.paramMap.get('id'));
 
-const data = response?.data;
+  // 🔥 PRIMERO CARGA UBICACIONES DEL USUARIO
+  await this.obtenerUbicacionUsuario();
 
-const tipo = Array.isArray(data)
-  ? data.find((x: any) => Number(x.id) === Number(this.tipoArticuloId))
-  : data && Number(data.id) === Number(this.tipoArticuloId)
-    ? data
-    : null;
+  // luego todo normal
+  await this.cargarUbicaciones();
+  this.cargarArticulos(this.tipoArticuloId);
+}
+async obtenerUbicacionUsuario(): Promise<void> {
+  return new Promise((resolve) => {
 
-    this.nombreTipoArticulo = tipo?.nombre ?? `Tipo ID ${this.tipoArticuloId}`;
-  },
-  error: () => {
-    this.nombreTipoArticulo = `Tipo ID ${this.tipoArticuloId}`;
-  }
-});
-  }
+    const usuario = JSON.parse(localStorage.getItem('user') || 'null');
+    const usuarioId = usuario?.data?.id ?? 0;
+
+    if (!usuarioId) {
+      console.warn('❌ Usuario sin ID');
+      this.ubicacionUsuarioId = 0;
+      resolve();
+      return;
+    }
+
+    this.ubicacionService.getUbicacionesPorUsuario(usuarioId).subscribe({
+      next: (res: any) => {
+
+        const lista = res?.data ?? res ?? [];
+
+        console.log('📍 UBICACIONES USUARIO:', lista);
+
+        this.ubicacionUsuarioId = lista[0]?.id ?? 0;
+
+        console.log('✅ UBICACION USUARIO FINAL:', this.ubicacionUsuarioId);
+
+        resolve();
+      },
+      error: () => {
+        this.ubicacionUsuarioId = 0;
+        resolve();
+      }
+    });
+  });
+}
 get safeEncabezados(): string[] {
   return Array.isArray(this.encabezados)
     ? this.encabezados
@@ -94,47 +115,107 @@ get safeEncabezados(): string[] {
   return qr.toDataURL(); // 🔥 devuelve imagen completa
 }
 cargarArticulos(id: number) {
+  console.log('🔥 ENTRANDO A cargarArticulos con ID:', id);
+
   this.articuloService.getPivotPorTipo(id).subscribe({
     next: (res: any) => {
 
-      const dataRaw = res?.data;
+      // 🔥 DEBUG PRINCIPAL (RESPUESTA BACKEND)
+      console.log('📦 RESPUESTA BACKEND ARTICULOS:', res);
 
-      // 🔥 FORZAR ARRAY SIEMPRE
+      const dataRaw = res?.data?.data ?? res?.data;
+
+      console.log('📦 DATA RAW:', dataRaw);
+
       const data = Array.isArray(dataRaw)
         ? dataRaw
         : dataRaw
           ? [dataRaw]
           : [];
 
+      console.log('📦 DATA FINAL (ARRAY):', data);
+
       if (data.length === 0) {
+        console.warn('⚠️ NO HAY ARTICULOS');
         this.encabezados = [];
         this.articulos = [];
         this.articulosFiltrados = [];
         return;
       }
 
-      const cleanedData = data.map((item: any) => {
-        const newItem: any = {};
-        Object.keys(item || {}).forEach(k => {
-          newItem[k.trim()] = item[k];
-        });
-        return newItem;
+      console.log('👤 UBICACION USUARIO:', this.ubicacionUsuarioId);
+      console.log('📍 LISTA UBICACIONES:', this.ubicaciones);
+
+      // 🔥 si no hay usuario válido → mostrar todo
+      if (!this.ubicacionUsuarioId || this.ubicacionUsuarioId <= 0) {
+        console.warn('⚠️ USUARIO SIN UBICACION → SE MUESTRA TODO');
+        const cleaned = this.limpiar(data);
+        this.setData(cleaned);
+        return;
+      }
+
+      // 🔥 FILTRO REAL
+      const filtrados = data.filter((item: any) => {
+        const ubicacionArticulo = Number(item?.UbicacionId ?? 0);
+
+        const ubicacion = this.ubicaciones.find(u => u.id === ubicacionArticulo);
+
+        console.log('---------------------------');
+        console.log('Articulo UbicacionId:', ubicacionArticulo);
+        console.log('Ubicacion encontrada:', ubicacion);
+        console.log('PadreId:', ubicacion?.PadreId);
+        console.log('Usuario UbicacionId:', this.ubicacionUsuarioId);
+
+        const cumple =
+          ubicacion &&
+          Number(ubicacion.PadreId) === Number(this.ubicacionUsuarioId);
+
+        console.log('¿PASA FILTRO?', cumple);
+
+        return cumple;
       });
 
-      // 🔥 ENCABEZADOS SIEMPRE ARRAY
-      this.encabezados = Object.keys(cleanedData[0] || {});
+      console.log('✅ ARTICULOS FILTRADOS:', filtrados);
 
-      // 🔥 FORZAR ARRAYS
-      this.articulos = [...cleanedData];
-      this.articulosFiltrados = [...cleanedData];
+      const cleaned = this.limpiar(filtrados);
+      this.setData(cleaned);
     },
+
     error: (err) => {
-      console.error('Error al obtener artículos pivot', err);
+      console.error('❌ ERROR AL OBTENER ARTICULOS:', err);
       this.articulos = [];
       this.articulosFiltrados = [];
       this.encabezados = [];
     }
   });
+}
+limpiar(data: any[]) {
+  return data.map((item: any) => {
+    const newItem: any = {};
+    Object.keys(item || {}).forEach(k => {
+      newItem[k.trim()] = item[k];
+    });
+    return newItem;
+  });
+}
+setData(cleanedData: any[]) {
+  this.encabezados = Object.keys(cleanedData[0] || {});
+  this.articulos = [...cleanedData];
+  this.articulosFiltrados = [...cleanedData];
+}
+getHijosRecursivo(id: number, visitados = new Set<number>()): number[] {
+  if (!id || visitados.has(id)) return [];
+
+  visitados.add(id);
+
+  const hijos = this.ubicaciones
+    .filter(u => Number(u.PadreId) === Number(id))
+    .map(u => Number(u.id));
+
+  return [
+    ...hijos,
+    ...hijos.flatMap(h => this.getHijosRecursivo(h, visitados))
+  ];
 }
   aplicarFiltro() {
     if (!this.filtro.trim()) {
@@ -294,25 +375,27 @@ guardarArticulo() {
     };
     reader.readAsDataURL(file);
   }
-cargarUbicaciones() {
-  this.ubicacionService.getUbicaciones().subscribe({
-    next: (res: any) => {
+async cargarUbicaciones(): Promise<void> {
+  return new Promise((resolve) => {
+    this.ubicacionService.getUbicaciones().subscribe({
+      next: (res: any) => {
 
-      const raw = res?.data?.data ?? res?.data ?? res;
+        const raw = res?.data?.data ?? res?.data ?? res;
+        const lista = Array.isArray(raw) ? raw : [];
 
-      const lista = Array.isArray(raw) ? raw : [];
+        this.ubicaciones = lista.map((u: any) => ({
+          id: Number(u.id ?? u.Id),
+          nombre: u.nombre ?? u.Nombre,
+          PadreId: Number(u.PadreId ?? u.padreId ?? 0)
+        }));
 
-      this.ubicaciones = lista.map((u: any) => ({
-        id: u.id ?? u.Id,
-        nombre: u.nombre ?? u.Nombre
-      }));
-
-      console.log('UBICACIONES OK:', this.ubicaciones);
-    },
-    error: (err) => {
-      console.error('Error al cargar ubicaciones', err);
-      this.ubicaciones = [];
-    }
+        resolve();
+      },
+      error: () => {
+        this.ubicaciones = [];
+        resolve();
+      }
+    });
   });
 }
 

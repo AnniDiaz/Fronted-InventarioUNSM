@@ -1,61 +1,99 @@
 <div class="sidebar">
-  <div class="cont-logo">
-    <img src="/assets/logo_fisi.png" alt="Logo">
-    <div class="cont-text">
-      <h1>FISI</h1>
-      <p>Facultad de Ingenieria de sistemas e informatica</p>
+
+  <!-- HEADER -->
+  <div class="sidebar-header">
+    <div class="logo-box">
+
+      <img
+        *ngIf="ubicacionLogo"
+        [src]="ubicacionLogo"
+        alt="Ubicación logo"
+        class="ubicacion-logo"
+      >
+
+      <div class="logo-text">
+        <p class="title">{{ ubicacionNombre }} </p>
+        <p class="subtitle">Panel de gestión</p>
+
+      </div>
+
+
     </div>
   </div>
 
-  <ul>
-    <!-- Módulos dinámicos -->
+  <!-- MENU -->
+  <ul class="menu">
+
     <li *ngFor="let mod of modulos">
 
-      <ng-container *ngIf="mod.subModulos && mod.subModulos.length > 0; else moduloDirecto">
+      <!-- CON SUBMÓDULOS -->
+      <ng-container *ngIf="mod.subModulos?.length; else direct">
 
-      <div class="menu-head">
+        <div
+          class="menu-item"
+          [class.open]="expanded[mod.id]"
+          (click)="onClickModulo(mod)"
+        >
 
-  <span (click)="onClickModulo(mod)" style="flex:1; cursor:pointer;">
-    <i [class]="mod.icon"></i>
-    {{ mod.nombre }}
-  </span>
+          <div class="menu-left">
+            <i [class]="mod.icon"></i>
+            <span>{{ mod.nombre }}</span>
+          </div>
 
-  <span
-    *ngIf="mod.subModulos?.length"
-    (click)="toggle(mod.id)"
-    style="cursor:pointer;"
-  >
-    {{ expanded[mod.id] ? '▾' : '▸' }}
-  </span>
+          <i
+            class="fas fa-chevron-right arrow"
+            (click)="toggle(mod.id); $event.stopPropagation()"
+          ></i>
 
-</div>
+        </div>
 
-        <ul *ngIf="expanded[mod.id]" class="submenu">
+        <ul class="submenu" *ngIf="expanded[mod.id]">
+
           <li *ngFor="let sub of mod.subModulos">
-            <a [routerLink]="sub.ruta" routerLinkActive="active">
-              <i [class]="sub.icon ? sub.icon : 'fas fa-circle'"></i>
+            <a
+              class="submenu-item"
+              [routerLink]="sub.ruta"
+              routerLinkActive="active"
+            >
+              <i [class]="sub.icon || 'fas fa-circle'"></i>
               {{ sub.nombre }}
             </a>
           </li>
+
         </ul>
 
       </ng-container>
 
-      <!-- SIN SUBMÓDULOS -->
-      <ng-template #moduloDirecto>
-        <a [routerLink]="mod.ruta" routerLinkActive="active" class="menu-head">
-          <i [class]="mod.icon ? mod.icon : 'fas fa-folder'"></i>
-          {{ mod.nombre }}
+      <!-- SIN SUBMÓDULOS (MISMO DISEÑO) -->
+      <ng-template #direct>
+
+        <a
+          class="menu-item"
+          [routerLink]="mod.ruta"
+          routerLinkActive="active"
+        >
+
+          <div class="menu-left">
+            <i [class]="mod.icon || 'fas fa-folder'"></i>
+            <span>{{ mod.nombre }}</span>
+          </div>
+
         </a>
+
       </ng-template>
 
     </li>
+
   </ul>
 
-  <!-- Logout -->
-  <div class="logout-section">
-    <button class="btn-logout" (click)="logout()">
-      <i class="fa fa-sign-out"></i> Cerrar sesión
+  <!-- FOOTER -->
+  <div class="sidebar-footer">
+
+    <button class="logout-btn" (click)="logout()">
+      <i class="fa fa-sign-out"></i>
+      Cerrar sesión
     </button>
+
   </div>
+
 </div>

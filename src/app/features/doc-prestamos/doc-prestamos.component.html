@@ -1,0 +1,359 @@
+<div class="container-app">
+
+  <!-- SIDEBAR -->
+  <div class="barra-lateral">
+    <app-sidebar></app-sidebar>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main-section">
+
+    <app-header></app-header>
+
+    <div class="contenido">
+
+      <!-- FORMULARIO -->
+      <div class="panel-formulario">
+
+        <div class="card-formulario">
+
+          <!-- TITULO -->
+          <div class="titulo-formulario">
+
+            <div>
+              <h2>Generar Solicitud</h2>
+              <p>Documento institucional</p>
+            </div>
+
+
+          </div>
+
+          <!-- EQUIPO -->
+          <div class="grupo">
+
+            <label>EQUIPO / ARTÍCULO</label>
+
+      <select [(ngModel)]="equipo">
+
+  <option value="">
+    Seleccione un artículo
+  </option>
+
+  <option
+    *ngFor="let a of articulos"
+    [value]="a.nombre">
+
+    {{ a.nombre }}
+    -
+    {{ a.codigoPatrimonial }}
+
+  </option>
+
+</select>
+
+          </div>
+
+          <!-- DESTINATARIO -->
+          <div class="grupo">
+
+            <label>DESTINATARIO</label>
+
+            <textarea
+              rows="4"
+              [(ngModel)]="destinatario"
+              placeholder="Escriba el destinatario">
+            </textarea>
+
+          </div>
+
+          <!-- SOLICITANTE -->
+          <div class="grupo">
+
+            <label>SOLICITANTE</label>
+
+            <input
+              type="text"
+              [(ngModel)]="nombre"
+              placeholder="Nombre completo">
+
+            <div class="grid-2">
+
+              <input
+                type="text"
+                [(ngModel)]="dni"
+                placeholder="DNI">
+
+              <input
+                type="text"
+                [(ngModel)]="ciclo"
+                placeholder="Ciclo">
+
+            </div>
+
+            <input
+              type="text"
+              [(ngModel)]="escuela"
+              placeholder="Escuela profesional">
+
+            <input
+              type="text"
+              [(ngModel)]="direccion"
+              placeholder="Dirección">
+
+            <input
+              type="email"
+              [(ngModel)]="correo"
+              placeholder="Correo institucional">
+
+          </div>
+
+          <!-- DETALLE -->
+          <div class="grupo">
+
+            <label>DETALLE DE LA SOLICITUD</label>
+
+            <textarea
+              rows="7"
+              [(ngModel)]="detalle"
+              placeholder="Escriba el detalle de la solicitud">
+            </textarea>
+
+            <div class="grid-2">
+
+              <div>
+
+                <small>Fecha Inicio</small>
+
+                <input
+                  type="date"
+                  [(ngModel)]="fechaInicio">
+
+              </div>
+
+              <div>
+
+                <small>Fecha Fin</small>
+
+                <input
+                  type="date"
+                  [(ngModel)]="fechaFin">
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- ACOMPAÑANTES -->
+          <div class="grupo">
+
+            <div class="titulo-acompanantes">
+
+              <label>ACOMPAÑANTES</label>
+
+            </div>
+
+            <div class="add-acompanante">
+
+              <input
+                type="text"
+                [(ngModel)]="nuevoAcompanante"
+                placeholder="Nombre del acompañante">
+
+              <button
+                class="btn-add"
+                (click)="agregarAcompanante()">
+
+                <i class="fa fa-plus"></i>
+
+              </button>
+
+            </div>
+
+            <div
+              class="acompanante"
+              *ngFor="let a of acompanantes; let i = index">
+
+              <span>{{i + 1}}</span>
+
+              <input type="text" [value]="a">
+
+              <button (click)="eliminarAcompanante(i)">
+
+                <i class="fa fa-trash"></i>
+
+              </button>
+
+            </div>
+
+          </div>
+
+          <!-- UBICACION -->
+          <div class="grupo">
+
+            <label>UBICACIÓN Y FECHA</label>
+
+            <div class="grid-2">
+
+              <input
+                type="text"
+                [(ngModel)]="ciudad"
+                placeholder="Ciudad">
+
+              <input
+                type="date"
+                [(ngModel)]="fechaDocumento">
+
+            </div>
+
+          </div>
+
+          <!-- BOTON -->
+          <button
+            class="btn-generar"
+            (click)="imprimir()">
+
+            <i class="fa fa-print"></i>
+            Imprimir Documento
+
+          </button>
+
+        </div>
+
+      </div>
+
+      <!-- PREVIEW -->
+      <div class="panel-preview">
+
+        <div class="header-preview">
+
+          <div>
+
+            <h2>Vista Previa</h2>
+
+            <p>
+              Documento listo para imprimir
+            </p>
+
+          </div>
+
+        </div>
+
+        <!-- DOCUMENTO -->
+        <div class="documento">
+
+          <div class="hoja">
+
+            <div class="marca-agua">
+              UNSM
+            </div>
+
+            <div class="icon-doc">
+              <i class="fa fa-file-o"></i>
+            </div>
+
+            <h3>
+              {{destinatario || 'DESTINATARIO'}}
+            </h3>
+
+            <p>
+
+              Yo
+
+              <strong>
+                {{nombre || 'NOMBRE COMPLETO'}}
+              </strong>,
+
+              identificado con DNI N°
+
+              {{dni || '00000000'}},
+
+              estudiante del
+
+              {{ciclo || 'CICLO'}},
+
+              perteneciente a
+
+              {{escuela || 'ESCUELA PROFESIONAL'}}.
+
+            </p>
+
+            <p>
+
+              {{detalle || 'DETALLE DE LA SOLICITUD'}}
+
+            </p>
+
+            <p>
+
+              Por lo expuesto, solicito se me otorgue
+              el permiso correspondiente para el uso
+              de
+
+              <strong>
+                {{equipo || 'EQUIPO'}}
+              </strong>.
+
+            </p>
+
+            <ul>
+
+              <li *ngFor="let a of acompanantes">
+
+                {{a}}
+
+              </li>
+
+            </ul>
+
+            <p class="despedida">
+
+              Esperando una respuesta favorable,
+              me despido de usted.
+
+            </p>
+
+            <div class="fecha-doc">
+
+              {{ciudad || 'Ciudad'}},
+
+              {{fechaDocumento || 'Fecha'}}
+
+            </div>
+
+            <div class="firma">
+
+              <div class="linea"></div>
+
+              <h4>
+
+                {{nombre || 'NOMBRE COMPLETO'}}
+
+              </h4>
+
+              <p>
+
+                DNI N°
+                {{dni || '00000000'}}
+
+              </p>
+
+              <small>
+
+                {{correo || 'correo@correo.com'}}
+
+              </small>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

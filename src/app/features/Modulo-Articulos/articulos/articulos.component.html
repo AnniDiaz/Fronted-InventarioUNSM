@@ -31,6 +31,16 @@
             <button class="btn-agregar-pill" (click)="toggleFormulario()">
               <i class="fa fa-plus"></i> Agregar Artículo
             </button>
+
+            <label class="btn-excel-import">
+              <i class="fas fa-file-excel"></i> 
+              <span>Importar Excel</span>
+              <input 
+                type="file" 
+                (change)="onExcelSelected($event)" 
+                accept=".xlsx, .xls" 
+                style="display: none;">
+            </label>
           </div>
         </div>
 
@@ -76,10 +86,11 @@
 
                 <div class="form-group">
                   <label for="ubicacion">Ubicación</label>
-                  <select id="ubicacion" name="ubicacionId" [(ngModel)]="articulo.ubicacionId" required
-                    [disabled]="!editando && articulo.id > 0">
+                  <select id="ubicacion" name="ubicacionId" [(ngModel)]="articulo.ubicacionId" required>
                     <option value="0" disabled>Seleccione ubicación</option>
-                    <option *ngFor="let u of ubicaciones" [value]="u.id">{{ u.nombre }}</option>
+                    <option *ngFor="let u of ubicaciones" [value]="u.id">
+                      {{ u.nombre }}
+                    </option>
                   </select>
                 </div>
 
@@ -90,7 +101,7 @@
                 </div>
 
                 <div class="form-group">
-                  <label for="codigoPatrimonial">Código</label>
+                  <label for="codigoPatrimonial">Código Patrimonial</label>
                   <input id="codigoPatrimonial" type="text" name="codigoPatrimonial"
                     [(ngModel)]="articulo.codigoPatrimonial" required [disabled]="!editando && articulo.id > 0"
                     placeholder="Ej: FISI-001" />
@@ -107,16 +118,24 @@
                   <label for="condicion">Condición</label>
                   <select id="condicion" name="condicion" [(ngModel)]="articulo.condicion" required
                     [disabled]="!editando && articulo.id > 0">
-                    <option value="" disabled>Seleccione condición</option>
-                    <option value="Nuevo">Nuevo</option>
-                    <option value="Usado">Usado</option>
-                    <option value="Dañado">Dañado</option>
-                    <option value="Deteriorado">Deteriorado</option>
+                    
+                    <ng-container *ngIf="!editando && articulo.id > 0">
+                      <option [value]="articulo.condicion">{{ articulo.condicion }}</option>
+                    </ng-container>
+
+                    <ng-container *ngIf="editando || articulo.id === 0">
+                      <option value="" disabled>Seleccione condición</option>
+                      <option value="Nuevo">Nuevo</option>
+                      <option value="Usado">Usado</option>
+                      <option value="Dañado">Dañado</option>
+                      <option value="Deteriorado">Deteriorado</option>
+                    </ng-container>
+
                   </select>
                 </div>
 
                 <div class="form-group">
-                  <label for="fechaAdquision">Fecha</label>
+                  <label for="fechaAdquision">Fecha Adquisición</label>
                   <input id="fechaAdquision" type="date" name="fechaAdquision" [(ngModel)]="articulo.fechaAdquision"
                     required [disabled]="!editando && articulo.id > 0" />
                 </div>
@@ -125,6 +144,84 @@
                   <label for="vidaUtil">Vida útil (años)</label>
                   <input id="vidaUtil" type="number" name="vidaUtil" [(ngModel)]="articulo.vidaUtil" min="0"
                     [disabled]="!editando && articulo.id > 0" placeholder="Ej: 5" />
+                </div>
+
+                <div class="form-group">
+                  <label for="codigoBarra">Código de Barras</label>
+                  <input id="codigoBarra" type="text" name="codigoBarra" [(ngModel)]="articulo.codigoBarra" 
+                    [disabled]="!editando && articulo.id > 0" placeholder="Código de barras alterno" />
+                </div>
+
+                <div class="form-group">
+                  <label for="marca">Marca</label>
+                  <input id="marca" type="text" name="marca" [(ngModel)]="articulo.marca" 
+                    [disabled]="!editando && articulo.id > 0" placeholder="Ej: Lenovo" />
+                </div>
+
+                <div class="form-group">
+                  <label for="modelo">Modelo</label>
+                  <input id="modelo" type="text" name="modelo" [(ngModel)]="articulo.modelo" 
+                    [disabled]="!editando && articulo.id > 0" placeholder="Ej: ThinkPad E14" />
+                </div>
+
+                <div class="form-group">
+                  <label for="nroSerie">Nro. de Serie</label>
+                  <input id="nroSerie" type="text" name="nroSerie" [(ngModel)]="articulo.nroSerie" 
+                    [disabled]="!editando && articulo.id > 0" placeholder="Nro de serie del fabricante" />
+                </div>
+
+                <div class="form-group">
+                  <label for="medidas">Medidas</label>
+                  <input id="medidas" type="text" name="medidas" [(ngModel)]="articulo.medidas" 
+                    [disabled]="!editando && articulo.id > 0" placeholder="Ej: 40x30x15 cm" />
+                </div>
+
+                <div class="form-group">
+                  <label for="color">Color</label>
+                  <input id="color" type="text" name="color" [(ngModel)]="articulo.color" 
+                    [disabled]="!editando && articulo.id > 0" placeholder="Ej: Gris" />
+                </div>
+
+                <div class="form-group">
+                  <label for="mayor">Cuenta Mayor</label>
+                  <input id="mayor" type="text" name="mayor" [(ngModel)]="articulo.mayor" 
+                    [disabled]="!editando && articulo.id > 0" placeholder="Ej: 33" />
+                </div>
+
+                <div class="form-group">
+                  <label for="subCta">Sub Cuenta</label>
+                  <input id="subCta" type="text" name="subCta" [(ngModel)]="articulo.subCta" 
+                    [disabled]="!editando && articulo.id > 0" placeholder="Ej: 33311" />
+                </div>
+
+                <div class="form-group">
+                  <label for="hValorInicial">Historial Valor Inicial</label>
+                  <input id="hValorInicial" type="number" name="hValorInicial" [(ngModel)]="articulo.hValorInicial" 
+                    [disabled]="!editando && articulo.id > 0" />
+                </div>
+
+                <div class="form-group">
+                  <label for="hDeprInicial">Historial Depr. Inicial</label>
+                  <input id="hDeprInicial" type="number" name="hDeprInicial" [(ngModel)]="articulo.hDeprInicial" 
+                    [disabled]="!editando && articulo.id > 0" />
+                </div>
+
+                <div class="form-group">
+                  <label for="hDeprAjustada">Depr. Ajustada</label>
+                  <input id="hDeprAjustada" type="number" name="hDeprAjustada" [(ngModel)]="articulo.hDeprAjustada" 
+                    [disabled]="!editando && articulo.id > 0" />
+                </div>
+
+                <div class="form-group">
+                  <label for="hDeprEjercicio">Depr. Ejercicio</label>
+                  <input id="hDeprEjercicio" type="number" name="hDeprEjercicio" [(ngModel)]="articulo.hDeprEjercicio" 
+                    [disabled]="!editando && articulo.id > 0" />
+                </div>
+
+                <div class="form-group">
+                  <label for="valorNeto">Valor Neto</label>
+                  <input id="valorNeto" type="number" name="valorNeto" [(ngModel)]="articulo.valorNeto" 
+                    [disabled]="!editando && articulo.id > 0" />
                 </div>
 
                 <div class="form-group" *ngFor="let campo of camposDelTipo; let i = index">
@@ -163,12 +260,18 @@
             <thead>
               <tr>
                 <th width="90">QR</th>
-                <th width="200">CÓDIGO</th>
-                <th width="200">NOMBRE</th>
-                <th width="120" class="text-center">ESTADO</th>
+                <th width="150">TIPO DE ARTÍCULO</th>
+                <th width="180">UBICACIÓN</th>
+                <th width="220">NOMBRE</th>
+                <th width="180">CÓDIGO PATRIMONIAL</th>
                 <th width="120">VALOR</th>
-                <th width="230">UBICACIÓN</th>
-                <th width="120" class="text-right">ACCIONES</th>
+                <th width="120" class="text-center">CONDICIÓN</th>
+                <th width="150">FECHA ADQUISICIÓN</th>
+                <th width="160">CÓDIGO DE BARRAS</th>
+                <th width="130">MARCA</th>
+                <th width="130">MODELO</th>
+                <th width="130">NRO DE SERIE</th>
+                <th width="150" class="text-right th-acciones-sticky">ACCIONES</th>
               </tr>
             </thead>
             <tbody>
@@ -179,25 +282,42 @@
                     <span class="no-qr" *ngIf="!a.qrCodeBase64">No QR</span>
                   </div>
                 </td>
-                <td class="td-codigo">
-                  <span class="codigo-verde">{{ a.codigoPatrimonial }}</span>
-                </td>
-                <td class="td-nombre">
-                  <div class="nombre-principal">{{ a.nombre }}</div>
-                  <div class="nombre-sub">{{ obtenerTipoArticulo(a.tipoArticuloId) }}</div>
-                </td>
-                <td class="td-estado text-center">
-                  <span class="badge" [ngClass]="getBadgeClass(a.condicion)">
-                    {{ a.condicion | uppercase }}
-                  </span>
-                </td>
-                <td class="td-valor">
-                  <span class="precio-fuerte">S/ {{ a.valorAdquisitivo }}</span>
-                </td>
+                
+                <td><span class="texto-secundario">{{ obtenerTipoArticulo(a.tipoArticuloId) }}</span></td>
+                
                 <td class="td-ubicacion">
                   <i class="fa fa-map-marker-alt"></i> {{ obtenerUbicacion(a.ubicacionId) }}
                 </td>
-                <td class="td-acciones">
+                
+                <td class="td-nombre">
+                  <div class="nombre-principal">{{ a.nombre }}</div>
+                </td>
+                
+                <td class="td-codigo">
+                  <span class="codigo-verde">{{ a.codigoPatrimonial }}</span>
+                </td>
+                
+                <td class="td-valor">
+                  <span class="precio-fuerte">S/ {{ a.valorAdquisitivo | number:'1.2-2' }}</span>
+                </td>
+                
+                <td class="td-estado text-center">
+                  <span class="badge">
+                    {{ a.condicion | uppercase }}
+                  </span>
+                </td>
+                
+                <td><span class="texto-secundario">{{ a.fechaAdquision | date:'dd/MM/yyyy' }}</span></td>
+                
+                <td><span class="texto-secundario">{{ a.codigoBarra || '-' }}</span></td>
+                
+                <td><span class="texto-secundario">{{ a.marca || '-' }}</span></td>
+                
+                <td><span class="texto-secundario">{{ a.modelo || '-' }}</span></td>
+                
+                <td><span class="texto-secundario">{{ a.nroSerie || '-' }}</span></td>
+
+                <td class="td-acciones td-acciones-sticky">
                   <div class="action-icons">
                     <button class="icon-btn ver" (click)="verArticulo(a)" title="Ver artículo">
                       <i class="fa fa-eye"></i>
@@ -208,8 +328,7 @@
                     <button class="icon-btn eliminar" (click)="eliminarArticulo(a.id)" title="Eliminar artículo">
                       <i class="fa fa-trash"></i>
                     </button>
-                    <button class="icon-btn qr-down" (click)="descargarQR(a)" title="Descargar QR"
-                      *ngIf="a.qrCodeBase64">
+                    <button class="icon-btn qr-down" (click)="descargarQR(a)" title="Descargar QR" *ngIf="a.qrCodeBase64">
                       <i class="fa fa-qrcode"></i>
                     </button>
                   </div>
@@ -226,8 +345,7 @@
 
         <div class="footer-paginacion">
           <div class="pag-info">
-            Mostrando <strong>{{ registrosPaginados.length }}</strong> de <strong>{{ articulosFiltrados.length
-              }}</strong> artículos
+            Mostrando <strong>{{ registrosPaginados.length }}</strong> de <strong>{{ articulosFiltrados.length }}</strong> artículos
           </div>
           <div class="pag-botones">
             <button class="btn-pag-nav" [disabled]="paginaActual === 1"

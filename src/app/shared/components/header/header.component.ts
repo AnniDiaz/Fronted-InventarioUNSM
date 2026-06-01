@@ -34,25 +34,23 @@ export class HeaderComponent implements OnInit {
     this.router.navigate(['/perfil']);
   }
 
-  ngOnInit(): void {
-    // Cargar usuario inicial desde localStorage
-    this.usuarioActual = this.loginService.getUser();
-    console.log("USUARIO ACTUAL: ", this.usuarioActual)
+ngOnInit(): void {
 
-    // Suscribirse a cambios de usuario
-    this.loginService.usuario$.subscribe((usuario: Usuario | null) => {
-      this.usuarioActual = usuario;
+  this.usuarioActual = this.loginService.getUser();
+  console.log("USUARIO ACTUAL: ", this.usuarioActual);
 
-      // Forzar actualización de la vista
-      this.cdr.detectChanges();
-    });
+  if (!this.usuarioActual?.data) return;
 
-    this.rolService.getRolById(this.usuarioActual?.data.rolId).subscribe({
+  const rolId = this.usuarioActual.data.rolId;
+
+  // 🔥 CARGAR ROL
+  if (rolId) {
+    this.rolService.getRolById(rolId).subscribe({
       next: (res: any) => {
-        this.rolActual = res;
-        console.log("ROL ACTUAL: ", this.rolActual)
+        this.rolActual = res.data; // 👈 IMPORTANTE
+        console.log("ROL ACTUAL: ", this.rolActual);
       }
-    })
+    });
   }
-
+}
 }

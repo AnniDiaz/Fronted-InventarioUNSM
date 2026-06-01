@@ -7,6 +7,7 @@ import { MantenimientoService } from '../../core/services/mantenimiento.service'
 import Swal from 'sweetalert2';
 import { ArticuloService } from '../../core/services/articulos.service';
 import { NgxPaginationModule } from 'ngx-pagination';
+import { UbicacionService } from '../../core/services/ubicacion.service';
 
 @Component({
   selector: 'app-mantenimiento',
@@ -34,7 +35,8 @@ export class MantenimientoComponent implements OnInit {
   pageSize = 6;
   totalPaginas = 1;
   registrosPaginados: any[] = [];
-
+listaUbicaciones: any[] = [];
+idsUbicacionesPermitidas: number[] = [];
   nuevoMantenimiento = {
     idArticulo: '',
     tipo: 'Preventivo',
@@ -44,40 +46,83 @@ export class MantenimientoComponent implements OnInit {
     observaciones: ''
   };
 
-  constructor(private _mantenimientoService: MantenimientoService, private _articuloService: ArticuloService) { }
+  constructor(private _mantenimientoService: MantenimientoService, private _articuloService: ArticuloService,
+    private ubicacionService:UbicacionService
+  ) { }
 
-  ngOnInit(): void {
-    this.cargarArticulosParaSelect();
-    this.cargarMantenimientos();
-  }
+ngOnInit(): void {
+  this.cargarUbicaciones();
+}
+cargarUbicaciones(): void {
 
-  cargarArticulosParaSelect(): void {
-    this._articuloService.getArticulos().subscribe({
-      next: (res: any) => {
-        // Manejamos el wrapper ApiResponse { success, message, data }
-        this.articulosDisponibles = Array.isArray(res) ? res : res?.data ?? [];
-      },
-      error: (err) => {
-        console.error('Error al cargar artículos', err);
-      }
-    });
-  }
+  const usuario = JSON.parse(localStorage.getItem('user') || 'null');
+  const usuarioId = usuario?.data?.id;
 
-  cargarMantenimientos(): void {
-    this._mantenimientoService.getMantenimientos().subscribe({
-      next: (data) => {
-        console.log(data);
-        this.mantenimientos = data;
-        this.mantenimientosFiltrados = [...this.mantenimientos];
-        this.actualizarPaginacion();
-      },
-      error: (err) => {
-        console.error('Error al cargar mantenimientos', err);
-        Swal.fire('Error', 'No se pudo conectar con el servidor', 'error');
-      }
-    });
-  }
+  if (!usuarioId) return;
 
+ this.ubicacionService.getUbicacionesPorUsuario(usuarioId).subscribe({
+    next: (resp: any) => {
+
+      const ubicaciones = Array.isArray(resp) ? resp : resp?.data ?? [];
+
+      if (!ubicaciones.length) return;
+
+      const padreId = ubicaciones[0].id;
+
+      this.ubicacionService.getUbicacionesPorPadre(padreId).subscribe({
+        next: (res: any) => {
+
+          this.listaUbicaciones = Array.isArray(res) ? res : res?.data ?? [];
+
+          // 🔥 IMPORTANTE: IDs permitidos
+          this.idsUbicacionesPermitidas = this.listaUbicaciones.map(u => u.id);
+
+          // 🔥 ahora sí cargar todo
+          this.cargarArticulosParaSelect();
+          this.cargarMantenimientos();
+        }
+      });
+
+    }
+  });
+}
+cargarArticulosParaSelect(): void {
+  this._articuloService.getArticulos().subscribe({
+    next: (res: any) => {
+
+      const data = Array.isArray(res) ? res : res?.data ?? [];
+
+   this.articulosDisponibles = data.filter((a: any) =>
+  this.idsUbicacionesPermitidas.includes(a.ubicacionId)
+);
+    }
+  });
+}
+cargarMantenimientos(): void {
+  this._mantenimientoService.getMantenimientos().subscribe({
+    next: (res: any) => {
+
+      const data = Array.isArray(res) ? res : res?.data ?? [];
+
+      this.mantenimientos = data.filter((m: any) => {
+
+        const articulo = this.articulosDisponibles.find(
+          a => a.id === m.articuloId
+        );
+
+        if (!articulo) return false;
+
+        return this.idsUbicacionesPermitidas.includes(articulo.ubicacionId);
+      });
+
+      this.aplicarFiltro();
+    },
+    error: (err) => {
+      console.error('Error al cargar mantenimientos', err);
+      Swal.fire('Error', 'No se pudo conectar con el servidor', 'error');
+    }
+  });
+}
   programarMantenimiento(): void {
     console.log("--- INICIO REGISTRO MANTENIMIENTO ---");
 

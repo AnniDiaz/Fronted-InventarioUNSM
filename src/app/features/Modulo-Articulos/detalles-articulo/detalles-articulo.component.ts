@@ -40,7 +40,7 @@ export class DetallesArticuloComponent implements OnInit {
     private ubicacionService: UbicacionService,
     private tipoArticuloService: TipoArticuloService,
     private location: Location
-  ) { }
+  ) {}
 
   irAtras() {
     this.location.back();

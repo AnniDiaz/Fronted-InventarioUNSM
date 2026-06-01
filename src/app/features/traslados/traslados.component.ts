@@ -57,29 +57,78 @@ export class TrasladosComponent implements OnInit {
 cargarTraslados(): void {
   this.trasladoService.getTraslados().subscribe({
     next: (resp: any) => {
-      this.traslados = Array.isArray(resp) ? resp : []; // 👈 AQUÍ EL FIX
+
+      const data = Array.isArray(resp) ? resp : resp?.data ?? [];
+
+      // 🔥 IDs permitidos (ubicaciones hijas)
+      const idsUbicaciones = this.listaUbicaciones.map(u => u.id);
+
+      console.log('✅ IDS UBICACIONES:', idsUbicaciones);
+
+      // 🔥 FILTRAR TRASLADOS
+      this.traslados = data.filter((t: any) =>
+        idsUbicaciones.includes(t.ubicacionOrigenId) ||
+        idsUbicaciones.includes(t.ubicacionDestinoId)
+      );
+
+      console.log('📦 TRASLADOS FILTRADOS:', this.traslados);
+
       this.paginaActual = 1;
     },
     error: () => Swal.fire('Error', 'No se pudieron cargar los traslados', 'error')
   });
 }
+cargarArticulos(): void {
+  this.articuloService.getArticulos().subscribe({
+    next: (resp: any) => {
 
-  cargarArticulos(): void {
-    this.articuloService.getArticulos().subscribe({
-      next: (resp: any) => this.listaArticulos = resp.data || [],
-      error: () => console.error('Error cargando artículos')
-    });
-  }
+      const data = Array.isArray(resp) ? resp : resp?.data ?? [];
 
-  cargarUbicaciones(): void {
-    this.ubicacionService.getUbicaciones().subscribe({
-      next: (resp: any) => {
-        this.listaUbicaciones = resp.data || [];
-      },
-      error: () => console.error('Error cargando ubicaciones')
-    });
-  }
+      // 🔥 IDs de ubicaciones permitidas (usuario)
+      const idsUbicaciones = this.listaUbicaciones.map(u => u.id);
 
+      console.log('📦 IDS UBICACIONES (ARTICULOS):', idsUbicaciones);
+
+      // 🔥 FILTRAR ARTÍCULOS
+      this.listaArticulos = data.filter((a: any) =>
+        idsUbicaciones.includes(a.ubicacionId)
+      );
+
+      console.log('📦 ARTICULOS FILTRADOS:', this.listaArticulos);
+    },
+    error: () => console.error('Error cargando artículos')
+  });
+}
+cargarUbicaciones(): void {
+
+  const usuario = JSON.parse(localStorage.getItem('user') || 'null');
+  const usuarioId = usuario?.data?.id;
+
+  if (!usuarioId) return;
+
+  this.ubicacionService.getUbicacionesPorUsuario(usuarioId).subscribe({
+    next: (resp: any) => {
+
+      const ubicacionesUsuario = Array.isArray(resp) ? resp : resp?.data ?? [];
+
+      if (ubicacionesUsuario.length === 0) return;
+
+      const idUbicacion = ubicacionesUsuario[0].id;
+
+      this.ubicacionService.getUbicacionesPorPadre(idUbicacion).subscribe({
+        next: (res: any) => {
+
+          this.listaUbicaciones = Array.isArray(res) ? res : res?.data ?? [];
+
+          // 🔥 ORDEN CORRECTO
+          this.cargarArticulos();
+          this.cargarTraslados();
+        }
+      });
+
+    }
+  });
+}
   // FILTROS
   get trasladosFiltrados(): any[] {
     return this.traslados.filter(t => {

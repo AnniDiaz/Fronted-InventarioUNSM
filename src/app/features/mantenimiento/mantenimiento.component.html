@@ -92,8 +92,7 @@
                 </tr>
                 <tr *ngIf="registrosPaginados.length === 0">
                   <td colspan="8" class="empty-state">
-                    <i class="fa fa-toolbox"
-                      style="font-size: 40px; color: #e2e8f0; margin-bottom: 15px; display: block;"></i>
+                    <i class="fa fa-toolbox" style="font-size: 40px; color: #e2e8f0; margin-bottom: 15px; display: block;"></i>
                     <p>No se encontraron registros de mantenimiento</p>
                   </td>
                 </tr>
@@ -103,15 +102,13 @@
 
           <div class="footer-paginacion" *ngIf="mantenimientosFiltrados.length > 0">
             <div class="pag-info">
-              Mostrando <strong>{{ registrosPaginados.length }}</strong> de <strong>{{ mantenimientosFiltrados.length
-                }}</strong> registros
+              Mostrando <strong>{{ registrosPaginados.length }}</strong> de <strong>{{ mantenimientosFiltrados.length }}</strong> registros
             </div>
             <div class="pag-botones">
               <button class="btn-pag-nav" [disabled]="paginaActual === 1" (click)="cambiarPagina(paginaActual - 1)">
                 Anterior
               </button>
-              <button class="btn-pag-nav active" [disabled]="paginaActual === totalPaginas"
-                (click)="cambiarPagina(paginaActual + 1)">
+              <button class="btn-pag-nav active" [disabled]="paginaActual === totalPaginas" (click)="cambiarPagina(paginaActual + 1)">
                 Siguiente
               </button>
             </div>
@@ -165,14 +162,13 @@
 
               <div class="form-group full">
                 <label>Descripción / Observaciones</label>
-                <textarea name="observaciones" [(ngModel)]="nuevoMantenimiento.observaciones" rows="3"
-                  placeholder="Detalles del problema o trabajo realizado..."></textarea>
+                <textarea name="observaciones" [(ngModel)]="nuevoMantenimiento.observaciones" rows="3" placeholder="Detalles del problema o trabajo realizado..."></textarea>
               </div>
 
               <div class="modal-footer-btns">
                 <button type="button" class="btn-cancelar" (click)="toggleFormulario()">Cancelar</button>
                 <button type="submit" class="btn-registrar" [disabled]="f.invalid">
-                  {{ editando ? 'Actualizar Registro' : 'Programar Servicio' }}
+                    {{ editando ? 'Actualizar Registro' : 'Programar Servicio' }}
                 </button>
               </div>
             </form>
