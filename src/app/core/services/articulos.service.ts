@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import baseUrl from '../../shared/components/helper';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -59,5 +60,13 @@ public getArticulosConCampos() {
 
   public getPivotPorTipo(tipoArticuloId: number) {
     return this.http.get<any[]>(`${baseUrl}/articulos/pivot/tipo/${tipoArticuloId}`);
+  }
+
+  cargarMasivaExcel(archivo: File): Observable<any> {
+    const formData = new FormData();
+    // El nombre 'archivo' debe coincidir exactamente con el parámetro IFormFile de tu C#
+    formData.append('archivo', archivo); 
+
+    return this.http.post(`${baseUrl}/articulos/cargar-masiva-excel`, formData);
   }
 }

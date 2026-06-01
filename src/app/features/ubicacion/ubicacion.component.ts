@@ -174,14 +174,33 @@ cargarUsuarios() {
 cargarSubUbicaciones(padreId: number) {
   this.ubicacionService.getUbicacionesPorPadre(padreId).subscribe({
     next: (res: any) => {
-
       const data = res?.data ?? res;
-      this.ubicaciones = Array.isArray(data) ? data : [];
+      let listaHijos = Array.isArray(data) ? data : [];
+
+      // ✨ INYECCIÓN GLOBAL: Si la ubicación general "Otros" no está en la lista, la agregamos manualmente al inicio
+      const existeOtros = listaHijos.some((u: any) => u.id === 100);
+      
+      if (!existeOtros) {
+        listaHijos.unshift({
+          id: 100,
+          nombre: 'Otros',
+          descripcion: 'Ubicación por defecto para artículos sin ubicación especificada',
+          piso: 0,
+          tipoUbicacionId: 100, // ID de tu TipoUbicacion General
+          imagenUrl: null,
+          usuarioId: null,
+          padreId: null
+        });
+      }
+
+      // Asignamos la lista combinada al listado del componente
+      this.ubicaciones = listaHijos;
 
       this.aplicarFiltro();
     }
   });
 }
+
   toggleMenu() {
     this.menuAbierto = !this.menuAbierto;
   }

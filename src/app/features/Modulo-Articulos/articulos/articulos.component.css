@@ -41,6 +41,35 @@
   box-shadow: 0 2px 8px rgba(0, 164, 104, 0.2);
 }
 
+.btn-excel-import {
+  background-color: #217346; /* Verde Excel */
+  color: #ffffff;
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  user-select: none;
+}
+
+.btn-excel-import:hover {
+  background-color: #1a5c38;
+}
+
+.btn-excel-import:active {
+  transform: scale(0.98);
+}
+
+.btn-excel-import i {
+  font-size: 16px;
+}
+
 .sort-box {
   display: flex;
   align-items: center;
@@ -64,39 +93,75 @@
 }
 
 /* =========================================================
-   TABLA MODERNA
+   TABLA MODERNA CON COLUMNA ACCIONES ESTÁTICA (SIN SOMBRAS)
    ========================================================= */
 .table-container {
   width: 100%;
-  overflow-x: auto;
+  max-width: 100%;     /* Evita que se estire más que la pantalla */
+  overflow-x: auto;    /* ↔️ Habilita scroll horizontal */
+  overflow-y: hidden;  /* ↕️ Elimina por completo el scroll vertical de la tabla */
+  position: relative;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
 }
 
 .tabla-clean {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  min-width: 900px;
+  min-width: 1700px;   /* Ancho suficiente para las 11 columnas */
+  table-layout: fixed; /* Fuerza el respeto de los anchos de columna */
 }
 
 .tabla-clean thead th {
   text-align: left;
-  padding: 14px 16px;
+  padding: 1px 16px;
   font-size: 11px;
   font-weight: 700;
   color: #94a3b8;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   border-bottom: 1px solid #e2e8f0;
-}
-
-.tabla-clean tbody tr:hover {
   background: #f8fafc;
 }
 
 .tabla-clean td {
-  padding: 16px;
+  padding: 10px;
   border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
+  background: #ffffff; /* Evita transparencias al desplazar columnas */
+}
+
+.tabla-clean tbody tr:hover td {
+  background: #f8fafc; /* Color de hover para celdas normales */
+}
+
+/* 🔒 COLUMNA DE ACCIONES ESTÁTICA Y LIMPIA (SIN SOMBREADOS) */
+.tabla-clean thead th.th-acciones-sticky {
+  position: sticky;
+  right: 0;
+  z-index: 30;         /* Por encima de las celdas comunes */
+  background: #f8fafc; /* Fondo sólido de cabecera */
+  text-align: right;
+}
+
+.tabla-clean tbody td.td-acciones-sticky {
+  position: sticky;
+  right: 0;
+  z-index: 5;
+  background: #ffffff !important; /* Fondo blanco sólido */
+}
+
+/* Mantener el color de fondo correcto en la celda fija durante el hover */
+.tabla-clean tbody tr:hover td.td-acciones-sticky {
+  background: #f8fafc !important;
+}
+
+/* Clases útiles adicionales */
+.texto-secundario {
+  color: #475569;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .qr-box {
@@ -104,7 +169,7 @@
   width: 42px;
   height: 42px;
   border-radius: 8px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
@@ -123,18 +188,29 @@
   background: #e6f6ee;
   padding: 4px 8px;
   border-radius: 6px;
+  display: inline-block;
+  white-space: nowrap;
 }
 
 .nombre-principal {
   font-weight: 700;
   color: #1e293b;
   font-size: 14px;
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.nombre-sub {
-  font-size: 12px;
-  color: #94a3b8;
-  margin-top: 2px;
+.precio-fuerte {
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 14px;
+}
+
+.td-ubicacion {
+  color: #64748b;
+  font-size: 13px;
 }
 
 /* BADGES DE ESTADO */
@@ -144,21 +220,7 @@
   border-radius: 999px;
   font-size: 10px;
   font-weight: 800;
-}
-
-.badge-nuevo {
-  background: #e6f6ee;
-  color: #00a468;
-}
-
-.badge-usado {
-  background: #eff6ff;
-  color: #3b82f6;
-}
-
-.badge-danado {
-  background: #fef2f2;
-  color: #ef4444;
+  color: black;
 }
 
 /* ICONOS DE ACCIÓN */
@@ -180,17 +242,10 @@
   transform: scale(1.15);
 }
 
-.icon-btn.ver {
-  color: #00a468;
-}
-
-.icon-btn.editar {
-  color: #3b82f6;
-}
-
-.icon-btn.eliminar {
-  color: #ef4444;
-}
+.icon-btn.ver { color: #00a468; }
+.icon-btn.editar { color: #3b82f6; }
+.icon-btn.eliminar { color: #ef4444; }
+.icon-btn.qr-down { color: #475569; }
 
 /* =========================================================
    MODAL MODERNIZADO
@@ -234,8 +289,8 @@
 .form-grid-modern {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  column-gap: 24px;  /* horizontal */
-  row-gap: 1px;     /* vertical (menos espacio entre filas) */
+  column-gap: 24px;
+  row-gap: 1px;
 }
 
 .form-group label {
@@ -253,7 +308,6 @@
   padding: 12px;
   border-radius: 8px;
   border: 1px solid #00a468;
-  /* El verde que pediste */
   font-size: 14px;
   outline: none;
 }
@@ -287,6 +341,28 @@
 }
 
 /* =========================================================
+   ESTRUCTURA GENERAL Y PAGINACIÓN FIJA
+   ========================================================= */
+.card-inventario {
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  min-height: auto;
+}
+
+.footer-paginacion {
+  margin-top: 20px; /* Separación prudente de la tabla */
+  background: #ffffff !important; 
+  padding: 12px 16px;
+  border-top: 1px solid #eee;
+  border-radius: 0 0 8px 8px; /* Redondeado inferior para que acople con la tarjeta */
+  
+  /* 🚨 CORRECCIÓN: Quitamos el 'sticky' que rompe el scroll de la ventana si hay pocos items */
+  position: relative; 
+  z-index: 10; 
+}
+
+/* =========================================================
    RESPONSIVE
    ========================================================= */
 @media (max-width: 1024px) {
@@ -299,20 +375,4 @@
   .form-grid-modern {
     grid-template-columns: 1fr;
   }
-}.card-inventario {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: 100vh; /* o ajusta según tu layout */
-}
-
-
-
-.footer-paginacion {
-  margin-top: auto; /* 👈 esto lo empuja abajo */
-  background: #fff;
-  padding: 12px 16px;
-  border-top: 1px solid #eee;
-  position: sticky; /* opcional pero mejora UX */
-  bottom: 0;
 }

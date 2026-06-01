@@ -12,32 +12,33 @@ import Qrious from 'qrious';
 
 @Component({
   selector: 'app-articulo-form',
+  standalone: true,
   imports: [HeaderComponent, SidebarComponent, FormsModule, CommonModule],
   templateUrl: './articulos.component.html',
   styleUrls: ['./articulos.component.css']
 })
 export class ArticuloFormComponent implements OnInit {
 
-  // NUEVO: Estado para el menú responsivo
+  // Estado para el menú responsivo
   menuAbierto = false;
 
   mostrarFormulario = false;
   filtro = '';
-  filtroTipo = 'Todos'; // NUEVO: para chips
-  orden = 'recientes'; // NUEVO: para select de orden
+  filtroTipo = 'Todos'; 
+  orden = 'recientes'; 
 
   paginaActual = 1;
-  pageSize = 5;
+  pageSize = 4;
   totalPaginas = 1;
 
   articulos: any[] = [];
-  articulosFiltrados: any[] = []; // NUEVO: todos los filtrados
+  articulosFiltrados: any[] = []; 
   registrosPaginados: any[] = [];
 
   tipos: any[] = [];
   ubicaciones: any[] = [];
   camposDelTipo: any[] = [];
-ubicacionUsuarioId: number = 0;
+  ubicacionUsuarioId: number = 0;
   articulo: any = this.crearArticuloVacio();
   editando = false;
 
@@ -51,7 +52,6 @@ ubicacionUsuarioId: number = 0;
   ngOnInit(): void {
     this.cargarTipos();
     this.cargarUbicaciones();
-    this.listarArticulos();
   }
 
   // ---------------------------
@@ -140,38 +140,33 @@ ubicacionUsuarioId: number = 0;
     this.actualizarPaginacion();
   }
 
-listarArticulos() {
-  this.articuloService.getArticulosConCampos().subscribe({
-    next: (res: any) => {
+  listarArticulos() {
+    this.articuloService.getArticulosConCampos().subscribe({
+      next: (res: any) => {
+        const data = Array.isArray(res) ? res : res.data ?? [];
+        const idsUbicaciones = this.ubicaciones.map(u => u.id);
 
-      const data = Array.isArray(res) ? res : res.data ?? [];
+        console.log('✅ IDS PERMITIDOS:', idsUbicaciones);
 
-      // 🔥 obtener IDs de ubicaciones hijas
-      const idsUbicaciones = this.ubicaciones.map(u => u.id);
+        this.articulos = data
+          .filter((a: any) => idsUbicaciones.includes(a.ubicacionId))
+          .map((a: any) => {
+            if (a.id) {
+              const urlQR = `http://localhost:4200/tipos-articulos/articulo/${a.id}`;
+              a.qrCodeBase64 = this.generarQR(urlQR);
+            }
+            return a;
+          });
 
-      console.log('✅ IDS PERMITIDOS:', idsUbicaciones);
-
-      // 🔥 FILTRAR ARTICULOS
-      this.articulos = data
-        .filter((a: any) => idsUbicaciones.includes(a.ubicacionId))
-        .map((a: any) => {
-          if (a.id) {
-            const urlQR = `http://localhost:4200/tipos-articulos/articulo/${a.id}`;
-            a.qrCodeBase64 = this.generarQR(urlQR);
-          }
-          return a;
-        });
-
-      console.log('📦 ARTICULOS FILTRADOS:', this.articulos);
-
-      this.aplicarFiltro();
-    },
-    error: (err) => {
-      console.error('Error al listar artículos:', err);
-      Swal.fire('Error', 'No se pudieron cargar los artículos', 'error');
-    }
-  });
-}
+        console.log('📦 ARTICULOS FILTRADOS:', this.articulos);
+        this.aplicarFiltro();
+      },
+      error: (err) => {
+        console.error('Error al listar artículos:', err);
+        Swal.fire('Error', 'No se pudieron cargar los artículos', 'error');
+      }
+    });
+  }
 
   getBadgeClass(condicion: string): string {
     if (!condicion) return 'badge-default';
@@ -187,43 +182,59 @@ listarArticulos() {
   // ---------------------------
   cargarTipos() {
     this.tipoService.getTipoArticulos().subscribe({
-next: (res: any) => {
-  this.tipos = Array.isArray(res) ? res : res?.data ?? [];
-},      error: () => Swal.fire('Error', 'No se pudieron cargar los tipos', 'error')
+      next: (res: any) => {
+        this.tipos = Array.isArray(res) ? res : res?.data ?? [];
+      },
+      error: () => Swal.fire('Error', 'No se pudieron cargar los tipos', 'error')
     });
   }
-cargarUbicaciones(): void {
 
-  const usuario = JSON.parse(localStorage.getItem('user') || 'null');
-  const usuarioId = usuario?.data?.id;
+  cargarUbicaciones(): void {
+    const usuario = JSON.parse(localStorage.getItem('user') || 'null');
+    const usuarioId = usuario?.data?.id;
 
-  if (!usuarioId) return;
+    if (!usuarioId) return;
 
-  this.ubicService.getUbicacionesPorUsuario(usuarioId).subscribe({
-    next: (resp: any) => {
+    this.ubicService.getUbicacionesPorUsuario(usuarioId).subscribe({
+      next: (resp: any) => {
+        const ubicacionesUsuario = Array.isArray(resp) ? resp : resp?.data ?? [];
 
-      const ubicacionesUsuario = Array.isArray(resp) ? resp : resp?.data ?? [];
-
-      if (ubicacionesUsuario.length === 0) {
-        this.ubicaciones = [];
-        return;
-      }
-
-      const padreId = ubicacionesUsuario[0].id;
-      this.ubicacionUsuarioId = padreId;
-
-      this.ubicService.getUbicacionesPorPadre(padreId).subscribe({
-        next: (res: any) => {
-
-          this.ubicaciones = Array.isArray(res) ? res : res?.data ?? [];
-
-          // 🔥 AQUÍ recién listar artículos
-          this.listarArticulos();
+        if (ubicacionesUsuario.length === 0) {
+          this.ubicaciones = [];
+          return;
         }
-      });
-    }
-  });
-}
+
+        const padreId = ubicacionesUsuario[0].id;
+        this.ubicacionUsuarioId = padreId;
+
+        this.ubicService.getUbicacionesPorPadre(padreId).subscribe({
+          next: (res: any) => {
+            const data = Array.isArray(res) ? res : res?.data ?? [];
+            let listaUbicaciones = [...data];
+
+            // ✨ INYECCIÓN DEL COMODÍN: Agregamos "Otros" (ID: 100) al dropdown de artículos
+            const existeOtros = listaUbicaciones.some((u: any) => u.id === 100);
+            if (!existeOtros) {
+              listaUbicaciones.push({
+                id: 100,
+                nombre: 'Otros (Ubicación General)',
+                descripcion: 'Ubicación por defecto para artículos sin ubicación especificada',
+                piso: 0,
+                tipoUbicacionId: 100,
+                usuarioId: null,
+                padreId: null
+              });
+            }
+
+            this.ubicaciones = listaUbicaciones;
+            
+            // 💡 Ejecuta el listado de artículos una vez que las ubicaciones estén listas
+            this.listarArticulos();
+          }
+        });
+      }
+    });
+  }
 
   obtenerTipoArticulo(id: number) {
     return this.tipos.find(t => t.id === id)?.nombre || '-';
@@ -249,33 +260,30 @@ cargarUbicaciones(): void {
 
     if (!this.articulo.tipoArticuloId) return;
 
-this.campoService.getCamposByTipoArticulo(this.articulo.tipoArticuloId).subscribe({
-  next: (res: any) => {
+    this.campoService.getCamposByTipoArticulo(this.articulo.tipoArticuloId).subscribe({
+      next: (res: any) => {
+        const campos = Array.isArray(res) ? res : (res?.campos ?? res?.data ?? []);
 
-    const campos = Array.isArray(res)
-      ? res
-      : (res?.campos ?? res?.data ?? []);
+        this.camposDelTipo = campos.map((c: any) => ({
+          id: c.id,
+          nombreCampo: c.nombreCampo ?? c.nombre,
+          tipoDato: c.tipoDato ?? c.tipo ?? 'texto',
+          opciones: c.opciones ?? []
+        }));
 
-    this.camposDelTipo = campos.map((c: any) => ({
-      id: c.id,
-      nombreCampo: c.nombreCampo ?? c.nombre,
-      tipoDato: c.tipoDato ?? c.tipo ?? 'texto',
-      opciones: c.opciones ?? []
-    }));
-
-    // 🔥 IMPORTANTE: inicializar camposValores aquí
-    this.articulo.camposValores = this.camposDelTipo.map(c => ({
-      campoArticuloId: c.id,
-      valor: ''
-    }));
-  }
-});
+        this.articulo.camposValores = this.camposDelTipo.map(c => ({
+          campoArticuloId: c.id,
+          valor: ''
+        }));
+      }
+    });
   }
 
   // ---------------------------
   // GUARDAR / EDITAR
   // ---------------------------
   guardar() {
+    // 1. Configuraciones iniciales existentes
     if (this.articulo.id) {
       const urlQR = `http://localhost:4200/tipos-articulos/articulo/${this.articulo.id}`;
       this.articulo.qrCodeBase64 = this.generarQR(urlQR);
@@ -286,7 +294,32 @@ this.campoService.getCamposByTipoArticulo(this.articulo.tipoArticuloId).subscrib
       this.articulo.fechaAdquision = new Date(this.articulo.fechaAdquision).toISOString();
     }
 
+    // 🛡️ Parche preventivo: Si la lista de campos dinámicos está vacía o nula,
+    // nos aseguramos de que viaje como un arreglo vacío estructurado para evitar el rechazo de la API
+    if (!this.articulo.camposValores) {
+      this.articulo.camposValores = [];
+    }
+
     const payload = { ...this.articulo };
+
+    // =========================================================================
+    // 🔍 BLOQUE DE DEBUEG: Inspección profunda del Payload enviado al backend
+    // =========================================================================
+    console.group('%c🚀 DETECCIÓN DE PAYLOAD - ARTÍCULO', 'color: #007bff; font-weight: bold; font-size: 12px;');
+    console.log('%cAcción ejecutada:', 'color: #ffc107; font-weight: bold;', this.editando ? 'ACTUALIZAR (PUT)' : 'CREAR NUEVO (POST)');
+    console.log('📦 Estructura Completa del Objeto:', payload);
+    console.log('📌 ID Ubicación Seleccionada:', payload.ubicacionId);
+    console.log('📌 ID Tipo de Artículo:', payload.tipoArticuloId);
+    
+    // Alerta visual en consola si los campos dinámicos van vacíos (Causa del Error 500)
+    if (payload.camposValores.length === 0) {
+      console.warn('%c⚠️ ADVERTENCIA: "camposValores" está VACÍO []. Si tu backend no admite tipos sin campos adicionales, lanzará error.', 'color: #dc3545; font-weight: bold;');
+    } else {
+      console.log('%c🧬 Campos Dinámicos Enviados (%d):', 'color: #28a745; font-weight: bold;', payload.camposValores.length, payload.camposValores);
+    }
+    console.groupEnd();
+    // =========================================================================
+
     if (this.editando) {
       this.articuloService.updateArticuloConCampos(payload).subscribe({
         next: () => {
@@ -294,6 +327,9 @@ this.campoService.getCamposByTipoArticulo(this.articulo.tipoArticuloId).subscrib
           this.toggleFormulario();
           this.listarArticulos();
           this.resetForm();
+        },
+        error: (err) => {
+          console.error('%c❌ Error devuelto por el servidor en actualización:', 'color: #dc3545; font-weight: bold;', err);
         }
       });
     } else {
@@ -303,9 +339,63 @@ this.campoService.getCamposByTipoArticulo(this.articulo.tipoArticuloId).subscrib
           this.toggleFormulario();
           this.listarArticulos();
           this.resetForm();
+        },
+        error: (err) => {
+          console.error('%c❌ Error devuelto por el servidor en inserción:', 'color: #dc3545; font-weight: bold;', err);
         }
       });
     }
+  }
+
+  // ---------------------------
+  // CARGA MASIVA DESDE EXCEL
+  // ---------------------------
+  onExcelSelected(event: any) {
+    const archivo: File = event.target.files[0];
+
+    if (!archivo) return;
+
+    // Alerta visual de espera para que el usuario no desespere si el Excel es grande
+    Swal.fire({
+      title: 'Procesando Excel',
+      text: 'Estamos subiendo y registrando tus artículos en lote. Por favor, espera...',
+      icon: 'info',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    this.articuloService.cargarMasivaExcel(archivo).subscribe({
+      next: (res: any) => {
+        // Cerramos el loading y mostramos el mensaje de éxito del backend
+        Swal.fire({
+          title: '¡Operación Completada!',
+          text: res.message || 'La carga masiva se ejecutó correctamente.',
+          icon: 'success',
+          confirmButtonText: 'Genial'
+        });
+
+        // 🔥 RECARGAMOS LA TABLA: Trae los nuevos artículos agregados sin recargar la página (F5)
+        this.listarArticulos(); 
+        
+        // Limpiamos el input file por si el usuario quiere subir el mismo archivo corregido luego
+        event.target.value = '';
+      },
+      error: (err:any) => {
+        console.error('Error en carga masiva:', err);
+        const mensajeError = err.error?.message || 'Hubo un problema al procesar el archivo en el servidor.';
+        
+        Swal.fire({
+          title: 'Error de Procesamiento',
+          text: mensajeError,
+          icon: 'error',
+          confirmButtonText: 'Entendido'
+        });
+        
+        event.target.value = '';
+      }
+    });
   }
 
   verArticulo(a: any) {
@@ -397,7 +487,24 @@ this.campoService.getCamposByTipoArticulo(this.articulo.tipoArticuloId).subscrib
       ubicacionId: 0,
       estado: 1,
       camposValores: [],
-      vidaUtil: null
+      vidaUtil: null,
+
+      // ✨ CAMPOS DE CARGA MASIVA / ADICIONALES
+      codigoBarra: '',
+      marca: '',
+      modelo: '',
+      nroSerie: '',
+      medidas: '',
+      color: '',
+      mayor: '',
+      subCta: '',
+      
+      // Control Financiero / Depreciaciones
+      hValorInicial: 0,
+      hDeprInicial: 0,
+      hDeprAjustada: 0,
+      hDeprEjercicio: 0,
+      valorNeto: 0
     };
   }
 
