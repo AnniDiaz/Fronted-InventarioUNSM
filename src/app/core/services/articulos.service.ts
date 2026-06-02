@@ -16,7 +16,9 @@ export class ArticuloService {
 getArticuloPorQR(qr: string) {
   return this.http.get<any >(`${baseUrl}/articulos/qr/${qr}`);
 }
-
+getArticulosPorUbicacionUsuario(ubicacionId: number) {
+  return this.http.get<any>(`${baseUrl}/articulos/por-ubicacion/${ubicacionId}`);
+}
   public getArticuloById(id: number) {
     return this.http.get<any>(`${baseUrl}/articulos/${id}`);
   }
@@ -61,12 +63,12 @@ public getArticulosConCampos() {
   public getPivotPorTipo(tipoArticuloId: number) {
     return this.http.get<any[]>(`${baseUrl}/articulos/pivot/tipo/${tipoArticuloId}`);
   }
+cargarMasivaExcel(archivo: File, ubicacionId: number): Observable<any> {
+  const formData = new FormData();
 
-  cargarMasivaExcel(archivo: File): Observable<any> {
-    const formData = new FormData();
-    // El nombre 'archivo' debe coincidir exactamente con el parámetro IFormFile de tu C#
-    formData.append('archivo', archivo); 
+  formData.append('archivo', archivo);
+  formData.append('ubicacionId', ubicacionId.toString());
 
-    return this.http.post(`${baseUrl}/articulos/cargar-masiva-excel`, formData);
-  }
+  return this.http.post(`${baseUrl}/articulos/cargar-masiva-excel`, formData);
+}
 }

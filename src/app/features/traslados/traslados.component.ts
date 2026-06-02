@@ -24,7 +24,7 @@ export class TrasladosComponent implements OnInit {
 
   filtroTexto: string = '';
   filtroFecha: string = '';
-
+ubicacionUsuarioId: number = 0;
   traslados: any[] = [];
   listaArticulos: any[] = [];
   listaUbicaciones: any[] = [];
@@ -79,55 +79,84 @@ cargarTraslados(): void {
   });
 }
 cargarArticulos(): void {
-  this.articuloService.getArticulos().subscribe({
+
+  this.articuloService.getArticulosConCampos().subscribe({
     next: (resp: any) => {
 
-      const data = Array.isArray(resp) ? resp : resp?.data ?? [];
+      const data = Array.isArray(resp)
+        ? resp
+        : resp?.data ?? [];
 
-      // 🔥 IDs de ubicaciones permitidas (usuario)
-      const idsUbicaciones = this.listaUbicaciones.map(u => u.id);
+      const idsUbicaciones = [
+        this.ubicacionUsuarioId,
+        ...this.listaUbicaciones.map(u => Number(u.id))
+      ];
 
-      console.log('📦 IDS UBICACIONES (ARTICULOS):', idsUbicaciones);
+      console.log('✅ IDS UBICACIONES PERMITIDAS:', idsUbicaciones);
 
-      // 🔥 FILTRAR ARTÍCULOS
       this.listaArticulos = data.filter((a: any) =>
-        idsUbicaciones.includes(a.ubicacionId)
+        idsUbicaciones.includes(Number(a.ubicacionId))
       );
 
-      console.log('📦 ARTICULOS FILTRADOS:', this.listaArticulos);
+      console.log('📦 ARTÍCULOS FILTRADOS:', this.listaArticulos);
     },
-    error: () => console.error('Error cargando artículos')
+    error: () => {
+      console.error('Error cargando artículos');
+    }
   });
+
 }
 cargarUbicaciones(): void {
 
-  const usuario = JSON.parse(localStorage.getItem('user') || 'null');
-  const usuarioId = usuario?.data?.id;
+  const usuario = JSON.parse(localStorage.getItem('user') || '{}');
+
+  const usuarioId =
+    usuario?.data?.id ||
+    usuario?.id ||
+    usuario?.usuarioId;
 
   if (!usuarioId) return;
 
   this.ubicacionService.getUbicacionesPorUsuario(usuarioId).subscribe({
     next: (resp: any) => {
 
-      const ubicacionesUsuario = Array.isArray(resp) ? resp : resp?.data ?? [];
+      const ubicacionesUsuario = Array.isArray(resp)
+        ? resp
+        : resp?.data ?? [];
 
-      if (ubicacionesUsuario.length === 0) return;
+      if (ubicacionesUsuario.length === 0) {
+        this.listaUbicaciones = [];
+        this.listaArticulos = [];
+        return;
+      }
 
-      const idUbicacion = ubicacionesUsuario[0].id;
+      // ubicación principal
+      this.ubicacionUsuarioId = Number(ubicacionesUsuario[0].id);
 
-      this.ubicacionService.getUbicacionesPorPadre(idUbicacion).subscribe({
+      this.ubicacionService.getUbicacionesPorPadre(this.ubicacionUsuarioId).subscribe({
         next: (res: any) => {
 
-          this.listaUbicaciones = Array.isArray(res) ? res : res?.data ?? [];
+          this.listaUbicaciones = Array.isArray(res)
+            ? res
+            : res?.data ?? [];
 
-          // 🔥 ORDEN CORRECTO
+          console.log('🏢 UBICACIÓN PADRE:', this.ubicacionUsuarioId);
+          console.log('🏢 UBICACIONES HIJAS:', this.listaUbicaciones);
+
           this.cargarArticulos();
           this.cargarTraslados();
+        },
+        error: (err) => {
+          console.error('Error obteniendo ubicaciones hijas', err);
         }
       });
 
+    },
+    error: (err) => {
+      console.error('Error obteniendo ubicaciones del usuario', err);
     }
   });
+
 }
   // FILTROS
   get trasladosFiltrados(): any[] {
@@ -189,9 +218,16 @@ onArticuloChange(articuloId: any): void {
 
   this.articuloService.getArticuloById(articuloId).subscribe({
     next: (resp: any) => {
-      const art = resp.data; // 🔥 IMPORTANTE (tu API devuelve {data: {...}})
 
+      const art = resp?.data;
+
+      if (!art) return;
+
+      console.log('📦 ARTÍCULO SELECCIONADO:', art);
+
+      // 🔥 AQUÍ SE AUTOCARGA LA UBICACIÓN
       this.nuevoTraslado.origen = Number(art.ubicacionId);
+
     },
     error: () => {
       Swal.fire('Error', 'No se pudo obtener la ubicación del artículo', 'error');
@@ -199,7 +235,6 @@ onArticuloChange(articuloId: any): void {
     }
   });
 }
-
   // ✅ FIX: evitar error find cuando no es array
   getNombreUbicacion(id: any): string {
     if (!Array.isArray(this.listaUbicaciones)) return 'Cargando...';

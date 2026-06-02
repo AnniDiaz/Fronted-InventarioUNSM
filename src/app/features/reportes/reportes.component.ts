@@ -52,7 +52,7 @@ export class ReportesComponent implements OnInit {
   filtroUbicacionDestinoId: number = 0;
   filtroCategoriaId: number = 0;
   filtroEstado: string = 'Todos';
-
+idsUbicacionesPermitidas: number[] = [];
   tipos: any[] = [];
   ubicaciones: any[] = [];
 
@@ -63,7 +63,10 @@ export class ReportesComponent implements OnInit {
 
   chart: any;
   loading: boolean = false;
-
+rolId: number = 0;
+usuarioActual: any = null;
+facultadUsuario: any = null;
+ubicacionesPadre: any[] = [];
   constructor(
     private reportesService: ReportesService,
     private tipoService: TipoArticuloService,
@@ -73,7 +76,56 @@ export class ReportesComponent implements OnInit {
   toggleMenu() {
     this.menuAbierto = !this.menuAbierto;
   }
+private obtenerUbicacionesPermitidas(): Promise<number[]> {
+  return new Promise((resolve) => {
 
+    const usuario = JSON.parse(localStorage.getItem('user') || '{}');
+
+    const usuarioId =
+      usuario?.data?.id ||
+      usuario?.id ||
+      usuario?.usuarioId;
+
+    if (!usuarioId) {
+      resolve([]);
+      return;
+    }
+
+    this.ubicService.getUbicacionesPorUsuario(usuarioId).subscribe({
+      next: (res: any) => {
+
+        const ubicacionesUsuario = Array.isArray(res)
+          ? res
+          : res?.data ?? [];
+
+        if (ubicacionesUsuario.length === 0) {
+          resolve([]);
+          return;
+        }
+
+        const padreId = ubicacionesUsuario[0].id;
+
+        this.ubicService.getUbicacionesPorPadre(padreId).subscribe({
+          next: (res2: any) => {
+
+            const hijas = Array.isArray(res2)
+              ? res2
+              : res2?.data ?? [];
+
+            const ids = [
+              padreId,
+              ...hijas.map((u: any) => Number(u.id))
+            ];
+
+            resolve(ids);
+          }
+        });
+
+      }
+    });
+
+  });
+}
   ngOnInit(): void {
     this.cargarTipos();
     this.cargarUbicaciones();
@@ -86,51 +138,136 @@ export class ReportesComponent implements OnInit {
     });
   }
 
-  cargarUbicaciones() {
-    this.ubicService.getUbicaciones().subscribe((res: any) => {
-      this.ubicaciones = Array.isArray(res) ? res : res?.data ?? [];
-    });
-  }
+
 
   onTabChange(event: any) {
     this.activeTab = event.index;
     this.reiniciarFiltros(); // Resetear filtros al cambiar de pestaña
   }
+cargarUbicaciones() {
 
-  generarReporte() {
-    // Si se está seleccionando un rango, esperar a que ambas fechas estén presentes
-    if (this.filtroFechaInicio && !this.filtroFechaFin) return;
+  this.usuarioActual =
+    JSON.parse(localStorage.getItem('user') || 'null');
 
-    this.loading = true;
-    this.p = 1; // Resetear página al filtrar
-    const request: ReporteRequest = {
-      tipo: this.activeTab,
-      fechaInicio: this.filtroFechaInicio?.toISOString(),
-      fechaFin: this.filtroFechaFin?.toISOString(),
-      ubicacionId: this.filtroUbicacionId > 0 ? this.filtroUbicacionId : undefined,
-      ubicacionOrigenId: this.filtroUbicacionOrigenId > 0 ? this.filtroUbicacionOrigenId : undefined,
-      ubicacionDestinoId: this.filtroUbicacionDestinoId > 0 ? this.filtroUbicacionDestinoId : undefined,
-      categoriaId: this.filtroCategoriaId > 0 ? this.filtroCategoriaId : undefined,
-      estado: this.filtroEstado
-    };
+  this.rolId = Number(localStorage.getItem('rolId'));
 
-    console.log("Enviando filtros al backend:", request);
+  if (!this.usuarioActual) return;
 
-    this.reportesService.generarReporte(request).subscribe({
-      next: (res) => {
-        console.log("Datos recibidos del backend:", res);
-        this.kpis = res.kpis;
-        this.tablaDatos = res.tabla;
-        this.renderChart(res.grafico.labels, res.grafico.valores);
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error("Error al generar reporte", err);
-        this.loading = false;
-      }
+  const usuarioId = this.usuarioActual.data.id;
+
+  // 👑 ADMIN: ve todo (o filtrado si quieres)
+  if (this.rolId === 1) {
+
+    this.ubicService.getUbicaciones().subscribe((res: any) => {
+
+      const data = res?.data ?? res;
+      const lista = Array.isArray(data) ? data : [];
+
+      this.ubicaciones = lista.filter((u: any) => {
+        const nombre = (u.nombre || '').toLowerCase().trim();
+
+        return nombre.includes('facultad') ||
+               nombre.includes('oficina') ||
+               nombre.includes('almacén') ||
+               nombre.includes('almacen');
+      });
+
     });
+
+    return;
   }
 
+  // 👤 USUARIO NORMAL: solo sus ubicaciones
+  this.ubicService.getUbicacionesPorUsuario(usuarioId).subscribe({
+    next: (res: any) => {
+
+      if (Array.isArray(res) && res.length > 0) {
+
+        this.facultadUsuario = res[0];
+        this.ubicacionesPadre = [this.facultadUsuario];
+
+        this.cargarSubUbicacionesReporte(this.facultadUsuario.id);
+
+      } else {
+        this.ubicaciones = [];
+      }
+
+    },
+    error: () => {
+      this.ubicaciones = [];
+    }
+  });
+
+}
+cargarSubUbicacionesReporte(padreId: number) {
+
+  this.ubicService.getUbicacionesPorPadre(padreId).subscribe({
+    next: (res: any) => {
+
+      const data = res?.data ?? res;
+      let lista = Array.isArray(data) ? data : [];
+
+      // 🔥 OPCIONAL: agregar "Todos / Otros"
+      const existeOtros = lista.some((u: any) => u.id === 100);
+
+      if (!existeOtros) {
+        lista.unshift({
+          id: 100,
+          nombre: 'Todos',
+        });
+      }
+
+      this.ubicaciones = lista;
+    }
+  });
+
+}
+async generarReporte() {
+
+  if (this.filtroFechaInicio && !this.filtroFechaFin) return;
+
+  this.loading = true;
+  this.p = 1;
+
+  const idsPermitidos = await this.obtenerUbicacionesPermitidas();
+
+  const request: any = {
+    tipo: this.activeTab,
+    fechaInicio: this.filtroFechaInicio?.toISOString(),
+    fechaFin: this.filtroFechaFin?.toISOString(),
+
+    // 🔥 ESTE ES EL IMPORTANTE
+    ubicacionIds: idsPermitidos,
+
+    ubicacionOrigenId: this.filtroUbicacionOrigenId > 0
+      ? this.filtroUbicacionOrigenId
+      : undefined,
+
+    ubicacionDestinoId: this.filtroUbicacionDestinoId > 0
+      ? this.filtroUbicacionDestinoId
+      : undefined,
+
+    categoriaId: this.filtroCategoriaId > 0
+      ? this.filtroCategoriaId
+      : undefined,
+
+    estado: this.filtroEstado
+  };
+
+  console.log("ENVIANDO:", request);
+
+  this.reportesService.generarReporte(request).subscribe({
+    next: (res) => {
+      this.kpis = res.kpis;
+      this.tablaDatos = res.tabla;
+      this.renderChart(res.grafico.labels, res.grafico.valores);
+      this.loading = false;
+    },
+    error: () => {
+      this.loading = false;
+    }
+  });
+}
   renderChart(labels: string[], valores: number[]) {
     if (this.chart) this.chart.destroy();
 

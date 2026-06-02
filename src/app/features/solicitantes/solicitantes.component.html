@@ -83,47 +83,50 @@
                                 </tr>
                             </thead>
 
-                            <tbody>
+                      <tbody>
 
-                                <tr *ngFor="let s of registrosPaginados">
+    <tr *ngFor="let s of registrosPaginados">
+        <td>{{ s.nombres }}</td>
+        <td>{{ s.apellidos }}</td>
+        <td>{{ s.codigo }}</td>
+        <td>{{ s.correo }}</td>
+        <td>{{ s.telefono }}</td>
+        <td>{{ s.cargo }}</td>
+        <td>{{ s.ciclo }}</td>
 
-                                    <td>{{ s.nombres }}</td>
-                                    <td>{{ s.apellidos }}</td>
-                                    <td>{{ s.codigo }}</td>
-                                    <td>{{ s.correo }}</td>
-                                    <td>{{ s.telefono }}</td>
-                                    <td>{{ s.cargo }}</td>
-                                    <td>{{ s.ciclo }}</td>
+        <td class="text-right">
+            <div class="acciones-botones">
 
-<td class="text-right">
-<div class="acciones-botones">
+                <button class="btn-icon btn-ver"
+                        (click)="verSolicitante(s)"
+                        title="Ver">
+                    <i class="fa fa-eye"></i>
+                </button>
 
-    <button class="btn-icon btn-ver"
-            (click)="verSolicitante(s)"
-            title="Ver">
-        <i class="fa fa-eye"></i>
-    </button>
+                <button class="btn-icon btn-editar"
+                        (click)="editarSolicitante(s)"
+                        title="Editar">
+                    <i class="fa fa-pen"></i>
+                </button>
 
-    <button class="btn-icon btn-editar"
-            (click)="editarSolicitante(s)"
-            title="Editar">
-        <i class="fa fa-pen"></i>
-    </button>
+                <button class="btn-icon btn-eliminar"
+                        (click)="eliminarSolicitante(s.id)"
+                        title="Eliminar">
+                    <i class="fa fa-trash"></i>
+                </button>
 
-    <button class="btn-icon btn-eliminar"
-            (click)="eliminarSolicitante(s.id)"
-            title="Eliminar">
-        <i class="fa fa-trash"></i>
-    </button>
+            </div>
+        </td>
+    </tr>
 
-</div>
+    <!-- Mensaje cuando no hay registros -->
+    <tr *ngIf="registrosPaginados.length === 0">
+        <td colspan="8" class="sin-datos">
+            No hay solicitantes registrados
+        </td>
+    </tr>
 
-</td>
-
-                                </tr>
-
-                            </tbody>
-
+</tbody>
                         </table>
 
                     </div>

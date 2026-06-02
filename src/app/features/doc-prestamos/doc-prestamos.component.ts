@@ -18,6 +18,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
+import { UbicacionService } from '../../core/services/ubicacion.service';
 @Component({
   selector: 'app-doc-prestamos',
   standalone: true,
@@ -48,17 +49,19 @@ nombreSolicitanteCtrl = '';
     private articuloService: ArticuloService,
     private solicitanteService: SolicitantesService,
       private prestamoService: PrestamosService,
-        private router: Router
+        private router: Router,
+          private ubicService: UbicacionService
+
 
 
   ) {}
 
   articulos: any[] = [];
 articuloId: number = 0;  equipo = '';
-
+ubicacionUsuarioId: number = 0;
 prestamos: any[] = [];
   destinatario = '';
-
+ubicaciones: any[] = [];
   // REPRESENTANTE RESPONSABLE
 
   nombre = '';
@@ -99,29 +102,88 @@ solicitanteId: number = 0;
 
   nuevoParticipante = {
     nombre: '',
-    dni: '',
+    telefono: '',
     codigo: '',
     correo: ''
   };
+ngOnInit(): void {
 
-  // =========================
-  // INIT
-  // =========================
+  this.cargarUbicaciones(); // ← carga ubicación padre + hijas
 
-  ngOnInit(): void {
+  this.cargarSolicitantes();
 
-    this.listarArticulos();
-  this.listarSolicitantes(); // 👈 TE FALTA ESTO
+  const hoy = new Date();
+  this.fechaDocumento = hoy.toISOString().split('T')[0];
 
-    const hoy = new Date();
-
-    this.fechaDocumento =
-      hoy.toISOString().split('T')[0];
-  }
+}
 mostrarSolicitante = (s: any): string => {
   return s ? `${s.nombres} ${s.apellidos}` : '';
 };
+cargarUbicaciones(): void {
 
+  const usuario = JSON.parse(
+    localStorage.getItem('user') || '{}'
+  );
+
+  const usuarioId =
+    usuario?.data?.id ||
+    usuario?.id ||
+    usuario?.usuarioId;
+
+  if (!usuarioId) {
+    console.error('No se encontró el ID del usuario');
+    return;
+  }
+
+  this.ubicService.getUbicacionesPorUsuario(usuarioId).subscribe({
+    next: (resp: any) => {
+
+      const ubicacionesUsuario = Array.isArray(resp)
+        ? resp
+        : resp?.data ?? [];
+
+      if (ubicacionesUsuario.length === 0) {
+        return;
+      }
+
+      this.ubicacionUsuarioId = Number(
+        ubicacionesUsuario[0].id
+      );
+
+      console.log(
+        '📍 UBICACION PADRE:',
+        this.ubicacionUsuarioId
+      );
+
+      this.ubicService
+        .getUbicacionesPorPadre(this.ubicacionUsuarioId)
+        .subscribe({
+          next: (res: any) => {
+
+            this.ubicaciones = Array.isArray(res)
+              ? res
+              : res?.data ?? [];
+
+            console.log(
+              '📍 UBICACIONES HIJAS:',
+              this.ubicaciones
+            );
+
+            this.listarArticulos();
+
+          },
+          error: (err) => {
+            console.error(err);
+          }
+        });
+
+    },
+    error: (err) => {
+      console.error(err);
+    }
+  });
+
+}
 listarSolicitantes(): void {
   this.solicitanteService.getSolicitantes().subscribe({
     next: (res: any) => {
@@ -246,40 +308,77 @@ seleccionarSolicitante(s: any): void {
     this.solicitanteId = s.id; // 👈 IMPORTANTE
 
 }
-  listarArticulos(): void {
+cargarSolicitantes(): void {
 
-    this.articuloService
-      .getArticulosConCampos()
-      .subscribe({
+  const ubicacionesUsuario = JSON.parse(
+    localStorage.getItem('ubicacionUsuario') || '[]'
+  );
 
-        next: (res: any) => {
+  const idsUbicaciones = ubicacionesUsuario.map(
+    (u: any) => Number(u.id)
+  );
 
-          this.articulos =
-            Array.isArray(res)
-              ? res
-              : res.data ?? [];
+  this.solicitanteService.getSolicitantes().subscribe({
+    next: (response: any) => {
 
-          console.log(
-            'ARTICULOS:',
-            this.articulos
-          );
-        },
+      this.solicitantes = (response.data ?? []).filter(
+        (s: any) => idsUbicaciones.includes(Number(s.ubicacionId))
+      );
 
-        error: (err) => {
+      this.solicitantesFiltrados = [...this.solicitantes];
+    },
+    error: (error) => {
+      console.error(error);
+    }
+  });
+}
+listarArticulos(): void {
 
-          console.error(
-            'Error al cargar artículos',
-            err
-          );
-        }
+  this.articuloService.getArticulosConCampos().subscribe({
+    next: (res: any) => {
 
-      });
-  }
+      const data = Array.isArray(res)
+        ? res
+        : res?.data ?? [];
 
-  // =========================
-  // PARTICIPANTES
-  // =========================
+      const idsUbicaciones = [
+        Number(this.ubicacionUsuarioId),
+        ...this.ubicaciones.map(
+          (u: any) => Number(u.id)
+        )
+      ];
 
+      console.log(
+        '✅ IDS PERMITIDOS:',
+        idsUbicaciones
+      );
+
+      this.articulos = data.filter((a: any) =>
+        idsUbicaciones.includes(
+          Number(a.ubicacionId)
+        )
+      );
+
+      console.log(
+        '📦 ARTICULOS FILTRADOS:',
+        this.articulos
+      );
+
+    },
+    error: (err) => {
+
+      console.error(err);
+
+      Swal.fire(
+        'Error',
+        'No se pudieron cargar los artículos',
+        'error'
+      );
+
+    }
+  });
+
+}
   agregarParticipante(): void {
 
     if (
@@ -293,8 +392,8 @@ seleccionarSolicitante(s: any): void {
       nombre:
         this.nuevoParticipante.nombre,
 
-      dni:
-        this.nuevoParticipante.dni,
+      telefono:
+        this.nuevoParticipante.telefono,
 
       codigo:
         this.nuevoParticipante.codigo,
@@ -307,7 +406,7 @@ seleccionarSolicitante(s: any): void {
     this.nuevoParticipante = {
 
       nombre: '',
-      dni: '',
+      telefono: '',
       codigo: '',
       correo: ''
 
@@ -323,10 +422,19 @@ seleccionarSolicitante(s: any): void {
       1
     );
   }
+seleccionarArticulo(id: number): void {
 
-  // =========================
-  // IMPRESIÓN
-  // =========================
+  const articulo = this.articulos.find(
+    a => Number(a.id) === Number(id)
+  );
+
+  if (articulo) {
+    this.equipo = articulo.nombre;
+  } else {
+    this.equipo = '';
+  }
+
+}
 
   imprimir(): void {
 
@@ -369,7 +477,7 @@ seleccionarSolicitante(s: any): void {
     this.nuevoParticipante = {
 
       nombre: '',
-      dni: '',
+      telefono: '',
       codigo: '',
       correo: ''
 

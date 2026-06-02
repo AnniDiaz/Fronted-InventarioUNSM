@@ -24,15 +24,15 @@ export class ArticuloFormComponent implements OnInit {
 
   mostrarFormulario = false;
   filtro = '';
-  filtroTipo = 'Todos'; 
-  orden = 'recientes'; 
+  filtroTipo = 'Todos';
+  orden = 'recientes';
 
   paginaActual = 1;
   pageSize = 4;
   totalPaginas = 1;
 
   articulos: any[] = [];
-  articulosFiltrados: any[] = []; 
+  articulosFiltrados: any[] = [];
   registrosPaginados: any[] = [];
 
   tipos: any[] = [];
@@ -140,34 +140,42 @@ export class ArticuloFormComponent implements OnInit {
     this.actualizarPaginacion();
   }
 
-  listarArticulos() {
-    this.articuloService.getArticulosConCampos().subscribe({
-      next: (res: any) => {
-        const data = Array.isArray(res) ? res : res.data ?? [];
-        const idsUbicaciones = this.ubicaciones.map(u => u.id);
+listarArticulos() {
+  this.articuloService.getArticulosConCampos().subscribe({
+    next: (res: any) => {
+      const data = Array.isArray(res)
+        ? res
+        : res?.data ?? [];
 
-        console.log('✅ IDS PERMITIDOS:', idsUbicaciones);
+      const idsUbicaciones = [
+        this.ubicacionUsuarioId,
+        ...this.ubicaciones.map(u => Number(u.id))
+      ];
 
-        this.articulos = data
-          .filter((a: any) => idsUbicaciones.includes(a.ubicacionId))
-          .map((a: any) => {
-            if (a.id) {
-              const urlQR = `http://localhost:4200/tipos-articulos/articulo/${a.id}`;
-              a.qrCodeBase64 = this.generarQR(urlQR);
-            }
-            return a;
-          });
+      console.log('✅ IDS PERMITIDOS:', idsUbicaciones);
 
-        console.log('📦 ARTICULOS FILTRADOS:', this.articulos);
-        this.aplicarFiltro();
-      },
-      error: (err) => {
-        console.error('Error al listar artículos:', err);
-        Swal.fire('Error', 'No se pudieron cargar los artículos', 'error');
-      }
-    });
-  }
+      this.articulos = data
+        .filter((a: any) =>
+          idsUbicaciones.includes(Number(a.ubicacionId))
+        )
+        .map((a: any) => {
+          if (a.id) {
+            const urlQR = `http://localhost:4200/tipos-articulos/articulo/${a.id}`;
+            a.qrCodeBase64 = this.generarQR(urlQR);
+          }
+          return a;
+        });
 
+      console.log('📦 ARTICULOS FILTRADOS:', this.articulos);
+
+      this.aplicarFiltro();
+    },
+    error: (err) => {
+      console.error('Error al listar artículos:', err);
+      Swal.fire('Error', 'No se pudieron cargar los artículos', 'error');
+    }
+  });
+}
   getBadgeClass(condicion: string): string {
     if (!condicion) return 'badge-default';
     const cond = condicion.toLowerCase();
@@ -189,53 +197,61 @@ export class ArticuloFormComponent implements OnInit {
     });
   }
 
-  cargarUbicaciones(): void {
-    const usuario = JSON.parse(localStorage.getItem('user') || 'null');
-    const usuarioId = usuario?.data?.id;
+cargarUbicaciones(): void {
+  const usuario = JSON.parse(localStorage.getItem('user') || '{}');
 
-    if (!usuarioId) return;
+  console.log('👤 USUARIO LOCALSTORAGE:', usuario);
 
-    this.ubicService.getUbicacionesPorUsuario(usuarioId).subscribe({
-      next: (resp: any) => {
-        const ubicacionesUsuario = Array.isArray(resp) ? resp : resp?.data ?? [];
+  const usuarioId =
+    usuario?.data?.id ||
+    usuario?.id ||
+    usuario?.usuarioId;
 
-        if (ubicacionesUsuario.length === 0) {
-          this.ubicaciones = [];
-          return;
-        }
-
-        const padreId = ubicacionesUsuario[0].id;
-        this.ubicacionUsuarioId = padreId;
-
-        this.ubicService.getUbicacionesPorPadre(padreId).subscribe({
-          next: (res: any) => {
-            const data = Array.isArray(res) ? res : res?.data ?? [];
-            let listaUbicaciones = [...data];
-
-            // ✨ INYECCIÓN DEL COMODÍN: Agregamos "Otros" (ID: 100) al dropdown de artículos
-            const existeOtros = listaUbicaciones.some((u: any) => u.id === 100);
-            if (!existeOtros) {
-              listaUbicaciones.push({
-                id: 100,
-                nombre: 'Otros (Ubicación General)',
-                descripcion: 'Ubicación por defecto para artículos sin ubicación especificada',
-                piso: 0,
-                tipoUbicacionId: 100,
-                usuarioId: null,
-                padreId: null
-              });
-            }
-
-            this.ubicaciones = listaUbicaciones;
-            
-            // 💡 Ejecuta el listado de artículos una vez que las ubicaciones estén listas
-            this.listarArticulos();
-          }
-        });
-      }
-    });
+  if (!usuarioId) {
+    console.error('No se encontró el ID del usuario en localStorage');
+    return;
   }
 
+  this.ubicService.getUbicacionesPorUsuario(usuarioId).subscribe({
+    next: (resp: any) => {
+      const ubicacionesUsuario = Array.isArray(resp)
+        ? resp
+        : resp?.data ?? [];
+
+      console.log('📍 UBICACIONES DEL USUARIO:', ubicacionesUsuario);
+
+      if (ubicacionesUsuario.length === 0) {
+        this.ubicaciones = [];
+        this.articulos = [];
+        return;
+      }
+
+      // Ubicación principal
+      this.ubicacionUsuarioId = Number(ubicacionesUsuario[0].id);
+
+      this.ubicService.getUbicacionesPorPadre(this.ubicacionUsuarioId).subscribe({
+        next: (res: any) => {
+          const ubicacionesHijas = Array.isArray(res)
+            ? res
+            : res?.data ?? [];
+
+          this.ubicaciones = ubicacionesHijas;
+
+          console.log('🏢 UBICACION PADRE:', this.ubicacionUsuarioId);
+          console.log('🏢 UBICACIONES HIJAS:', this.ubicaciones);
+
+          this.listarArticulos();
+        },
+        error: (err) => {
+          console.error('Error obteniendo ubicaciones hijas', err);
+        }
+      });
+    },
+    error: (err) => {
+      console.error('Error obteniendo ubicaciones del usuario', err);
+    }
+  });
+}
   obtenerTipoArticulo(id: number) {
     return this.tipos.find(t => t.id === id)?.nombre || '-';
   }
@@ -310,7 +326,7 @@ export class ArticuloFormComponent implements OnInit {
     console.log('📦 Estructura Completa del Objeto:', payload);
     console.log('📌 ID Ubicación Seleccionada:', payload.ubicacionId);
     console.log('📌 ID Tipo de Artículo:', payload.tipoArticuloId);
-    
+
     // Alerta visual en consola si los campos dinámicos van vacíos (Causa del Error 500)
     if (payload.camposValores.length === 0) {
       console.warn('%c⚠️ ADVERTENCIA: "camposValores" está VACÍO []. Si tu backend no admite tipos sin campos adicionales, lanzará error.', 'color: #dc3545; font-weight: bold;');
@@ -333,17 +349,14 @@ export class ArticuloFormComponent implements OnInit {
         }
       });
     } else {
-      this.articuloService.addArticuloConCampos(payload).subscribe({
-        next: () => {
-          Swal.fire('Éxito', 'Artículo guardado correctamente', 'success');
-          this.toggleFormulario();
-          this.listarArticulos();
-          this.resetForm();
-        },
-        error: (err) => {
-          console.error('%c❌ Error devuelto por el servidor en inserción:', 'color: #dc3545; font-weight: bold;', err);
-        }
+this.articuloService.addArticuloConCampos(payload).subscribe({
+  next: () => {
+    Swal.fire('Éxito', 'Artículo guardado correctamente', 'success')
+      .then(() => {
+        window.location.reload();
       });
+  }
+});
     }
   }
 
@@ -366,8 +379,10 @@ export class ArticuloFormComponent implements OnInit {
       }
     });
 
-    this.articuloService.cargarMasivaExcel(archivo).subscribe({
-      next: (res: any) => {
+this.articuloService.cargarMasivaExcel(
+  archivo,
+  this.ubicacionUsuarioId
+).subscribe({      next: (res: any) => {
         // Cerramos el loading y mostramos el mensaje de éxito del backend
         Swal.fire({
           title: '¡Operación Completada!',
@@ -377,22 +392,22 @@ export class ArticuloFormComponent implements OnInit {
         });
 
         // 🔥 RECARGAMOS LA TABLA: Trae los nuevos artículos agregados sin recargar la página (F5)
-        this.listarArticulos(); 
-        
+        this.listarArticulos();
+
         // Limpiamos el input file por si el usuario quiere subir el mismo archivo corregido luego
         event.target.value = '';
       },
       error: (err:any) => {
         console.error('Error en carga masiva:', err);
         const mensajeError = err.error?.message || 'Hubo un problema al procesar el archivo en el servidor.';
-        
+
         Swal.fire({
           title: 'Error de Procesamiento',
           text: mensajeError,
           icon: 'error',
           confirmButtonText: 'Entendido'
         });
-        
+
         event.target.value = '';
       }
     });
@@ -498,7 +513,7 @@ export class ArticuloFormComponent implements OnInit {
       color: '',
       mayor: '',
       subCta: '',
-      
+
       // Control Financiero / Depreciaciones
       hValorInicial: 0,
       hDeprInicial: 0,

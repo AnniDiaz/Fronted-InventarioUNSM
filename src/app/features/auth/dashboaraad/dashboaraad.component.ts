@@ -3,9 +3,10 @@ import { SidebarComponent } from '../../../shared/components/sidebar/sidebar.com
 import { HeaderComponent } from "../../../shared/components/header/header.component";
 import { CommonModule } from '@angular/common';
 import Chart from 'chart.js/auto';
-import { ReportesService, ReporteRequest } from '../../../core/services/reportes.service';
+import { ReportesService } from '../../../core/services/reportes.service';
 import { UbicacionService } from '../../../core/services/ubicacion.service';
-
+import { ArticuloService } from '../../../core/services/articulos.service';
+import { TrasladosService } from '../../../core/services/traslados.service';
 const centerTextPlugin: any = {
   id: 'centerText',
   beforeDraw: function (chart: any) {
@@ -58,33 +59,213 @@ export class DashboardComponent implements OnInit {
   totalUbicaciones = 0;
   totalTraslados = 0;
   totalValor = 0;
-
+ubicacionesHijasFiltradas: any[] = [];
   categorias: any[] = [];
   articulos: any[] = [];
-
+idsUbicacionesPermitidas: number[] = [];
   barChart: any;
   pieChart: any;
-
+ubicacionId?: number;
   constructor(
     private reportesService: ReportesService,
-    private ubicacionService: UbicacionService
+    private ubicacionService: UbicacionService,
+      private articuloService: ArticuloService,
+      private trasladoService: TrasladosService
+
   ) { }
 
-  ngOnInit() {
-    this.cargarDatosDashboard();
-  }
+ngOnInit() {
+  this.cargarDatosDashboard();
+  this.cargarTotalArticulosPorUbicacion();
+  this.cargarTotalUbicacionesFiltradas();
+  this.cargarTotalTrasladosFiltrados(); // 🔥 NUEVO
+}
+cargarTotalArticulosPorUbicacion() {
 
-  cargarDatosDashboard() {
-    // 1. Obtener datos de Inventario General
-    this.reportesService.generarReporte({ tipo: 0 }).subscribe(res => {
-      // KPIs
+const usuario = JSON.parse(localStorage.getItem('user') || '{}');
+
+const usuarioId =
+  usuario?.data?.id ||
+  usuario?.id ||
+  usuario?.usuarioId;
+
+  if (!usuarioId) return;
+
+this.ubicacionService.getUbicacionesPorUsuario(usuarioId).subscribe({
+
+  next: (resUb: any) => {
+
+    const ubicacionesUsuario = Array.isArray(resUb)
+      ? resUb
+      : resUb?.data ?? [];
+
+    if (ubicacionesUsuario.length === 0) return;
+
+    const padreId = ubicacionesUsuario[0].id;
+
+    this.ubicacionService.getUbicacionesPorPadre(padreId).subscribe({
+      next: (resHijas: any) => {
+
+        const hijas = Array.isArray(resHijas)
+          ? resHijas
+          : resHijas?.data ?? [];
+const idsPermitidos = [
+  padreId,
+  ...hijas.map((u: any) => Number(u.id))
+];
+this.idsUbicacionesPermitidas = idsPermitidos;
+
+// 👇 MOSTRAR EN ALERT
+const nombresUbicaciones = [
+  ...ubicacionesUsuario.map((u: any) => u.nombre),
+  ...hijas.map((u: any) => u.nombre)
+];
+
+          this.articuloService.getArticulosConCampos().subscribe({
+            next: (res3: any) => {
+
+              const data = Array.isArray(res3)
+                ? res3
+                : res3?.data ?? [];
+
+              const filtrados = data.filter((a: any) =>
+                idsPermitidos.includes(Number(a.ubicacionId))
+              );
+
+              this.totalArticulos = filtrados.length;
+
+              console.log('📦 TOTAL FILTRADO REAL:', this.totalArticulos);
+            }
+          });
+
+        }
+      });
+
+    }
+  });
+}
+
+private obtenerUbicacionesPermitidas(): Promise<number[]> {
+  return new Promise((resolve) => {
+    const usuario = JSON.parse(localStorage.getItem('user') || '{}');
+
+    const usuarioId =
+      usuario?.data?.id ||
+      usuario?.id ||
+      usuario?.usuarioId;
+
+    if (!usuarioId) {
+      resolve([]);
+      return;
+    }
+
+    this.ubicacionService.getUbicacionesPorUsuario(usuarioId).subscribe({
+      next: (res: any) => {
+
+        const ubicacionesUsuario = Array.isArray(res) ? res : res?.data ?? [];
+
+        if (ubicacionesUsuario.length === 0) {
+          resolve([]);
+          return;
+        }
+
+        const padreId = ubicacionesUsuario[0].id;
+
+        this.ubicacionService.getUbicacionesPorPadre(padreId).subscribe({
+          next: (res2: any) => {
+
+            const ubicacionesHijas = Array.isArray(res2) ? res2 : res2?.data ?? [];
+
+            const ids = [
+              padreId,
+              ...ubicacionesHijas.map((u: any) => Number(u.id))
+            ];
+
+            resolve(ids);
+          }
+        });
+      }
+    });
+  });
+}
+cargarTotalTrasladosFiltrados() {
+
+  const usuario = JSON.parse(localStorage.getItem('user') || '{}');
+
+  const usuarioId =
+    usuario?.data?.id ||
+    usuario?.id ||
+    usuario?.usuarioId;
+
+  if (!usuarioId) return;
+
+  this.ubicacionService.getUbicacionesPorUsuario(usuarioId).subscribe({
+    next: (res: any) => {
+
+      const ubicacionesUsuario = Array.isArray(res)
+        ? res
+        : res?.data ?? [];
+
+      if (ubicacionesUsuario.length === 0) {
+        this.totalTraslados = 0;
+        return;
+      }
+
+      const padreId = ubicacionesUsuario[0].id;
+
+      this.ubicacionService.getUbicacionesPorPadre(padreId).subscribe({
+        next: (res2: any) => {
+
+          const ubicacionesHijas = Array.isArray(res2)
+            ? res2
+            : res2?.data ?? [];
+
+          const idsPermitidos = [
+            padreId,
+            ...ubicacionesHijas.map((u: any) => Number(u.id))
+          ];
+
+          this.trasladoService.getTraslados().subscribe({
+            next: (resp: any) => {
+
+              const data = Array.isArray(resp)
+                ? resp
+                : resp?.data ?? [];
+
+              const filtrados = data.filter((t: any) =>
+                idsPermitidos.includes(Number(t.ubicacionOrigenId)) ||
+                idsPermitidos.includes(Number(t.ubicacionDestinoId))
+              );
+
+              this.totalTraslados = filtrados.length;
+
+              console.log('🚚 TOTAL TRASLADOS FILTRADOS:', this.totalTraslados);
+            }
+          });
+
+        }
+      });
+
+    }
+  });
+}
+
+cargarDatosDashboard() {
+
+  this.obtenerUbicacionesPermitidas().then((idsPermitidos) => {
+
+const request: any = {
+  tipo: 0,
+  ubicacionIds: idsPermitidos   // 🔥 LISTA COMPLETA
+};
+    this.reportesService.generarReporte(request).subscribe(res => {
+
       const kpiActivos = res.kpis.find(k => k.label === 'TOTAL ACTIVOS');
       const kpiValor = res.kpis.find(k => k.label === 'VALORACIÓN TOTAL');
 
       this.totalArticulos = kpiActivos ? parseInt(kpiActivos.value) : 0;
       this.totalValor = kpiValor ? parseFloat(kpiValor.value.replace('S/ ', '').replace(',', '')) : 0;
 
-      // Tabla de Artículos Recientes
       this.articulos = res.tabla.slice(0, 4).map(a => ({
         codigo: a.codigo,
         nombre: a.nombreArticulo,
@@ -94,59 +275,95 @@ export class DashboardComponent implements OnInit {
         fecha: a.fecha
       }));
 
-      // Procesar datos para Gráfico de Barras (Por Ubicación)
       this.inicializarBarChart(res.tabla);
-
-      // Procesar datos para Gráfico de Dona (Por Categoría)
       this.inicializarPieChart(res.tabla);
     });
 
-    // 2. Obtener Total de Ubicaciones
-    this.ubicacionService.getUbicaciones().subscribe((res: any) => {
-      const data = Array.isArray(res) ? res : res?.data ?? [];
-      this.totalUbicaciones = data.length;
-    });
+  });
 
-    // 3. Obtener Traslados Realizados
-    this.reportesService.generarReporte({ tipo: 3 }).subscribe(res => {
-      const kpiTraslados = res.kpis.find(k => k.label === 'TRASLADOS REALIZADOS');
-      this.totalTraslados = kpiTraslados ? parseInt(kpiTraslados.value) : 0;
-    });
-  }
+}
+async inicializarBarChart(data: any[]) {
 
-  inicializarBarChart(data: any[]) {
-    const ubicacionesCounts = data.reduce((acc: any, curr: any) => {
-      acc[curr.ubicacion] = (acc[curr.ubicacion] || 0) + 1;
-      return acc;
-    }, {});
+  const ubicacionesCounts = data.reduce((acc: any, curr: any) => {
 
-    const labels = Object.keys(ubicacionesCounts);
-    const valores = Object.values(ubicacionesCounts);
+    const ubicacion = curr.ubicacion;
 
-    if (this.barChart) this.barChart.destroy();
+    if (!ubicacion) return acc;
 
-    this.barChart = new Chart('barChart', {
-      type: 'bar',
-      data: {
-        labels: labels,
-        datasets: [{
-          data: valores,
-          backgroundColor: '#10b981',
-          barPercentage: 0.6,
-          borderRadius: 4
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          y: { beginAtZero: true, ticks: { stepSize: 1 } }
-        }
+    acc[ubicacion] = (acc[ubicacion] || 0) + 1;
+
+    return acc;
+  }, {});
+
+  const labels = Object.keys(ubicacionesCounts);
+  const valores = Object.values(ubicacionesCounts);
+
+  if (this.barChart) this.barChart.destroy();
+
+  this.barChart = new Chart('barChart', {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        data: valores,
+        backgroundColor: '#10b981',
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true }
       }
-    });
-  }
+    }
+  });
+}
+cargarTotalUbicacionesFiltradas() {
 
+  const usuario = JSON.parse(localStorage.getItem('user') || '{}');
+
+  const usuarioId =
+    usuario?.data?.id ||
+    usuario?.id ||
+    usuario?.usuarioId;
+
+  if (!usuarioId) return;
+
+  this.ubicacionService.getUbicacionesPorUsuario(usuarioId).subscribe({
+    next: (res: any) => {
+
+      const ubicacionesUsuario = Array.isArray(res)
+        ? res
+        : res?.data ?? [];
+
+      if (ubicacionesUsuario.length === 0) {
+        this.totalUbicaciones = 0;
+        return;
+      }
+
+      const padreId = ubicacionesUsuario[0].id;
+
+      this.ubicacionService.getUbicacionesPorPadre(padreId).subscribe({
+        next: (res2: any) => {
+
+          const ubicacionesHijas = Array.isArray(res2)
+            ? res2
+            : res2?.data ?? [];
+
+          // 🔥 igual que artículos: padre + hijos
+          const total = 1 + ubicacionesHijas.length;
+
+          this.totalUbicaciones = total;
+
+          console.log('📍 TOTAL UBICACIONES FILTRADAS:', total);
+        }
+      });
+
+    }
+  });
+}
   inicializarPieChart(data: any[]) {
     const catCounts = data.reduce((acc: any, curr: any) => {
       const cat = curr.categoria || 'Sin Categoría';

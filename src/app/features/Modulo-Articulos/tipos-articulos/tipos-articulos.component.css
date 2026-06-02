@@ -54,7 +54,6 @@
 }
 
 .tipo-card {
-  background: #fff;
   border-radius: 16px;
   padding: 16px;
   display: flex;
@@ -64,7 +63,8 @@
   transition: all 0.3s ease;
   position: relative;
   width: fit-content;
-  min-width: 240px;
+  width: 240px;
+  min-width: 273px;
   max-width: 320px;
 }
 
@@ -434,7 +434,6 @@
 .card-inventario {
   display: flex;
   flex-direction: column;
-  min-height: 100%;
 }
 .footer-paginacion {
   margin-top: auto;   /* 👈 CLAVE */

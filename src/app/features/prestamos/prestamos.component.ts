@@ -20,12 +20,14 @@ import { RouterModule } from '@angular/router';
   styleUrls: ['./prestamos.component.css']
 })
 export class PrestamoComponent implements OnInit {
-
+usuarioActual: any;
+ubicacionId: number | null = null
   p: number = 1;
 aprobado: boolean = false;  // --- Propiedades para el Layout Responsivo ---
   menuAbierto = false; // Controla si el menú lateral se muestra en móviles
 listaUbicaciones: any[] = [];
 idsUbicacionesPermitidas: number[] = [];
+articulosTodos: any[] = [];
   // --- Datos ---
   prestamos: any[] = [];
   prestamosFiltrados: any[] = [];
@@ -118,15 +120,39 @@ constructor(
   private _ubicacionService: UbicacionService   // 🔥 FALTABA
 ) { }
 ngOnInit(): void {
-  this.cargarUbicaciones();
-}
 
+  const usuario = JSON.parse(localStorage.getItem('user') || '{}');
+  this.usuarioActual = usuario;
+
+  const usuarioId = usuario?.data?.id;
+
+  if (!usuarioId) return;
+
+  this._ubicacionService.getUbicacionesPorUsuario(usuarioId).subscribe({
+    next: (res: any) => {
+
+      const ubicaciones = Array.isArray(res) ? res : res?.data ?? [];
+
+      if (ubicaciones.length > 0) {
+        this.ubicacionId = ubicaciones[0].id;
+
+        // 🔥 ahora recién cargas préstamos
+        this.cargarUbicaciones();
+      } else {
+        console.warn("Usuario sin ubicación");
+      }
+
+    },
+    error: (err) => {
+      console.error("Error cargando ubicación", err);
+    }
+  });
+}
   // --- Lógica del Menú Hamburguesa ---
   toggleMenu(): void {
     this.menuAbierto = !this.menuAbierto;
   }
 cargarUbicaciones(): void {
-
   const usuario = JSON.parse(localStorage.getItem('user') || 'null');
   const usuarioId = usuario?.data?.id;
 
@@ -136,9 +162,7 @@ cargarUbicaciones(): void {
     next: (resp: any) => {
 
       const ubicaciones = Array.isArray(resp) ? resp : resp?.data ?? [];
-      if (!ubicaciones.length) return;
-
-      const padreId = ubicaciones[0].id;
+      const padreId = ubicaciones[0]?.id;
 
       this._ubicacionService.getUbicacionesPorPadre(padreId).subscribe({
         next: (res: any) => {
@@ -146,31 +170,48 @@ cargarUbicaciones(): void {
           this.listaUbicaciones = Array.isArray(res) ? res : res?.data ?? [];
           this.idsUbicacionesPermitidas = this.listaUbicaciones.map(u => u.id);
 
-          // 🔥 SIGUIENTE PASO
-          this.cargarArticulosDisponibles();
+          this.cargarArticulosDisponibles(); // 👈 sigue flujo
         }
       });
     }
   });
 }
 cargarPrestamos() {
-  this._prestamosService.getPrestamos().subscribe({
-    next: (res: any) => {
 
-      const data = res.data || [];
+  console.log("Ubicación enviada:", this.ubicacionId);
 
-      this.prestamos = data.filter((p: any) => {
+  this._prestamosService.getPrestamosPorUbicacion(this.ubicacionId!)
+    .subscribe({
+      next: (res: any) => {
 
-        const articulo = this.articulosDisponibles.find((a: any) => a.id === p.articuloId);
+        console.log("RESPUESTA PRESTAMOS:", res);
 
-        if (!articulo) return false;
+        const data = res.data || [];
 
-        return this.idsUbicacionesPermitidas.includes(articulo.ubicacionId);
-      });
+        this.prestamos = data;
+        this.prestamosFiltrados = [...data];
 
-      this.aplicarFiltro();
-    }
-  });
+        console.log("PRESTAMOS:", this.prestamos);
+
+        this.actualizarPaginacion();
+      },
+      error: (err) => {
+        console.error("Error cargando préstamos", err);
+      }
+    });
+}
+
+
+getUbicacionUsuario(): number | null {
+
+  const ubicaciones = JSON.parse(localStorage.getItem('ubicacionUsuario') || '[]');
+
+  if (!Array.isArray(ubicaciones) || ubicaciones.length === 0) {
+    return null;
+  }
+
+  // toma la primera ubicación (o puedes ajustar lógica si hay varias)
+  return ubicaciones[0].id ?? null;
 }
 cambiarAEstado2(prestamo: any) {
 
@@ -244,29 +285,28 @@ aprobarPrestamo(p: any) {
   }).then((result) => {
 
     if (result.isConfirmed) {
+this._prestamosService.cambiarEstado2(p.id).subscribe({
+  next: () => {
 
-      this._prestamosService.cambiarEstado2(p.id).subscribe({
-        next: () => {
+    Swal.fire({
+      icon: 'success',
+      title: 'Aprobado',
+      text: 'El préstamo fue aprobado correctamente'
+    }).then(() => {
 
-          p.aprobado = true; // oculta botón
+      window.location.reload(); // recarga toda la página
 
-          Swal.fire({
-            icon: 'success',
-            title: 'Aprobado',
-            text: 'El préstamo fue aprobado correctamente'
-          });
+    });
 
-        },
-        error: () => {
-
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'No se pudo aprobar el préstamo'
-          });
-
-        }
-      });
+  },
+  error: () => {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'No se pudo aprobar el préstamo'
+    });
+  }
+});
 
     }
 
@@ -275,34 +315,36 @@ aprobarPrestamo(p: any) {
 }
 aplicarFiltroPrestamos() {
 
-  if (!this.idsUbicacionesPermitidas.length) {
-    this.prestamosFiltrados = [...this.prestamos];
-    this.actualizarPaginacion();
-    return;
-  }
+  const mapaArticulos = new Map(
+    this.articulosDisponibles.map(a => [Number(a.id), a])
+  );
 
   this.prestamosFiltrados = this.prestamos.filter(p => {
 
-    const articulo = this.articulosDisponibles.find(a => a.id === p.articuloId);
+    const articulo = mapaArticulos.get(Number(p.articuloId));
 
-    if (!articulo) return false;
-
+if (!articulo) {
+  console.warn("Préstamo sin artículo válido:", p);
+  return false; // ✔ ocultar o manejar controladamente
+}
     return this.idsUbicacionesPermitidas.includes(articulo.ubicacionId);
   });
 
   this.actualizarPaginacion();
 }
 cargarArticulosDisponibles() {
+
   this._articulosService.getArticulos().subscribe({
     next: (res: any) => {
 
       const data = res.data || [];
 
+      this.articulosTodos = data; // ← IMPORTANTE
+
       this.articulosDisponibles = data.filter((a: any) =>
         this.idsUbicacionesPermitidas.includes(a.ubicacionId)
       );
 
-      // 🔥 siguiente paso
       this.cargarPrestamos();
     }
   });
@@ -315,10 +357,23 @@ aplicarFiltroArticulos() {
     this.idsUbicacionesPermitidas.includes(a.ubicacionId)
   );
 }
+getNombreArticulo(id: number): string {
 
-getNombreArticulo(id: number) {
-  const articulo = this.articulosDisponibles.find(a => a.id === id);
-  return articulo ? articulo.nombre : 'Desconocido';
+  const articulo =
+    this.articulosDisponibles.find(a => Number(a.id) === Number(id)) ||
+    this.articulosTodos.find(a => Number(a.id) === Number(id));
+
+  if (!articulo) {
+    return 'Desconocido';
+  }
+
+  return `${articulo.codigoPatrimonial} - ${articulo.nombre}`;
+}
+getArticulo(id: number) {
+  return (
+    this.articulosDisponibles.find(a => Number(a.id) === Number(id)) ||
+    this.articulosTodos.find(a => Number(a.id) === Number(id))
+  );
 }
   aplicarFiltro() {
     const texto = this.filtroTexto.toLowerCase();
@@ -402,24 +457,31 @@ const dataParaEnviar = {
 };
   console.log("ENVIANDO:", dataParaEnviar);
 
-  this._prestamosService.addPrestamo(dataParaEnviar).subscribe({
-    next: () => {
-      Swal.fire('¡Registrado!', 'El préstamo se ha creado con éxito.', 'success');
-      this.generarPDF();
-      this.cargarPrestamos();
-      this.toggleFormulario();
-    },
-    error: (err) => {
-  console.error("Error real:", err);
+this._prestamosService.addPrestamo(dataParaEnviar).subscribe({
+  next: () => {
 
-  const mensajeBackend =
-    err?.error?.errors ||
-    err?.error?.message ||
-    'Hubo un fallo al registrar';
+    Swal.fire(
+      '¡Registrado!',
+      'El préstamo se ha creado con éxito.',
+      'success'
+    ).then(() => {
 
-  Swal.fire('Error', mensajeBackend, 'error');
-}
-  });
+      window.location.reload(); // recarga toda la página
+
+    });
+
+  },
+  error: (err) => {
+    console.error("Error real:", err);
+
+    const mensajeBackend =
+      err?.error?.errors ||
+      err?.error?.message ||
+      'Hubo un fallo al registrar';
+
+    Swal.fire('Error', mensajeBackend, 'error');
+  }
+});
 }
    marcarDevuelto(prestamo: any) {
     Swal.fire({

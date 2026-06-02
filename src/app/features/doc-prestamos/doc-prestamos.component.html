@@ -95,7 +95,9 @@
           <div class="grupo">
 
             <label>EQUIPO / ARTÍCULO SOLICITADO</label>
-<select [(ngModel)]="articuloId">
+<select
+  [(ngModel)]="articuloId"
+  (ngModelChange)="seleccionarArticulo($event)">
 
   <option [ngValue]="0">
     Seleccione un artículo
@@ -112,18 +114,9 @@
 </select>
           </div>
 
-          <!-- LUGAR -->
 
-          <div class="grupo">
 
-            <label>LUGAR DE UTILIZACIÓN</label>
 
-            <input
-              type="text"
-              [(ngModel)]="lugarUso"
-              placeholder="Laboratorio, institución, evento, etc.">
-
-          </div>
 
           <!-- DETALLE -->
 
@@ -184,19 +177,22 @@
                 [(ngModel)]="nuevoParticipante.nombre"
                 placeholder="Nombre completo">
 
-              <input
+                 <input
                 type="text"
-                [(ngModel)]="nuevoParticipante.dni"
-                placeholder="DNI">
+                [(ngModel)]="nuevoParticipante.codigo"
+                placeholder="Código universitario">
+
+
 
             </div>
 
             <div class="grid-2">
 
-              <input
+               <input
                 type="text"
-                [(ngModel)]="nuevoParticipante.codigo"
-                placeholder="Código universitario">
+                [(ngModel)]="nuevoParticipante.telefono"
+                placeholder="Teléfono">
+
 
               <input
                 type="email"
@@ -378,40 +374,45 @@
 
             </p>
 
-            <p>
 
-              <strong>
-                Lugar de utilización:
-              </strong>
+<p>
 
-              {{lugarUso || 'LUGAR DE UTILIZACIÓN'}}
+  <strong>
+    PERIODO DE PRÉSTAMO SOLICITADO
+  </strong>
 
-            </p>
+</p>
 
-            <p>
+<p>
 
-              <strong>
-                Periodo solicitado:
-              </strong>
+  El préstamo y/o uso del equipo institucional solicitado se realizará
+  durante el periodo comprendido entre el día
 
-              Desde
+  <strong>
+    {{fechaInicio || 'FECHA INICIO'}}
+  </strong>
 
-              {{fechaInicio || 'FECHA INICIO'}}
+  y el día
 
-              hasta
+  <strong>
+    {{fechaFin || 'FECHA FIN'}}
+  </strong>.
 
-              {{fechaFin || 'FECHA FIN'}}
+</p>
 
-            </p>
 
-            <p>
+<p>
 
-              Nos comprometemos al adecuado uso, custodia,
-              conservación y devolución de los bienes
-              institucionales asignados, respetando las normas
-              y reglamentos establecidos por la Universidad.
+  Nos comprometemos al adecuado uso, custodia,
+  conservación y devolución de los bienes
+  institucionales asignados, respetando las normas
+  y reglamentos establecidos por la Universidad.
 
-            </p>
+</p>
+
+
+
+
 
             <h4 class="subtitulo-tabla">
 
@@ -419,43 +420,39 @@
 
             </h4>
 
-            <table class="tabla-participantes">
+<div *ngIf="participantes.length > 0; else sinParticipantes">
 
-              <thead>
+  <table class="tabla-participantes">
 
-                <tr>
+    <thead>
+      <tr>
+        <th>N°</th>
+        <th>Apellidos y Nombres</th>
+        <th>Teléfono</th>
+        <th>Código</th>
+        <th>Correo</th>
+      </tr>
+    </thead>
 
-                  <th>N°</th>
-                  <th>Apellidos y Nombres</th>
-                  <th>DNI</th>
-                  <th>Código</th>
-                  <th>Correo</th>
+    <tbody>
+      <tr *ngFor="let p of participantes; let i = index">
+        <td>{{i + 1}}</td>
+        <td>{{p.nombre}}</td>
+        <td>{{p.dni}}</td>
+        <td>{{p.codigo}}</td>
+        <td>{{p.correo}}</td>
+      </tr>
+    </tbody>
 
-                </tr>
+  </table>
 
-              </thead>
+</div>
 
-              <tbody>
-
-                <tr
-                  *ngFor="let p of participantes; let i = index">
-
-                  <td>{{i + 1}}</td>
-
-                  <td>{{p.nombre}}</td>
-
-                  <td>{{p.dni}}</td>
-
-                  <td>{{p.codigo}}</td>
-
-                  <td>{{p.correo}}</td>
-
-                </tr>
-
-              </tbody>
-
-            </table>
-
+<ng-template #sinParticipantes>
+  <p class="sin-data">
+    No hay participantes agregados.
+  </p>
+</ng-template>
             <div class="fecha-doc">
 
               {{ciudad || 'Ciudad'}},
@@ -463,38 +460,22 @@
               {{fechaDocumento || 'Fecha'}}
 
             </div>
+<!-- ATENTAMENTE -->
+<div class="firma">
 
-            <div class="firma">
+  <div class="linea"></div>
 
-              <div class="linea"></div>
+  <p class="atentamente">Atentamente,</p>
 
-              <h4>
+  <h4>{{nombre || 'NOMBRE COMPLETO'}}</h4>
 
-                {{nombre || 'NOMBRE COMPLETO'}}
+  <p>REPRESENTANTE RESPONSABLE</p>
 
-              </h4>
+  <p>DNI N.° {{dni || '00000000'}}</p>
 
-              <p>
+  <small>{{correo || 'correo@unsm.edu.pe'}}</small>
 
-                REPRESENTANTE RESPONSABLE
-
-              </p>
-
-              <p>
-
-                DNI N.°
-                {{dni || '00000000'}}
-
-              </p>
-
-              <small>
-
-                {{correo || 'correo@unsm.edu.pe'}}
-
-              </small>
-
-            </div>
-
+</div>
           </div>
 
         </div>
@@ -504,5 +485,6 @@
     </div>
 
   </div>
+
 
 </div>

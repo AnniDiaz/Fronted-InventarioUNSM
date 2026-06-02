@@ -18,13 +18,13 @@ import Swal from 'sweetalert2';
   imports: [CommonModule, FormsModule, SidebarComponent, HeaderComponent]
 })
 export class DetallesArticuloComponent implements OnInit {
+
   articulo: any;
   idArticulo!: number;
 
   mostrarReporte: boolean = false;
   mostrarModalReporte: boolean = false;
 
-  // Formulario de reporte integrado con Mantenimiento
   reporte = {
     tipo: 'Correctivo',
     fecha: new Date().toISOString().split('T')[0],
@@ -55,10 +55,25 @@ export class DetallesArticuloComponent implements OnInit {
     this.articuloService.getArticuloById(this.idArticulo).subscribe({
       next: (res) => {
         console.log('Artículo cargado:', res);
+
         this.articulo = res.data;
 
-        // Cargar ubicación real
-        if (this.articulo && this.articulo.ubicacionId) {
+        // 🔥 SI NO HAY CAMPOS DINÁMICOS, LOS GENERAMOS
+        if (!this.articulo.camposValores || this.articulo.camposValores.length === 0) {
+          this.articulo.camposValores = [
+            { nombreCampo: 'Marca', valor: this.articulo.marca },
+            { nombreCampo: 'Modelo', valor: this.articulo.modelo },
+            { nombreCampo: 'Serie', valor: this.articulo.nroSerie },
+            { nombreCampo: 'Color', valor: this.articulo.color },
+            { nombreCampo: 'Medidas', valor: this.articulo.medidas },
+            { nombreCampo: 'Condición', valor: this.articulo.condicion },
+            { nombreCampo: 'Código Patrimonial', valor: this.articulo.codigoPatrimonial },
+            { nombreCampo: 'Valor Adquisición', valor: `S/ ${this.articulo.valorAdquisitivo}` }
+          ];
+        }
+
+        // Ubicación
+        if (this.articulo?.ubicacionId) {
           this.ubicacionService.getUbicacionById(this.articulo.ubicacionId).subscribe({
             next: (u: any) => {
               this.articulo.ubicacion = u.data;
@@ -67,11 +82,10 @@ export class DetallesArticuloComponent implements OnInit {
           });
         }
 
-        // Cargar tipo de artículo real
-        if (this.articulo && this.articulo.tipoArticuloId) {
+        // Tipo de artículo
+        if (this.articulo?.tipoArticuloId) {
           this.tipoArticuloService.getTipoArticuloById(this.articulo.tipoArticuloId).subscribe({
             next: (t: any) => {
-              // Si el backend también envuelve esto en ApiResponse
               this.articulo.tipoArticulo = t.data || t;
             },
             error: (err) => console.error('Error al cargar tipo de artículo', err)
@@ -93,33 +107,58 @@ export class DetallesArticuloComponent implements OnInit {
       FechaMantenimiento: new Date(this.reporte.fecha).toISOString(),
       ProveedorServicion: this.reporte.proveedor || 'SIN ASIGNAR',
       Costo: Number(this.reporte.costo) || 0,
-      EstadoMantenimiento: true, // PENDIENTE
+      EstadoMantenimiento: true,
       Observaciones: this.reporte.descripcion
     };
 
-    this.mantenimientoService.addMantenimiento(payload).subscribe({
-      next: (res) => {
-        Swal.fire({
-          title: '¡Incidencia Registrada!',
-          text: 'Se ha creado un registro en el módulo de mantenimiento.',
-          icon: 'success',
-          confirmButtonColor: '#00a468'
-        });
-        this.mostrarModalReporte = false;
-        this.mostrarReporte = false;
-        // Limpiar form
-        this.reporte = {
-          tipo: 'Correctivo',
-          fecha: new Date().toISOString().split('T')[0],
-          proveedor: '',
-          costo: 0,
-          descripcion: ''
-        };
-      },
-      error: (err) => {
-        console.error('Error al registrar incidencia', err);
-        Swal.fire('Error', 'No se pudo registrar la incidencia', 'error');
-      }
+   this.mantenimientoService.addMantenimiento(payload).subscribe({
+  next: () => {
+    Swal.fire({
+      title: '¡Incidencia Registrada!',
+      text: 'Se ha creado un registro en mantenimiento.',
+      icon: 'success',
+      confirmButtonColor: '#00a468'
     });
+
+    this.mostrarModalReporte = false;
+
+    this.reporte = {
+      tipo: 'Correctivo',
+      fecha: new Date().toISOString().split('T')[0],
+      proveedor: '',
+      costo: 0,
+      descripcion: ''
+    };
+  },
+error: (err) => {
+  console.error(err);
+
+  let raw = '';
+
+  // 🔥 capturamos todo lo posible
+  if (typeof err?.error === 'string') {
+    raw = err.error;
+  } else if (typeof err?.message === 'string') {
+    raw = err.message;
+  } else if (err?.error) {
+    raw = JSON.stringify(err.error);
+  }
+
+  // 🔥 LIMPIEZA FORZADA DEL STACK TRACE
+  const mensaje = raw
+    .split(' at ')[0]   // corta el stack trace
+    .replace('System.Exception:', '')
+    .replace('System.Exception', '')
+    .trim();
+
+  Swal.fire({
+    icon: 'warning',
+    title: 'No se pudo registrar',
+    text: mensaje || 'Error desconocido'
+  });
+
+
+  }
+});
   }
 }

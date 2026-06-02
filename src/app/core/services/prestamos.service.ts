@@ -45,4 +45,9 @@ public cambiarEstado2(id: number): Observable<any> {
     public getPrestamosActivos(): Observable<any[]> {
         return this.httpClient.get<any[]>(`${this.url}/activos`);
     }
+    public getPrestamosPorUbicacion(idUbicacion: number): Observable<any> {
+  return this.httpClient.get<any>(
+    `${this.url}/ubicacion/${idUbicacion}`
+  );
+}
 }

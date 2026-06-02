@@ -47,49 +47,43 @@
                                     <th class="text-right">ACCIONES</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr *ngFor="let p of registrosPaginados">
-                                    <td>{{ getNombreArticulo(p.articuloId) }}</td>
-                                    <td>{{ p.nombreSolicitante }}</td>
-                                    <td>{{ p.fechaPrestamo | date:'dd/MM/yyyy' }}</td>
-                                    <td>{{ (p.fechaDevolucion | date:'dd/MM/yyyy') || 'Pendiente' }}</td>
-                                    <td>
-                                        <span class="badge"
-                                            [ngClass]="{
-                                                'badge-activo': p.estadoPrestamo,
-                                                'badge-devuelto': !p.estadoPrestamo
-                                            }">
-                                            {{ p.estadoPrestamo ? 'ACTIVO' : 'DEVUELTO' }}
-                                        </span>
-                                    </td>
-                      <td class="text-right">
+                           <tbody>
+  <tr *ngIf="registrosPaginados.length === 0">
+    <td colspan="6" style="text-align: center; padding: 20px; font-weight: bold;">
+      No hay préstamos registrados
+    </td>
+  </tr>
 
-    <!-- VER PDF -->
-    <button class="btn-icon btn-pdf"
-        (click)="verPDF(p)"
-        title="Ver PDF">
+  <tr *ngFor="let p of registrosPaginados">
+    <td>{{ getNombreArticulo(p.articuloId) }}</td>
+    <td>{{ p.nombreSolicitante }}</td>
+    <td>{{ p.fechaPrestamo | date:'dd/MM/yyyy' }}</td>
+    <td>{{ (p.fechaDevolucion | date:'dd/MM/yyyy') || 'Pendiente' }}</td>
+    <td>
+      <span class="badge"
+        [ngClass]="{
+          'badge-activo': p.estadoPrestamo,
+          'badge-devuelto': !p.estadoPrestamo
+        }">
+        {{ p.estadoPrestamo ? 'ACTIVO' : 'DEVUELTO' }}
+      </span>
+    </td>
+
+    <td class="text-right">
+      <button class="btn-icon btn-pdf" (click)="verPDF(p)">
         <i class="fa fa-file-pdf"></i>
-    </button>
+      </button>
 
-    <!-- APROBAR -->
-    <button class="btn-icon btn-ok"
-        *ngIf="!p.aprobar"
-        (click)="aprobarPrestamo(p)"
-        title="Aprobar">
+      <button class="btn-icon btn-ok" *ngIf="!p.aprobar" (click)="aprobarPrestamo(p)">
         <i class="fa fa-check"></i>
-    </button>
+      </button>
 
-    <!-- DEVOLVER -->
-    <button class="btn-icon btn-return"
-        *ngIf="p.estadoPrestamo"
-        (click)="marcarDevuelto(p)"
-        title="Devolver">
+      <button class="btn-icon btn-return" *ngIf="p.estadoPrestamo" (click)="marcarDevuelto(p)">
         <i class="fa fa-rotate-left"></i>
-    </button>
-
-</td>
-                                </tr>
-                            </tbody>
+      </button>
+    </td>
+  </tr>
+</tbody>
                         </table>
                     </div>
 

@@ -16,83 +16,101 @@ export class SidebarComponent implements OnInit {
 
   modulos: Modulo[] = [];
   expanded: Record<number, boolean> = {};
+
   usuarioActual: any = null;
-ubicacionNombre: string = '';
-ubicacionLogo: string = '';
+  ubicacionNombre: string = '';
+  ubicacionLogo: string = '';
+
   constructor(
     private modulosService: ModulosService,
     private loginService: LoginService,
-    public  router: Router,
-    private ubicacionService:UbicacionService,
+    public router: Router,
+    private ubicacionService: UbicacionService,
   ) { }
 
-ngOnInit(): void {
-  this.usuarioActual = this.loginService.getUser();
+  ngOnInit(): void {
 
-  console.log('Usuario actual:', this.usuarioActual);
+    this.usuarioActual = this.loginService.getUser();
 
-  // 🚨 validar usuario
-  if (!this.usuarioActual) {
-    console.error('No hay usuario logueado');
-    return;
-  }
+    console.log('Usuario actual:', this.usuarioActual);
 
-  const usuarioId = this.usuarioActual.data.id;
-  const rolId = this.usuarioActual.data.rolId;
+    if (!this.usuarioActual) {
+      console.error('No hay usuario logueado');
+      return;
+    }
 
-  if (!rolId) {
-    console.error('El usuario no tiene rol asignado');
-    return;
-  }
+    const usuarioId = this.usuarioActual.data.id;
+    const rolId = this.usuarioActual.data.rolId;
 
-  // ==============================
-  // 🔥 1. CARGAR UBICACIÓN
-  // ==============================
-  this.ubicacionService.getUbicacionesPorUsuario(usuarioId).subscribe({
+    if (!rolId) {
+      console.error('El usuario no tiene rol asignado');
+      return;
+    }
+
+    // ==============================
+    // 🔥 1. CARGAR UBICACIÓN
+    // ==============================
+    this.ubicacionService.getUbicacionesPorUsuario(usuarioId).subscribe({
       next: (res: any) => {
 
-    console.log("Ubicaciones del usuario:", res);
+        console.log("Ubicaciones del usuario:", res);
 
-    if (Array.isArray(res) && res.length > 0) {
-      const ubicacion = res[0];
+        const ubicaciones = Array.isArray(res) ? res : res?.data ?? [];
 
-      this.ubicacionNombre = ubicacion.nombre;
+        if (ubicaciones.length > 0) {
 
-      // 🔥 construir URL completa del backend
-      this.ubicacionLogo = ubicacion.imagenUrl
-        ? `http://localhost:7000${ubicacion.imagenUrl}`
-        : '';
-    } else {
-      this.ubicacionNombre = 'Sin ubicación asignada';
-      this.ubicacionLogo = '';
-    }
-  },
-  error: (err) => {
-    console.error(err);
-    this.ubicacionNombre = 'Error al cargar ubicación';
-    this.ubicacionLogo = '';
+          const ubicacion = ubicaciones[0];
+
+          this.ubicacionNombre = ubicacion.nombre;
+
+          this.ubicacionLogo = ubicacion.imagenUrl
+            ? `http://localhost:7000${ubicacion.imagenUrl}`
+            : '';
+
+          // ✅ 🔥 GUARDAR EN LOCALSTORAGE (IMPORTANTE)
+          localStorage.setItem(
+            'ubicacionUsuario',
+            JSON.stringify(ubicaciones)
+          );
+
+        } else {
+          this.ubicacionNombre = 'Sin ubicación asignada';
+          this.ubicacionLogo = '';
+        }
+      },
+      error: (err) => {
+        console.error(err);
+        this.ubicacionNombre = 'Error al cargar ubicación';
+        this.ubicacionLogo = '';
+      }
+    });
+
+    this.cargarModulosPorRol(rolId);
   }
-});
-
-  this.cargarModulosPorRol(rolId);
-}
 
   cargarModulosPorRol(rolId: number) {
 
     this.modulosService.getSubModulosByRol(rolId).subscribe({
       next: (res: any) => {
+
         console.log('Datos recibidos del backend:', res);
 
-        if (res && res.success && res.data && Array.isArray(res.data.modulos)) {
+        if (res && res.success && Array.isArray(res.data?.modulos)) {
 
-          this.modulos = res.data.modulos.map((mod: any) => ({
-            id: mod.id,
-            nombre: mod.nombre,
-            ruta: mod.ruta,
-            icon: mod.icon || 'fas fa-folder',
-            estado: mod.estado,
-            subModulos: mod.subModulos || []
-          }));
+          this.modulos = res.data.modulos
+            .map((mod: any) => ({
+              id: mod.id,
+              nombre: mod.nombre,
+              ruta: mod.ruta,
+              icon: mod.icon || 'fas fa-folder',
+              estado: mod.estado,
+              subModulos: mod.subModulos || []
+            }))
+            .sort((a: any, b: any) => {
+              if (a.nombre === 'Dashboard') return -1;
+              if (b.nombre === 'Dashboard') return 1;
+              return 0;
+            });
 
         } else {
           console.warn('Estructura de datos no reconocida:', res);
@@ -106,16 +124,18 @@ ngOnInit(): void {
   toggle(id: number) {
     this.expanded[id] = !this.expanded[id];
   }
-onClickModulo(mod: any) {
-  // 1. Si tiene ruta → SIEMPRE navega primero
-  if (mod.ruta && mod.ruta.trim() !== '') {
-this.router.navigateByUrl(mod.ruta);  }
 
-  // 2. Si tiene submódulos → también expande
-  if (mod.subModulos && mod.subModulos.length > 0) {
-    this.toggle(mod.id);
+  onClickModulo(mod: any) {
+
+    if (mod.ruta && mod.ruta.trim() !== '') {
+      this.router.navigateByUrl(mod.ruta);
+    }
+
+    if (mod.subModulos && mod.subModulos.length > 0) {
+      this.toggle(mod.id);
+    }
   }
-}
+
   logout() {
     this.loginService.logout();
     this.router.navigate(['/login']);

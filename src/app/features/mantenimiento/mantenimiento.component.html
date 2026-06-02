@@ -124,16 +124,31 @@
             </div>
 
             <form (ngSubmit)="programarMantenimiento()" #f="ngForm" class="modal-body">
-              <div class="form-group">
-                <label>ARTÍCULO</label>
-                <select [(ngModel)]="nuevoMantenimiento.idArticulo" name="idArticulo" required>
-                  <option value="" disabled selected>Seleccionar artículo...</option>
-                  <option *ngFor="let a of articulosDisponibles" [value]="a.id">
-                    {{ a.codigoPatrimonial }} - {{ a.nombre }}
-                  </option>
-                </select>
-              </div>
+       <div class="form-group">
+  <label>ARTÍCULO</label>
+<input
+  type="text"
+  [(ngModel)]="busquedaArticulo"
+  name="busquedaArticulo"
+  (focus)="mostrarListaArticulos = true; filtrarArticulosSelect()"
+  (input)="filtrarArticulosSelect()"
+  placeholder="Buscar artículo..."
+  autocomplete="off">
 
+<div
+  class="lista-articulos"
+  *ngIf="mostrarListaArticulos && articulosFiltradosSelect.length > 0">
+    <div
+      class="item-articulo"
+      *ngFor="let a of articulosFiltradosSelect"
+      (click)="seleccionarArticulo(a)">
+
+      {{ a.codigoPatrimonial }} - {{ a.nombre }}
+
+    </div>
+
+  </div>
+</div>
               <div class="form-row">
                 <div class="form-group">
                   <label>TIPO DE MANTENIMIENTO</label>

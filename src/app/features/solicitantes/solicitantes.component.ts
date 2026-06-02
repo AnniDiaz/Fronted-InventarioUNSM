@@ -121,9 +121,25 @@ cargarSolicitantes() {
   const usuario = this.loginService.getUser();
   const usuarioId = usuario?.data?.id;
 
+  // Obtener ubicación del usuario logueado
+  const ubicacionesUsuario = JSON.parse(
+    localStorage.getItem('ubicacionUsuario') || '[]'
+  );
+
+  const ubicacionIdUsuario = ubicacionesUsuario.length > 0
+    ? ubicacionesUsuario[0].id
+    : 0;
+
   this.solicitantesService.getSolicitantesPorUsuario(usuarioId).subscribe({
     next: (res: any) => {
-      this.solicitantes = res.data || [];
+
+      const lista = res.data || [];
+
+      // Filtrar por ubicación
+      this.solicitantes = lista.filter(
+        (s: any) => s.ubicacionId === ubicacionIdUsuario
+      );
+
       this.aplicarPaginacion();
     },
     error: (err) => {
@@ -132,7 +148,6 @@ cargarSolicitantes() {
     }
   });
 }
-
 aplicarPaginacion() {
 
   const inicio = (this.paginaActual - 1) * this.registrosPorPagina;

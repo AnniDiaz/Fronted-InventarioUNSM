@@ -149,14 +149,18 @@
   background: white;
 }
 
-/* =========================
-   TABLA
-========================= */
+
 
 table {
   overflow-x: auto;
 }
-
+.sin-datos {
+    text-align: center;
+    padding: 30px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #777;
+}
 .tabla-moderna {
   width: 100%;
   border-collapse: collapse;

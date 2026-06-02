@@ -8,11 +8,22 @@ import Swal from 'sweetalert2';
 import { ArticuloService } from '../../core/services/articulos.service';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { UbicacionService } from '../../core/services/ubicacion.service';
-
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatInputModule } from '@angular/material/input';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MatFormFieldModule } from '@angular/material/form-field';
 @Component({
   selector: 'app-mantenimiento',
-  imports: [HeaderComponent, SidebarComponent, FormsModule, CommonModule, NgxPaginationModule],
-  templateUrl: './mantenimiento.component.html',
+imports: [
+  HeaderComponent,
+  SidebarComponent,
+  FormsModule,
+  CommonModule,
+  NgxPaginationModule,
+  MatAutocompleteModule,
+  MatInputModule,
+  MatFormFieldModule
+],  templateUrl: './mantenimiento.component.html',
   styleUrls: ['./mantenimiento.component.css']
 })
 export class MantenimientoComponent implements OnInit {
@@ -20,16 +31,18 @@ export class MantenimientoComponent implements OnInit {
   p: number = 1;
   menuAbierto = false;
   mostrarFormulario = false;
-
+busquedaArticulo: string = '';
+articulosFiltradosSelect: any[] = [];
   mantenimientos: any[] = [];
   mantenimientosFiltrados: any[] = [];
   articulosDisponibles: any[] = [];
   editando = false;
   idMantenimientoEditar: number | null = null;
 
+articulosFiltrados: any[] = [];
   filtroTexto: string = '';
   filtroFecha: string = '';
-
+mostrarListaArticulos = false;
   // Paginación manual para match con Artículos
   paginaActual = 1;
   pageSize = 6;
@@ -55,65 +68,149 @@ ngOnInit(): void {
 }
 cargarUbicaciones(): void {
 
-  const usuario = JSON.parse(localStorage.getItem('user') || 'null');
-  const usuarioId = usuario?.data?.id;
+  const usuario = JSON.parse(localStorage.getItem('user') || '{}');
 
-  if (!usuarioId) return;
+  const usuarioId =
+    usuario?.data?.id ||
+    usuario?.id ||
+    usuario?.usuarioId;
 
- this.ubicacionService.getUbicacionesPorUsuario(usuarioId).subscribe({
+  if (!usuarioId) {
+    console.error('No se encontró usuario');
+    return;
+  }
+
+  this.ubicacionService.getUbicacionesPorUsuario(usuarioId).subscribe({
     next: (resp: any) => {
 
-      const ubicaciones = Array.isArray(resp) ? resp : resp?.data ?? [];
+      const ubicacionesUsuario = Array.isArray(resp)
+        ? resp
+        : resp?.data ?? [];
 
-      if (!ubicaciones.length) return;
+      if (ubicacionesUsuario.length === 0) {
+        this.articulosDisponibles = [];
+        return;
+      }
 
-      const padreId = ubicaciones[0].id;
+      const ubicacionPadreId = Number(ubicacionesUsuario[0].id);
 
-      this.ubicacionService.getUbicacionesPorPadre(padreId).subscribe({
+      this.ubicacionService.getUbicacionesPorPadre(ubicacionPadreId).subscribe({
         next: (res: any) => {
 
-          this.listaUbicaciones = Array.isArray(res) ? res : res?.data ?? [];
+          this.listaUbicaciones = Array.isArray(res)
+            ? res
+            : res?.data ?? [];
 
-          // 🔥 IMPORTANTE: IDs permitidos
-          this.idsUbicacionesPermitidas = this.listaUbicaciones.map(u => u.id);
+          this.idsUbicacionesPermitidas = [
+            ubicacionPadreId,
+            ...this.listaUbicaciones.map((u: any) => Number(u.id))
+          ];
 
-          // 🔥 ahora sí cargar todo
+          console.log('IDS PERMITIDOS:', this.idsUbicacionesPermitidas);
+
+          // SOLO CARGAMOS ARTÍCULOS
+          // LOS MANTENIMIENTOS SE CARGARÁN DESPUÉS
           this.cargarArticulosParaSelect();
-          this.cargarMantenimientos();
+
+        },
+        error: (err) => {
+          console.error(err);
         }
       });
 
+    },
+    error: (err) => {
+      console.error(err);
     }
   });
 }
 cargarArticulosParaSelect(): void {
-  this._articuloService.getArticulos().subscribe({
+
+  this._articuloService.getArticulosConCampos().subscribe({
     next: (res: any) => {
 
-      const data = Array.isArray(res) ? res : res?.data ?? [];
+      const data = Array.isArray(res)
+        ? res
+        : res?.data ?? [];
 
-   this.articulosDisponibles = data.filter((a: any) =>
-  this.idsUbicacionesPermitidas.includes(a.ubicacionId)
-);
+      this.articulosDisponibles = data.filter((a: any) =>
+        this.idsUbicacionesPermitidas.includes(Number(a.ubicacionId))
+      );
+
+      this.articulosFiltradosSelect = [...this.articulosDisponibles];
+
+      console.log('ARTICULOS DISPONIBLES:', this.articulosDisponibles);
+
+      // IMPORTANTE:
+      // AHORA LOS MANTENIMIENTOS SE CARGAN
+      // CUANDO LOS ARTÍCULOS YA EXISTEN
+      this.cargarMantenimientos();
+
+    },
+    error: (err) => {
+      console.error(err);
     }
   });
+
+}
+filtrarArticulos() {
+
+  const texto = this.busquedaArticulo.toLowerCase();
+
+  this.articulosFiltrados = this.articulosDisponibles.filter(a =>
+    a.nombre.toLowerCase().includes(texto) ||
+    a.codigoPatrimonial.toLowerCase().includes(texto)
+  );
+}
+
+filtrarArticulosSelect(): void {
+
+  this.mostrarListaArticulos = true;
+
+  const texto = this.busquedaArticulo.toLowerCase().trim();
+
+  if (!texto) {
+    this.articulosFiltradosSelect = [...this.articulosDisponibles];
+    return;
+  }
+
+  this.articulosFiltradosSelect = this.articulosDisponibles.filter(a =>
+    (a.nombre || '').toLowerCase().includes(texto) ||
+    (a.codigoPatrimonial || '').toLowerCase().includes(texto)
+  );
+}
+
+seleccionarArticulo(articulo: any): void {
+
+  this.nuevoMantenimiento.idArticulo = articulo.id;
+
+  this.busquedaArticulo =
+    articulo.codigoPatrimonial + ' - ' + articulo.nombre;
+
+  this.articulosFiltradosSelect = [];
+  this.mostrarListaArticulos = false;
 }
 cargarMantenimientos(): void {
+
+  console.log('ARTICULOS CARGADOS:', this.articulosDisponibles.length);
+
   this._mantenimientoService.getMantenimientos().subscribe({
     next: (res: any) => {
 
       const data = Array.isArray(res) ? res : res?.data ?? [];
 
-      this.mantenimientos = data.filter((m: any) => {
+this.mantenimientos = data.filter((m: any) => {
 
-        const articulo = this.articulosDisponibles.find(
-          a => a.id === m.articuloId
-        );
+  const articulo = this.articulosDisponibles.find(
+    a => Number(a.id) === Number(m.articuloId)
+  );
 
-        if (!articulo) return false;
+  if (!articulo) return false;
 
-        return this.idsUbicacionesPermitidas.includes(articulo.ubicacionId);
-      });
+  return this.idsUbicacionesPermitidas.includes(
+    Number(articulo.ubicacionId)
+  );
+});
 
       this.aplicarFiltro();
     },
@@ -161,12 +258,29 @@ cargarMantenimientos(): void {
 error: (err) => {
   console.error("Error completo:", err);
 
-  const mensaje =
-    err?.error?.Errors ||   // 👈 ESTE ES EL CORRECTO
-    err?.error?.Message ||
-    'Hubo un problema al procesar la solicitud.';
+  let mensaje = 'Hubo un problema al procesar la solicitud.';
 
-  Swal.fire('Atención', mensaje, 'warning');
+  if (typeof err.error === 'string') {
+
+    const match = err.error.match(/System\.Exception:\s*(.*?)(\r\n|\n|$)/);
+
+    if (match && match[1]) {
+      mensaje = match[1];
+    } else {
+      mensaje = err.error;
+    }
+
+  } else if (err.error?.Errors) {
+    mensaje = err.error.Errors;
+  } else if (err.error?.Message) {
+    mensaje = err.error.Message;
+  }
+
+  Swal.fire({
+    icon: 'warning',
+    title: 'Atención',
+    text: mensaje
+  });
 }
       });
 
@@ -242,23 +356,36 @@ error: (err) => {
   toggleMenu(): void {
     this.menuAbierto = !this.menuAbierto;
   }
+toggleFormulario(): void {
 
-  toggleFormulario(): void {
-    this.mostrarFormulario = !this.mostrarFormulario;
-    if (!this.mostrarFormulario) {
-      this.editando = false;
-      this.idMantenimientoEditar = null;
-      this.nuevoMantenimiento = {
-        idArticulo: '',
-        tipo: 'Preventivo',
-        fecha: new Date().toISOString().split('T')[0],
-        proveedor: '',
-        costo: 0,
-        observaciones: ''
-      };
-    }
-  }
+  this.mostrarFormulario = !this.mostrarFormulario;
+if (this.mostrarFormulario) {
 
+  this.busquedaArticulo = '';
+
+  // NO mostrar lista al abrir
+  this.articulosFiltradosSelect = [];
+
+  this.mostrarListaArticulos = false;
+} else {
+
+  this.busquedaArticulo = '';
+  this.articulosFiltradosSelect = [];
+  this.mostrarListaArticulos = false;
+
+  this.editando = false;
+  this.idMantenimientoEditar = null;
+
+  this.nuevoMantenimiento = {
+    idArticulo: '',
+    tipo: 'Preventivo',
+    fecha: new Date().toISOString().split('T')[0],
+    proveedor: '',
+    costo: 0,
+    observaciones: ''
+  };
+}
+}
   aplicarFiltro(): void {
     const texto = this.filtroTexto.toLowerCase();
 
