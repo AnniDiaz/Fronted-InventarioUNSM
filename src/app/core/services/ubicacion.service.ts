@@ -9,10 +9,14 @@ export class UbicacionService {
 
   constructor(private httpClient: HttpClient) {}
 
-  // CREATE con imagen
-  addUbicacionForm(data: FormData) {
-    return this.httpClient.post(`${baseUrl}/ubicaciones`, data);
+  public addUbicacion(ubicacion: any) {
+    return this.httpClient.post(`${baseUrl}/ubicaciones`, ubicacion);
   }
+
+  public updateUbicacion(id: number, ubicacion: any) {
+    return this.httpClient.put(`${baseUrl}/ubicaciones/${id}`, ubicacion);
+  }
+
   public asignarUsuario(ubicacionId: number, usuarioId: number) {
   return this.httpClient.put(
     `${baseUrl}/ubicaciones/${ubicacionId}/asignar-usuario`,
@@ -23,10 +27,6 @@ export class UbicacionService {
 public getUbicacionesPorUsuario(usuarioId: number) {
   return this.httpClient.get<any[]>(`${baseUrl}/ubicaciones/usuario/${usuarioId}`);
 }
-  // UPDATE con imagen
-  updateUbicacionForm(id: number, data: FormData) {
-    return this.httpClient.put(`${baseUrl}/ubicaciones/${id}`, data);
-  }
 public getUbicacionesPorPadre(padreId: number) {
   return this.httpClient.get<any[]>(
     `${baseUrl}/ubicaciones/por-padre/${padreId}`

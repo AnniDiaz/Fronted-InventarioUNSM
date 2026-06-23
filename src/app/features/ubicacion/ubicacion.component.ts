@@ -9,6 +9,7 @@ import { TipoUbicacionService } from '../../core/services/tipo-ubicacion.service
 import Swal from 'sweetalert2';
 import { LoginService } from '../../core/services/login.service';
 import { UsuariosService } from '../../core/services/usuarios.service';
+import { EscuelaService } from '../../core/services/escuela.service';
 
 @Component({
   selector: 'app-ubicaciones',
@@ -22,10 +23,10 @@ export class UbicacionComponent implements OnInit {
 
   filtro: string = '';
   filtroTipo: number | string = 'todos';
-
   ubicaciones: any[] = [];
   tiposUbicacion: any[] = [];
   ubicacionesFiltradas: any[] = [];
+  escuelas: any[] = [];
 
   idFacultades: number | null = null;
 usuarioActual: any = null;
@@ -49,8 +50,8 @@ rolId: number = 0;
     descripcion: '',
     piso: 0,
     tipoUbicacionId: 0,
-    imagenUrl: '',
-    padreId: null as number | null
+    usuarioId: null as number | null,
+    escuelaId: null as number | null
   };
 
   constructor(
@@ -59,7 +60,8 @@ rolId: number = 0;
   private router: Router,
   private route: ActivatedRoute,
   private loginService: LoginService,
-  private usuariosService: UsuariosService
+  private usuariosService: UsuariosService,
+  private escuelaService: EscuelaService
   ) { }
 
 ngOnInit(): void {
@@ -73,6 +75,8 @@ ngOnInit(): void {
   if (!this.usuarioActual) return;
 
   const usuarioId = this.usuarioActual.data.id;
+
+  this.cargarEscuelas();
 
   if (this.esAdministrador()) {
 
@@ -117,7 +121,7 @@ ngOnInit(): void {
   });
 
 }
-private esAdministrador(): boolean {
+ esAdministrador(): boolean {
   const rolId = Number(localStorage.getItem('rolId'));
   return rolId === 1;
 }
@@ -137,23 +141,23 @@ cargarTodasLasUbicaciones() {
       const data = res?.data ?? res;
       const lista = Array.isArray(data) ? data : [];
 
-      const esAdmin = this.rolId === 1;
-
-      if (esAdmin) {
-        this.ubicaciones = lista.filter((u: any) => {
-          const nombre = (u.nombre || '').toLowerCase().trim();
-
-          return nombre.includes('facultad') ||
-                 nombre.includes('oficina');
-        });
-      } else {
-        this.ubicaciones = lista;
-      }
+      this.ubicaciones = lista;
 
       this.aplicarFiltro();
     }
   });
 
+}
+cargarEscuelas() {
+  this.escuelaService.getEscuelas().subscribe({
+    next: (res: any) => {
+      const data = res?.data ?? res;
+      this.escuelas = Array.isArray(data) ? data : [];
+    },
+    error: () => {
+      this.escuelas = [];
+    }
+  });
 }
 cargarUsuarios() {
   this.usuariosService.getUsuarios().subscribe({
@@ -179,7 +183,7 @@ cargarSubUbicaciones(padreId: number) {
 
       // ✨ INYECCIÓN GLOBAL: Si la ubicación general "Otros" no está en la lista, la agregamos manualmente al inicio
       const existeOtros = listaHijos.some((u: any) => u.id === 100);
-      
+
       if (!existeOtros) {
         listaHijos.unshift({
           id: 100,
@@ -187,7 +191,6 @@ cargarSubUbicaciones(padreId: number) {
           descripcion: 'Ubicación por defecto para artículos sin ubicación especificada',
           piso: 0,
           tipoUbicacionId: 100, // ID de tu TipoUbicacion General
-          imagenUrl: null,
           usuarioId: null,
           padreId: null
         });
@@ -225,23 +228,7 @@ cargarTiposUbicacion(): Promise<void> {
         const data = res?.data ?? res;
         const tipos = Array.isArray(data) ? data : [];
 
-        const esAdmin = this.esAdministrador();
-
-        this.tiposUbicacion = tipos.filter((t: any) => {
-          const nombre = (t.nombre || '').toLowerCase().trim();
-
-          const esFacultadUOficina =
-            nombre.includes('facultad') ||
-            nombre.includes('oficina');
-
-          if (esAdmin) {
-            // 👑 SOLO facultades y oficinas
-            return esFacultadUOficina;
-          } else {
-            // 👤 NO admin: excluir facultades y oficinas
-            return !esFacultadUOficina;
-          }
-        });
+        this.tiposUbicacion = tipos;
 
         resolve();
       }
@@ -300,7 +287,6 @@ cargarTiposUbicacion(): Promise<void> {
   // =========================
   toggleFormulario() {
     this.mostrarFormulario = !this.mostrarFormulario;
-
     if (!this.mostrarFormulario) {
       this.nuevaUbicacion = {
         id: 0,
@@ -308,43 +294,54 @@ cargarTiposUbicacion(): Promise<void> {
         descripcion: '',
         piso: 0,
         tipoUbicacionId: 0,
-        imagenUrl: '',
-        padreId: null
+        usuarioId: null,
+        escuelaId: null
       };
       this.editando = false;
     }
   }
-
   guardarUbicacion() {
 
-    if (!this.nuevaUbicacion.nombre) {
-      Swal.fire('Error', 'El nombre es obligatorio', 'warning');
-      return;
-    }
 
-    const formData = new FormData();
+  if (
+    !this.nuevaUbicacion.nombre.trim() ||
+    !this.nuevaUbicacion.descripcion.trim() ||
+    this.nuevaUbicacion.tipoUbicacionId === 0 ||
+    this.nuevaUbicacion.piso <= 0
+  ) {
+    Swal.fire({
+      title: 'Campos incompletos',
+      text: 'Debe completar todos los campos obligatorios para continuar.',
+      icon: 'warning',
+      confirmButtonText: 'Entendido'
+    });
+    return;
+  }
 
-    formData.append('nombre', this.nuevaUbicacion.nombre);
-    formData.append('descripcion', this.nuevaUbicacion.descripcion || '');
-    formData.append('piso', this.nuevaUbicacion.piso.toString());
-    formData.append('tipoUbicacionId', this.nuevaUbicacion.tipoUbicacionId.toString());
-    formData.append('imagenUrl', this.nuevaUbicacion.imagenUrl || '');
+    const payload = {
+      id: this.nuevaUbicacion.id,
+      nombre: this.nuevaUbicacion.nombre,
+      descripcion: this.nuevaUbicacion.descripcion || '',
+      piso: this.nuevaUbicacion.piso,
+      tipoUbicacionId: this.nuevaUbicacion.tipoUbicacionId,
+      usuarioId: this.nuevaUbicacion.usuarioId || this.usuarioActual?.data?.id || 0,
+      escuelaId: this.nuevaUbicacion.escuelaId || 0
+    };
 
-// 🔥 ESTE FALTABA
-if (this.nuevaUbicacion.padreId !== null && this.nuevaUbicacion.padreId !== undefined) {
-  formData.append('padreId', this.nuevaUbicacion.padreId.toString());
-}
     const req = this.editando
-      ? this.ubicacionService.updateUbicacionForm(this.nuevaUbicacion.id, formData)
-      : this.ubicacionService.addUbicacionForm(formData);
+      ? this.ubicacionService.updateUbicacion(this.nuevaUbicacion.id, payload)
+      : this.ubicacionService.addUbicacion(payload);
 
     req.subscribe({
       next: () => {
 
   this.toggleFormulario();
 
-  Swal.fire('OK', 'Guardado correctamente', 'success');
-
+Swal.fire(
+  'Registro exitoso',
+  'La ubicación fue registrada correctamente en el sistema.',
+  'success'
+);
 this.recargarUbicaciones();
 
       },
@@ -354,11 +351,13 @@ this.recargarUbicaciones();
     });
   }
 
-  editarUbicacion(u: any) {
-    this.nuevaUbicacion = { ...u };
-    this.editando = true;
-    this.mostrarFormulario = true;
-  }
+editarUbicacion(u: any) {
+
+  this.nuevaUbicacion = { ...u };
+
+  this.editando = true;
+  this.mostrarFormulario = true;
+}
 asignarUsuario(u: any) {
   this.ubicacionSeleccionada = u;
   this.usuarioSeleccionadoId = u.usuarioId ?? 0;
@@ -394,11 +393,14 @@ this.recargarUbicaciones();      },
 }
 eliminarUbicacion(id: number) {
   Swal.fire({
-    title: '¿Eliminar?',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: 'Sí'
-  }).then(r => {
+  title: '¿Está seguro?',
+  text: 'La ubicación seleccionada será eliminada permanentemente.',
+  icon: 'warning',
+  showCancelButton: true,
+  confirmButtonText: 'Sí, eliminar',
+  cancelButtonText: 'Cancelar',
+  confirmButtonColor: '#d33'
+}).then(r => {
     if (r.isConfirmed) {
 
       this.ubicacionService.deleteUbicacion(id).subscribe(() => {
@@ -412,9 +414,19 @@ eliminarUbicacion(id: number) {
     }
   });
 }
-  irAArticulos(id: number) {
-    this.router.navigate(['/articulos'], {
-      queryParams: { ubicacion: id }
-    });
+irAArticulos(id: number) {
+
+  if (this.esAdministrador()) {
+    Swal.fire(
+      'Acceso denegado',
+      'Los administradores no pueden acceder a los artículos.',
+      'warning'
+    );
+    return;
   }
+
+  this.router.navigate(['/articulos'], {
+    queryParams: { ubicacion: id }
+  });
+}
 }

@@ -157,7 +157,25 @@ select:focus{
   grid-template-columns:1fr 1fr;
   gap:10px;
 }
+.sello-aprobado{
+  position:absolute;
+  top:180px;
+  right:60px;
 
+  padding:15px 40px;
+
+  border:5px solid #16a34a;
+  color:#16a34a;
+
+  font-size:38px;
+  font-weight:700;
+
+  transform:rotate(-20deg);
+
+  opacity:.25;
+
+  pointer-events:none;
+}
 
 .btn-add{
 

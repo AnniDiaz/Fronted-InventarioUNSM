@@ -119,12 +119,35 @@
             <form (ngSubmit)="guardarTraslado()" #f="ngForm" class="modal-body">
               <div class="form-group">
                 <label>ARTÍCULO A TRASLADAR</label>
-<select [(ngModel)]="nuevoTraslado.articulo"
-        name="articulo"
-        (ngModelChange)="onArticuloChange($event)">        (ngModelChange)="onArticuloChange($event)">
-                  <option value="" disabled selected>Seleccionar artículo...</option>
-                  <option *ngFor="let a of listaArticulos" [value]="a.id">{{ a.nombre }}</option>
-                </select>
+<div class="autocomplete-container">
+
+  <input
+    type="text"
+    name="articuloBusqueda"
+    [(ngModel)]="articuloBusqueda"
+    (input)="filtrarArticulos()"
+    (focus)="filtrarArticulos()"
+    placeholder="Buscar por nombre o código patrimonial..."
+    autocomplete="off">
+
+  <div class="autocomplete-list"
+       *ngIf="mostrarListaArticulos && articulosFiltrados.length">
+
+    <div
+      class="autocomplete-item"
+      *ngFor="let a of articulosFiltrados"
+      (click)="seleccionarArticulo(a)">
+
+      <strong>{{ a.codigoPatrimonial }} </strong>
+      <br>
+
+      <small>{{ a.nombre }}</small>
+
+    </div>
+
+  </div>
+
+</div>
               </div>
 
               <div class="form-row">

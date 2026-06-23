@@ -20,6 +20,10 @@ import { SeguridadComponent } from './features/seguridad/seguridad.component';
 import { SuperadminComponent } from './superadmin/superadmin.component';
 import { DocPrestamosComponent } from './features/doc-prestamos/doc-prestamos.component';
 import { SolicitantesComponent } from './features/solicitantes/solicitantes.component';
+import { SedesComponent } from './features/sedes/sedes.component';
+import { FacultadesComponent } from './features/facultades/facultades.component';
+import { EscuelasComponent } from './features/escuelas/escuelas.component';
+import { ConsultaBienesComponent } from './features/consulta-bienes/consulta-bienes.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -30,6 +34,9 @@ export const routes: Routes = [
 
   { path: 'tipo-ubicacion', component: TipoUbicacionComponent },
   { path: 'ubicaciones', component: UbicacionComponent },
+  { path: 'sedes', component: SedesComponent },
+  { path: 'facultades', component: FacultadesComponent },
+  { path: 'escuelas', component: EscuelasComponent },
   { path: 'reportes', component: ReportesComponent },
   { path: 'traslados', component: TrasladosComponent },
   { path: 'roles', component: RolesComponent },
@@ -46,6 +53,7 @@ export const routes: Routes = [
 
   { path: 'mantenimiento', component: MantenimientoComponent },
   { path: 'gestion-institucional', component: SuperadminComponent },
+  { path: 'consulta-bienes', component: ConsultaBienesComponent },
   {path: 'solicitantes', component: SolicitantesComponent},
 
   { path: '**', redirectTo: 'login' },

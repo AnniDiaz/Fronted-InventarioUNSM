@@ -63,6 +63,7 @@ prestamos: any[] = [];
   destinatario = '';
 ubicaciones: any[] = [];
   // REPRESENTANTE RESPONSABLE
+  aprobado: boolean = false;
 
   nombre = '';
   dni = '';
@@ -266,7 +267,6 @@ async generarPrestamo(): Promise<void> {
 
 async generarPDFBlob(): Promise<Blob> {
   const element = this.documentoPDF.nativeElement;
-
   const canvas = await html2canvas(element, {
     scale: 2
   });

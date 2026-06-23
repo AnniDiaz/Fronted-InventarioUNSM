@@ -179,7 +179,51 @@ filtrarArticulosSelect(): void {
     (a.codigoPatrimonial || '').toLowerCase().includes(texto)
   );
 }
+eliminarMantenimiento(mantenimiento: any): void {
 
+  const id =
+    mantenimiento.id ||
+    mantenimiento.idMantenimiento;
+
+  Swal.fire({
+    title: '¿Eliminar mantenimiento?',
+    text: 'Esta acción no se puede deshacer.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Sí, eliminar',
+    cancelButtonText: 'Cancelar'
+  }).then((result) => {
+
+    if (result.isConfirmed) {
+
+      this._mantenimientoService.deleteMantenimiento(id)
+        .subscribe({
+          next: () => {
+
+            Swal.fire(
+              'Eliminado',
+              'El mantenimiento fue eliminado correctamente.',
+              'success'
+            );
+
+            this.cargarMantenimientos();
+          },
+          error: (err) => {
+            console.error(err);
+
+            Swal.fire(
+              'Error',
+              'No se pudo eliminar el mantenimiento.',
+              'error'
+            );
+          }
+        });
+
+    }
+
+  });
+
+}
 seleccionarArticulo(articulo: any): void {
 
   this.nuevoMantenimiento.idArticulo = articulo.id;

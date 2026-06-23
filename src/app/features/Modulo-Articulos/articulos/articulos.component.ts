@@ -9,6 +9,7 @@ import { SidebarComponent } from '../../../shared/components/sidebar/sidebar.com
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import Qrious from 'qrious';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-articulo-form',
@@ -41,18 +42,30 @@ export class ArticuloFormComponent implements OnInit {
   ubicacionUsuarioId: number = 0;
   articulo: any = this.crearArticuloVacio();
   editando = false;
-
+ubicacionFiltroId: number | null = null;
   constructor(
     private articuloService: ArticuloService,
     private campoService: CamposArticuloService,
     private tipoService: TipoArticuloService,
-    private ubicService: UbicacionService
+    private ubicService: UbicacionService,
+      private route: ActivatedRoute
+
   ) { }
 
-  ngOnInit(): void {
+ngOnInit(): void {
+
+  this.route.queryParams.subscribe(params => {
+
+    if (params['ubicacion']) {
+      this.ubicacionFiltroId = Number(params['ubicacion']);
+    }
+
     this.cargarTipos();
     this.cargarUbicaciones();
-  }
+
+  });
+
+}
 
   // ---------------------------
   // TOGGLE MENÚ RESPONSIVO
@@ -153,19 +166,25 @@ listarArticulos() {
       ];
 
       console.log('✅ IDS PERMITIDOS:', idsUbicaciones);
+let articulosFiltrados = data.filter((a: any) =>
+  idsUbicaciones.includes(Number(a.ubicacionId))
+);
 
-      this.articulos = data
-        .filter((a: any) =>
-          idsUbicaciones.includes(Number(a.ubicacionId))
-        )
-        .map((a: any) => {
-          if (a.id) {
-            const urlQR = `http://localhost:4200/tipos-articulos/articulo/${a.id}`;
-            a.qrCodeBase64 = this.generarQR(urlQR);
-          }
-          return a;
-        });
+if (this.ubicacionFiltroId) {
+  articulosFiltrados = articulosFiltrados.filter(
+    (a: any) => Number(a.ubicacionId) === this.ubicacionFiltroId
+  );
+}
 
+this.articulos = articulosFiltrados.map((a: any) => {
+
+  if (a.id) {
+    const urlQR = `http://localhost:4200/tipos-articulos/articulo/${a.id}`;
+    a.qrCodeBase64 = this.generarQR(urlQR);
+  }
+
+  return a;
+});
       console.log('📦 ARTICULOS FILTRADOS:', this.articulos);
 
       this.aplicarFiltro();

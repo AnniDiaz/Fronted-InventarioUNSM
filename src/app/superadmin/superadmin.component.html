@@ -13,234 +13,185 @@
 
     <div class="contenido-principal">
 
-      <!-- HEADER -->
-      <div class="header">
-        <div>
-          <h2>Gestión Institucional</h2>
-          <p>Configura las ubicaciones.</p>
+      <!-- BANNER -->
+      <div class="banner-bienvenida">
+        <span class="banner-tag">
+          <span class="estado-dot"></span> SISTEMA CENTRAL OTI
+        </span>
+
+        <h1>Panel de Control de Inventario</h1>
+        <p>Bienvenido a la Oficina de Tecnologías de la Información - UNSM</p>
+
+        <div class="banner-badges">
+          <div class="banner-badge">
+            <span class="banner-badge-icono"><i class="fa fa-location-dot"></i></span>
+            <span class="banner-badge-textos">
+              <span class="banner-badge-label">UBICACIÓN</span>
+              <span class="banner-badge-valor">Tarapoto, San Martin</span>
+            </span>
+          </div>
+
+          <div class="banner-badge">
+            <span class="banner-badge-icono"><i class="fa fa-shield-halved"></i></span>
+            <span class="banner-badge-textos">
+              <span class="banner-badge-label">SEGURIDAD</span>
+              <span class="banner-badge-valor">{{ conexionSegura ? 'Protocolos SSL Activos' : 'Conexión sin SSL' }}</span>
+            </span>
+          </div>
         </div>
 
-        <button class="btn-primary" (click)="abrirModalUbicacion()">
-          + Nueva Ubicación
-        </button>
+        <i class="fa fa-building banner-icono-fondo"></i>
       </div>
 
-      <!-- TABS -->
-      <div class="tabs">
-        <button *ngFor="let tab of tabs"
-          [class.active]="tabActivo === tab.nombre.toLowerCase()"
-          (click)="cambiarTab(tab)">
-          {{ tab.nombre }}
-        </button>
-      </div>
-
-      <!-- MENSAJE -->
-      <div *ngIf="mensajeInfo" class="alerta-info">
-        {{ mensajeInfo }}
-      </div>
-
-      <div *ngIf="ubicaciones.length === 0 && !mensajeInfo" class="alerta-info">
-        No hay ubicaciones registradas
-      </div>
-
-      <!-- TABLA -->
-      <table *ngIf="ubicaciones.length > 0" class="tabla">
-
-        <thead>
-          <tr>
-            <th>Imagen</th>
-            <th>Nombre</th>
-            <th>Descripción</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          <tr *ngFor="let u of ubicaciones">
-
-            <!-- IMAGEN -->
-            <td>
-              <img
-                *ngIf="u.imagenUrl"
-                [src]="'http://localhost:7000' + u.imagenUrl"
-                class="img-tabla"
-              />
-
-              <span *ngIf="!u.imagenUrl">Sin imagen</span>
-            </td>
-
-            <td>{{ u.nombre }}</td>
-            <td>{{ u.descripcion }}</td>
-
-          <td class="acciones-tabla">
-
-  <button class="btn-icon edit" (click)="editarUbicacion(u)">
-    <span class="material-icons">edit</span>
-  </button>
-
-  <!-- NUEVO: asignar usuario -->
-  <button class="btn-icon asignar" (click)="asignarResponsable(u)">
-    <span class="material-icons">person_add</span>
-  </button>
-
-  <button class="btn-icon delete" (click)="eliminarUbicacion(u)">
-    <span class="material-icons">delete</span>
-  </button>
-
-</td>
-
-          </tr>
-        </tbody>
-
-      </table>
-
-    </div>
-
-    <!-- MODAL -->
-    <div class="modal-overlay" *ngIf="mostrarFormulario">
-      <div class="modal-modern">
-
-        <div class="modal-header">
-          <h3>{{ editando ? 'Editar Ubicación' : 'Registrar nueva ubicación' }}</h3>
-          <button class="btn-cerrar" (click)="toggleFormulario()">&times;</button>
+      <!-- KPI -->
+      <div class="grid-cards">
+        <div class="card-metric">
+          <div class="card-metric-top">
+            <div class="mc-icon bg-green-light text-green">
+              <span class="material-icons">inventory_2</span>
+            </div>
+            <span class="meta-badge">META 100%</span>
+          </div>
+          <div class="mc-title">Patrimonio Total</div>
+          <div class="mc-value">{{ totalBienes }}</div>
         </div>
 
-        <div class="modal-body">
-
-    <form (ngSubmit)="guardarUbicacion()" #ubicacionForm="ngForm" class="form-ubicacion">
-
-  <div class="form-group-full">
-    <label>Nombre</label>
-    <input type="text"
-      [(ngModel)]="nuevaUbicacion.nombre"
-      name="nombre"
-      required>
-  </div>
-
-  <div class="form-group-full">
-    <label>Descripción</label>
-    <textarea
-      [(ngModel)]="nuevaUbicacion.descripcion"
-      name="descripcion"
-      required></textarea>
-  </div>
-
-
-
-  <div class="form-group-full">
-    <label>Tipo de Ubicación</label>
-    <select [(ngModel)]="nuevaUbicacion.tipoUbicacionId"
-      name="tipoUbicacionId"
-      required>
-
-      <option value="0" disabled>Seleccione un tipo</option>
-
-      <option *ngFor="let tipo of tiposUbicacion"
-        [value]="tipo.id">
-        {{ tipo.nombre }}
-      </option>
-
-    </select>
-  </div>
-
-  <!-- IMAGEN -->
-  <div class="form-group-full">
-    <label>Imagen</label>
-
-    <div class="preview-imagen" *ngIf="imagenPreview">
-      <img [src]="imagenPreview" alt="Preview imagen" />
-
-      <button type="button"
-        class="btn-cambiar-imagen"
-        (click)="fileInput.click()">
-        Cambiar imagen
-      </button>
-    </div>
-
-    <div class="upload-area"
-      *ngIf="!imagenPreview"
-      (click)="fileInput.click()">
-
-      <span class="material-icons">cloud_upload</span>
-      <p>Selecciona una imagen</p>
-    </div>
-
-    <input
-      type="file"
-      #fileInput
-      (change)="onFileSelected($event)"
-      accept="image/*"
-      hidden
-    />
-  </div>
-
-  <!-- FOOTER -->
-  <div class="modal-footer-modern">
-
-    <button type="submit"
-      class="btn-guardar-md"
-      [disabled]="ubicacionForm.invalid">
-
-      {{ editando ? 'Actualizar' : 'Guardar' }}
-    </button>
-
-    <button type="button"
-      class="btn-cancelar-md"
-      (click)="toggleFormulario()">
-
-      Cancelar
-    </button>
-
-  </div>
-
-</form>
+        <div class="card-metric">
+          <div class="card-metric-top">
+            <div class="mc-icon bg-green-light text-green">
+              <span class="material-icons">check_circle</span>
+            </div>
+            <span class="meta-badge">META 100%</span>
+          </div>
+          <div class="mc-title">Estado Operativo</div>
+          <div class="mc-value">{{ bienesOperativos }}</div>
         </div>
 
+        <div class="card-metric">
+          <div class="card-metric-top">
+            <div class="mc-icon bg-orange-light text-orange">
+              <span class="material-icons">build</span>
+            </div>
+            <span class="meta-badge">META 100%</span>
+          </div>
+          <div class="mc-title">En Mantenimiento</div>
+          <div class="mc-value">{{ bienesMantenimiento }}</div>
+        </div>
+
+        <div class="card-metric">
+          <div class="card-metric-top">
+            <div class="mc-icon bg-red-light text-red">
+              <span class="material-icons">warning</span>
+            </div>
+            <span class="meta-badge">META 100%</span>
+          </div>
+          <div class="mc-title">Bajas Críticas</div>
+          <div class="mc-value">{{ bienesBaja }}</div>
+        </div>
       </div>
+
+      <!-- CRECIMIENTO + ACCIONES -->
+      <div class="grid-medio">
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <h3 class="card-title"><i class="fa fa-chart-line"></i> Crecimiento Patrimonial</h3>
+              <p class="card-subtitulo">Evolución del inventario en los últimos 6 meses</p>
+            </div>
+
+            <div class="toggle-modo">
+              <button [class.active]="modoCrecimiento === 'mensual'" (click)="cambiarModoCrecimiento('mensual')">Mensual</button>
+              <button [class.active]="modoCrecimiento === 'anual'" (click)="cambiarModoCrecimiento('anual')">Anual</button>
+            </div>
+          </div>
+
+          <div class="chart-wrapper">
+            <canvas id="chartCrecimientoPatrimonial"></canvas>
+          </div>
+        </div>
+
+        <div class="acciones-card">
+          <h3>Acciones OTI</h3>
+          <p>Administración estratégica global</p>
+
+          <button class="btn-accion principal" (click)="registrarBien()">
+            <i class="fa fa-circle-plus"></i> Registrar Nuevo Bien
+          </button>
+
+          <button class="btn-accion" (click)="generarReportePDF()">
+            <i class="fa fa-file-lines"></i> Generar Reporte PDF
+          </button>
+
+          <button class="btn-accion" (click)="verTrasladosPendientes()">
+            <i class="fa fa-arrow-right"></i> Ver Traslados Pendientes
+          </button>
+
+          <button class="btn-accion" (click)="auditarPatrimonio()">
+            <i class="fa fa-box-archive"></i> Auditar Patrimonio
+          </button>
+
+          <div class="ultima-auditoria">
+            <span class="auditoria-label">ÚLTIMA AUDITORÍA</span>
+            <p>Finalizada con 98.4% de coincidencia patrimonial.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARGA / COMPOSICION / INCIDENCIAS -->
+      <div class="grid-inferior">
+        <div class="chart-card">
+          <h3 class="card-title"><i class="fa fa-chart-bar"></i> Carga por Sede</h3>
+          <p class="card-subtitulo">Distribución de bienes registrados</p>
+
+          <div class="chart-wrapper">
+            <canvas id="chartCargaPorSede"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <h3 class="card-title"><i class="fa fa-chart-pie"></i> Composición</h3>
+          <p class="card-subtitulo">Estado de conservación detallado</p>
+
+          <div class="chart-wrapper donut-wrapper">
+            <canvas id="chartComposicion"></canvas>
+          </div>
+
+          <div class="composicion-legend">
+            <div class="legend-item" *ngFor="let c of composicion">
+              <span class="legend-dot" [style.background]="c.color"></span>
+              <span class="legend-nombre">{{ c.nombre }}</span>
+              <span class="legend-valor">{{ c.cantidad }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="incidencias-card">
+          <div class="incidencias-header">
+            <h3>Incidencias</h3>
+            <span class="punto-rojo"></span>
+          </div>
+
+          <div class="incidencia-item" *ngFor="let inc of incidencias">
+            <div class="incidencia-barra"></div>
+            <div>
+              <div class="incidencia-titulo">{{ inc.titulo }}</div>
+              <div class="incidencia-detalle">{{ inc.detalle }}</div>
+              <div class="incidencia-tiempo">{{ inc.tiempo | uppercase }}</div>
+            </div>
+          </div>
+
+          <div class="incidencias-vacio" *ngIf="incidencias.length === 0">
+            Sin incidencias recientes
+          </div>
+
+          <button class="btn-ver-alertas" (click)="verTodasLasAlertas()">VER TODAS LAS ALERTAS</button>
+        </div>
+      </div>
+
+      <div class="footer-oti">
+        © 2026 Oficina de Informática - Universidad Nacional. Sistema de Gestión de Patrimonio.
+      </div>
+
     </div>
-
-  </div>
-</div>
-
-
-<!-- MODAL ASIGNAR USUARIO -->
-<div class="modal-overlay" *ngIf="mostrarModalUsuario">
-  <div class="modal-modern">
-
-    <div class="modal-header">
-      <h3>Asignar Responsable</h3>
-      <button class="btn-cerrar" (click)="cerrarModalUsuario()">&times;</button>
-    </div>
-
-    <div class="modal-body">
-
-      <p style="margin-bottom:10px;">
-        Ubicación: <b>{{ ubicacionSeleccionada?.nombre }}</b>
-      </p>
-
-      <label>Seleccionar usuario</label>
-
-      <select [(ngModel)]="usuarioSeleccionadoId" name="usuarioSeleccionadoId" class="input-full">
-        <option value="0">-- Seleccione usuario --</option>
-
-        <option *ngFor="let u of usuarios" [value]="u.id">
-          {{ u.nombre }} {{ u.apellido }}
-        </option>
-      </select>
-
-    </div>
-
-    <div class="modal-footer-modern">
-
-      <button class="btn-guardar-md" (click)="asignarUsuario()">
-        Asignar
-      </button>
-
-      <button class="btn-cancelar-md" (click)="cerrarModalUsuario()">
-        Cancelar
-      </button>
-
-    </div>
-
   </div>
 </div>

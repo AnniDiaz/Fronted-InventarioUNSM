@@ -438,7 +438,7 @@
       <tr *ngFor="let p of participantes; let i = index">
         <td>{{i + 1}}</td>
         <td>{{p.nombre}}</td>
-        <td>{{p.dni}}</td>
+        <td>{{p.telefono}}</td>
         <td>{{p.codigo}}</td>
         <td>{{p.correo}}</td>
       </tr>
@@ -463,18 +463,18 @@
 <!-- ATENTAMENTE -->
 <div class="firma">
 
-  <div class="linea"></div>
 
-  <p class="atentamente">Atentamente,</p>
+  <p>
+    Documento generado electrónicamente por el sistema de préstamos.
+  </p>
 
-  <h4>{{nombre || 'NOMBRE COMPLETO'}}</h4>
+  <h4>{{nombre}}</h4>
 
-  <p>REPRESENTANTE RESPONSABLE</p>
+  <p>Representante Responsable</p>
 
-  <p>DNI N.° {{dni || '00000000'}}</p>
-
-  <small>{{correo || 'correo@unsm.edu.pe'}}</small>
-
+</div>
+<div *ngIf="aprobado" class="sello-aprobado">
+  APROBADO
 </div>
           </div>
 

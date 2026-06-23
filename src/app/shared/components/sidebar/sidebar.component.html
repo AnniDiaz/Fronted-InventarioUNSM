@@ -3,19 +3,16 @@
   <!-- HEADER -->
   <div class="sidebar-header">
     <div class="logo-box">
+<img
+  [src]="ubicacionLogo || '/assets/oti-unsm.png'"
+  alt="Ubicación logo"
+  class="ubicacion-logo"
+/>
 
-      <img
-        *ngIf="ubicacionLogo"
-        [src]="ubicacionLogo"
-        alt="Ubicación logo"
-        class="ubicacion-logo"
-      >
-
-      <div class="logo-text">
-        <p class="title">{{ ubicacionNombre }} </p>
-        <p class="subtitle">Panel de gestión</p>
-
-      </div>
+<div class="logo-text">
+  <p class="title">{{ ubicacionNombre }}</p>
+  <p class="subtitle">Panel de gestión</p>
+</div>
 
 
     </div>

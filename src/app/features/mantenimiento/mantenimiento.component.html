@@ -78,17 +78,34 @@
                       {{ m.estadoMantenimiento === false ? 'Completado' : 'Pendiente' }}
                     </span>
                   </td>
-                  <td class="text-right">
-                    <div class="actions-wrapper">
-                      <button class="btn-action-edit" (click)="prepararEdicion(m)" title="Editar">
-                        <i class="fa fa-edit"></i>
-                      </button>
-                      <button *ngIf="m.estadoMantenimiento === true" class="btn-action-done"
-                        (click)="marcarCompletado(m)" title="Finalizar">
-                        <i class="fa fa-check"></i>
-                      </button>
-                    </div>
-                  </td>
+              <td class="text-right">
+  <div class="actions-wrapper">
+
+    <button
+      class="btn-action-edit"
+      (click)="prepararEdicion(m)"
+      [disabled]="m.estadoMantenimiento === false"
+      title="Editar">
+      <i class="fa fa-edit"></i>
+    </button>
+
+    <button
+      *ngIf="m.estadoMantenimiento === true"
+      class="btn-action-done"
+      (click)="marcarCompletado(m)"
+      title="Finalizar">
+      <i class="fa fa-check"></i>
+    </button>
+
+<button
+  class="btn-action-delete"
+  (click)="eliminarMantenimiento(m)"
+  [disabled]="m.estadoMantenimiento === false"
+  title="Eliminar">
+  <i class="fa fa-trash"></i>
+</button>
+  </div>
+</td>
                 </tr>
                 <tr *ngIf="registrosPaginados.length === 0">
                   <td colspan="8" class="empty-state">

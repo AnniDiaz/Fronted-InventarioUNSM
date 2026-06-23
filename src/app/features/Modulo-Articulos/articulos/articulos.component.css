@@ -246,7 +246,9 @@
 .icon-btn.editar { color: #3b82f6; }
 .icon-btn.eliminar { color: #ef4444; }
 .icon-btn.qr-down { color: #475569; }
-
+.empty-state{
+  text-align: center;
+}
 /* =========================================================
    MODAL MODERNIZADO
    ========================================================= */
@@ -352,14 +354,14 @@
 
 .footer-paginacion {
   margin-top: 20px; /* Separación prudente de la tabla */
-  background: #ffffff !important; 
+  background: #ffffff !important;
   padding: 12px 16px;
   border-top: 1px solid #eee;
   border-radius: 0 0 8px 8px; /* Redondeado inferior para que acople con la tarjeta */
-  
+
   /* 🚨 CORRECCIÓN: Quitamos el 'sticky' que rompe el scroll de la ventana si hay pocos items */
-  position: relative; 
-  z-index: 10; 
+  position: relative;
+  z-index: 10;
 }
 
 /* =========================================================

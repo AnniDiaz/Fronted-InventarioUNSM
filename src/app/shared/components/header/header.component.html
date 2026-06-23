@@ -1,18 +1,34 @@
 <div class="cont-header">
 
-  <!-- Buscador -->
-  <div class="buscador">
-    <i class="fa fa-search icon-buscar"></i>
-    <input type="text" placeholder="Buscar...">
+  <!-- Título dinámico según la ruta -->
+  <div class="titulo-pagina">
+    <h1>{{ pageTitle }}</h1>
+    <span class="badge-rol" *ngIf="rolActual?.rol?.nombre">{{ rolActual.rol.nombre | uppercase }}</span>
   </div>
 
   <!-- Acciones -->
   <div class="acciones-usuario">
 
+    <!-- Buscador compacto -->
+    <div class="buscador">
+      <i class="fa fa-search icon-buscar"></i>
+      <input type="text" placeholder="Buscar código o serie...">
+    </div>
+
     <!-- Campana de notificaciones -->
     <div class="notificacion">
       <i class="fa-regular fa-bell"></i>
       <span class="badge"></span>
+    </div>
+
+    <!-- Ayuda -->
+    <div class="icono-accion" title="Ayuda">
+      <i class="fa-regular fa-circle-question"></i>
+    </div>
+
+    <!-- Configuración -->
+    <div class="icono-accion" (click)="irAConfiguracion()" title="Configuración">
+      <i class="fa-solid fa-gear"></i>
     </div>
 
     <!-- Separador -->

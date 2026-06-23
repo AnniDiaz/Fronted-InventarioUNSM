@@ -1,0 +1,155 @@
+<div class="container" [class.menu-activo]="menuAbierto">
+
+  <div class="sidebar-overlay" (click)="toggleMenu()"></div>
+
+  <div class="barra-lateral">
+    <app-sidebar></app-sidebar>
+  </div>
+
+  <div class="main-section">
+    <app-header></app-header>
+
+    <div class="contenido-principal">
+      <div class="page-container">
+
+        <div class="header-ubicaciones">
+          <div class="header-titulo-wrapper" style="display: flex; align-items: center; gap: 15px;">
+            <button class="menu-toggle" (click)="toggleMenu()">
+              <i class="fa fa-bars"></i>
+            </button>
+
+            <div class="titulos-header">
+              <h2>Gestión de Facultades</h2>
+              <p>{{ facultadesFiltradas.length }} registros encontrados</p>
+            </div>
+          </div>
+
+          <div class="header-acciones-derecha">
+            <div class="search-input-box-header">
+              <i class="fa fa-search icon-search"></i>
+              <input type="text" placeholder="Buscar por nombre..." [(ngModel)]="filtro" (input)="aplicarFiltro()">
+            </div>
+
+            <button class="btn-agregar-pill" (click)="toggleFormulario()">
+              <i class="fa fa-plus"></i> Nueva Facultad
+            </button>
+          </div>
+        </div>
+
+        <div class="modal-overlay" *ngIf="mostrarFormulario">
+          <div class="modal-modern">
+            <div class="modal-header">
+              <h3>{{ editando ? 'Editar Facultad' : 'Registrar nueva facultad' }}</h3>
+              <button class="btn-cerrar" (click)="toggleFormulario()">&times;</button>
+            </div>
+
+            <div class="modal-body">
+              <form (ngSubmit)="guardarFacultad()" #facultadForm="ngForm" class="form-ubicacion">
+                <div class="form-group-full">
+                  <label>Nombre</label>
+                  <input type="text" [(ngModel)]="nuevaFacultad.nombre" name="nombre"
+                    placeholder="Ej: Facultad de Ingeniería de Sistemas" required>
+                </div>
+
+                <div class="form-group-full">
+                  <label>Dirección</label>
+                  <input type="text" [(ngModel)]="nuevaFacultad.direccion" name="direccion"
+                    placeholder="Ej: Jr. Las Flores 123" required>
+                </div>
+
+                <div class="form-group-full">
+                  <label>Sede</label>
+                  <select [(ngModel)]="nuevaFacultad.sedeId" name="sedeId" required>
+                    <option [ngValue]="0" disabled>Seleccione una sede</option>
+                    <option *ngFor="let s of sedes" [ngValue]="s.id">{{ s.nombre }}</option>
+                  </select>
+                </div>
+
+                <div class="form-group-full form-group-toggle">
+                  <label>Estado</label>
+                  <label class="switch">
+                    <input type="checkbox" [(ngModel)]="nuevaFacultad.estado" name="estado">
+                    <span class="slider"></span>
+                  </label>
+                  <span class="switch-label">{{ nuevaFacultad.estado ? 'Activo' : 'Inactivo' }}</span>
+                </div>
+
+                <div class="modal-footer-modern">
+                  <button type="submit" class="btn-agregar-pill">
+                    {{ editando ? 'Actualizar' : 'Guardar' }}
+                  </button>
+                  <button type="button" class="btn-cancelar-md" (click)="toggleFormulario()">
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-ubicaciones">
+          <div class="card-ubicacion" *ngFor="let f of registrosPaginados || []">
+
+            <div class="card-top">
+              <span class="badge-estado" [class.activo]="f.estado" [class.inactivo]="!f.estado">
+                <i class="fa fa-circle"></i> {{ f.estado ? 'ACTIVO' : 'INACTIVO' }}
+              </span>
+
+              <div class="card-options">
+                <button class="btn-dots" (click)="toggleOpciones(f.id, $event)">
+                  <i class="fa fa-ellipsis-v"></i>
+                </button>
+
+                <div class="options-menu" *ngIf="menuAbiertoId === f.id">
+                  <button class="op-edit" (click)="editarFacultad(f)">
+                    <i class="fa fa-pen"></i> Editar
+                  </button>
+
+                  <button class="op-delete" (click)="eliminarFacultad(f.id)">
+                    <i class="fa fa-trash"></i> Eliminar
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-titulos">
+              <h3 class="ubi-name">{{ f.nombre }}</h3>
+              <p class="ubi-desc"><i class="fa fa-map-marker-alt"></i> {{ f.direccion || 'Sin dirección' }}</p>
+            </div>
+
+            <div class="card-stats">
+              <div class="stat-box">
+                <span class="stat-lb">ESCUELAS</span>
+                <span class="stat-vl">{{ f.nroEscuelas ?? 0 }}</span>
+              </div>
+              <div class="stat-box stat-box-bienes">
+                <span class="stat-lb"><i class="fa fa-cube"></i> Articulos</span>
+                <span class="stat-vl stat-vl-azul">{{ f.nroBienes ?? 0 }}</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="empty-state" *ngIf="registrosPaginados.length === 0">
+          <i class="fa fa-folder-open-o"></i>
+          <p>No se encontraron facultades con los filtros aplicados.</p>
+        </div>
+
+        <div class="footer-paginacion">
+          <div class="pag-info">
+            Mostrando <strong>{{ registrosPaginados.length }}</strong> de <strong>{{ facultadesFiltradas.length
+              }}</strong> facultades
+          </div>
+          <div class="pag-botones">
+            <button class="btn-pag-nav" [disabled]="paginaActual === 1"
+              (click)="cambiarPagina(paginaActual - 1)">Anterior</button>
+            <button class="btn-pag-nav active" [disabled]="paginaActual === totalPaginas"
+              (click)="cambiarPagina(paginaActual + 1)">Siguiente</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

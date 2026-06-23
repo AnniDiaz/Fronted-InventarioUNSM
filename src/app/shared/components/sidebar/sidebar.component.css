@@ -4,35 +4,38 @@
   --green-soft: #dcfce7;
   --green-dark: #15803d;
   --green-glow: rgba(34,197,94,0.25);
+  --sidebar-text: rgba(255, 255, 255, 0.75);
+  --sidebar-text-strong: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
 }
 
 .sidebar {
   width: 280px;
   height: 100vh;
-  background: linear-gradient(180deg, #ffffff, #f8fafc);
+  background: linear-gradient(180deg, #0b3d2e 0%, #042f25 60%, #021a14 100%);
   font-family: 'Inter', sans-serif;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid #eef2f6;
-  box-shadow: 10px 0 40px rgba(0, 0, 0, 0.05);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 10px 0 40px rgba(0, 0, 0, 0.15);
 }
 
 /* HEADER */
 .sidebar-header {
-  padding: 20px 18px;
   margin-top: 10px;
-  border-bottom: 1px solid #f1f5f9;
+  padding: 30px 20px 0px 20px;
+  border-bottom: 1px solid var(--sidebar-border);
 }
 .logo-box {
   display: flex;
-  justify-content: center; /* 👈 centra vertical */
-  align-items: center;     /* 👈 centra horizontal */
+  height: auto;
+      /* 👈 centra horizontal */
   gap: 10px;
 }
 
 .ubicacion-logo {
-  width: 50px;
-  height: 50px;
+  width: 60px;
+  height: 60px;
   border-radius: 10px;
   margin-top: -18px;
   object-fit: cover;
@@ -43,17 +46,23 @@
   flex-direction: column;
 }
 
- .title {
-  font-size: 14px;
-  line-height: 16px;
-  font-weight: 700;
-  color: #0f172a;
-}
+  .title {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+/* Espacio entre líneas */
+  line-height: 17px;
+
+  /* Espacio entre letras */
+  letter-spacing: 2px;    margin-top: -12px;
+
+    font-weight: 700;
+    color: var(--sidebar-text-strong);
+  }
 
 .subtitle {
   font-size: 10px;
-  margin-top: -12px;
-  color: #94a3b8;
+  margin-top: -14px;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 /* MENU */
@@ -70,11 +79,11 @@
   width:0px;
 }
 .menu::-webkit-scrollbar-thumb {
-  background: #cbd5f5;
+  background: rgba(255, 255, 255, 0.2);
   border-radius: 10px;
 }
 .menu::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: rgba(255, 255, 255, 0.35);
 }
 
 /* ITEM */
@@ -83,19 +92,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   padding: 10px 12px;
-  margin-bottom: 1px; /* 🔥 menos espacio */
-
+  margin-bottom: 9px;
   border-radius: 12px;
-
-  color: #2e2e2eb8;
-  font-size: 14px;
-  font-weight: 500;
+  color: var(--sidebar-text);
+  font-size: 15px;
   font-weight: 700;
   cursor: pointer;
   text-decoration: none;
-
   transition: all 0.2s ease;
   position: relative;
 }
@@ -112,7 +116,7 @@
   font-size: 13px;
   padding: 7px;
   border-radius: 8px;
-  color: #64748b;
+  color: rgba(255, 255, 255, 0.55);
   transition: all 0.2s ease;
 }
 
@@ -156,7 +160,7 @@
 /* ARROW */
 .arrow {
   font-size: 10px;
-  color: #94a3b8;
+  color: rgba(255, 255, 255, 0.4);
   transition: 0.3s;
 }
 
@@ -165,10 +169,10 @@
 }
 
 .submenu {
-  margin-left: 4px;
+  margin-left: 20px;
   margin-top: 2px;
   padding-left: 6px;
-  border-left: 2px dashed #e2e8f0;
+  border-left: 2px dashed rgba(255, 255, 255, 0.15);
 }
 
 /* SUBITEM (🔥 MÁS ANCHO) */
@@ -186,7 +190,7 @@
 
   font-size: 14px;
   margin-top: 10px;
-  color: #64748b;
+  color: rgba(255, 255, 255, 0.6);
   text-decoration: none;
 
   transition: all 0.18s ease;
@@ -208,7 +212,6 @@
   transform: translateX(2px);
   position: relative;
 }
-
 .submenu-item.active i {
   background: rgba(255,255,255,0.2);
   color: white;
@@ -228,7 +231,7 @@
 /* FOOTER */
 .sidebar-footer {
   padding: 12px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--sidebar-border);
 }
 
 /* LOGOUT */
@@ -236,8 +239,8 @@
   width: 100%;
   padding: 11px;
   border-radius: 10px;
-  border: none;
-  background: #086a49;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
   color: white;
   font-weight: 600;
   font-size: 13px;
@@ -250,8 +253,14 @@
   cursor: pointer;
   transition: all 0.2s ease;
 }
+ul li{
+  list-style: none;
 
+  text-decoration: none;
+}
 .logout-btn:hover {
+  background: var(--green-main);
+  border-color: var(--green-main);
   transform: translateY(-2px);
-  box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.35);
 }

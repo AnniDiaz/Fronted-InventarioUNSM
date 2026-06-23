@@ -162,10 +162,14 @@ cerrarFormulario() {
 
     request.subscribe({
       next: () => {
-Swal.fire("Éxito", "Guardado correctamente", "success").then(() => {
-  this.mostrarFormulario = false;   // 👈 cerrar modal directo
-  this.resetArticulo();             // 👈 limpiar formulario
-  this.cargarTipos();              // 👈 recargar lista
+Swal.fire(
+  '¡Registro exitoso!',
+  'El tipo de artículo fue registrado correctamente en el sistema.',
+  'success'
+).then(() => {
+  this.mostrarFormulario = false;
+  this.resetArticulo();
+  this.cargarTipos();
 });
       },
       error: e => Swal.fire("Error", e?.error?.message || "Error al guardar", "error")

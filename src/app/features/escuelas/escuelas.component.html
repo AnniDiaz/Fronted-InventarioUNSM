@@ -1,0 +1,164 @@
+<div class="container" [class.menu-activo]="menuAbierto">
+
+  <div class="sidebar-overlay" (click)="toggleMenu()"></div>
+
+  <div class="barra-lateral">
+    <app-sidebar></app-sidebar>
+  </div>
+
+  <div class="main-section">
+    <app-header></app-header>
+
+    <div class="contenido-principal">
+      <div class="page-container">
+
+        <div class="header-ubicaciones">
+          <div class="header-titulo-wrapper" style="display: flex; align-items: center; gap: 15px;">
+            <button class="menu-toggle" (click)="toggleMenu()">
+              <i class="fa fa-bars"></i>
+            </button>
+
+            <div class="titulos-header">
+              <h2>Gestión de Escuelas</h2>
+              <p>{{ escuelasFiltradas.length }} registros encontrados</p>
+            </div>
+          </div>
+
+          <div class="header-acciones-derecha">
+            <div class="search-input-box-header">
+              <i class="fa fa-search icon-search"></i>
+              <input type="text" placeholder="Buscar por nombre o facultad..." [(ngModel)]="filtro" (input)="aplicarFiltro()">
+            </div>
+
+            <button class="btn-agregar-pill" (click)="toggleFormulario()">
+              <i class="fa fa-plus"></i> Nueva Escuela
+            </button>
+          </div>
+        </div>
+
+        <div class="modal-overlay" *ngIf="mostrarFormulario">
+          <div class="modal-modern">
+            <div class="modal-header">
+              <h3>{{ editando ? 'Editar Escuela' : 'Registrar nueva escuela' }}</h3>
+              <button class="btn-cerrar" (click)="toggleFormulario()">&times;</button>
+            </div>
+
+            <div class="modal-body">
+              <form (ngSubmit)="guardarEscuela()" #escuelaForm="ngForm" class="form-ubicacion">
+                <div class="form-group-full">
+                  <label>Nombre</label>
+                  <input type="text" [(ngModel)]="nuevaEscuela.nombre" name="nombre"
+                    placeholder="Ej: Ingeniería de Sistemas" required>
+                </div>
+
+                <div class="form-group-full">
+                  <label>Facultad</label>
+                  <select [(ngModel)]="nuevaEscuela.facultadId" name="facultadId" required>
+                    <option value="0" disabled>Seleccione una facultad</option>
+                    <option *ngFor="let f of facultades" [value]="f.id">
+                      {{ f.nombre }}
+                    </option>
+                  </select>
+                </div>
+
+                <div class="form-group-full">
+                  <label class="label-upload">Imagen de la escuela</label>
+
+                  <div class="preview-imagen" *ngIf="imagenPreview">
+                    <img [src]="imagenPreview" alt="Preview imagen">
+
+                    <div class="preview-overlay">
+                      <button type="button" class="btn-cambiar-imagen" (click)="fileInput.click()">
+                        <i class="fa fa-camera"></i>
+                        Cambiar imagen
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="upload-area" *ngIf="!imagenPreview" (click)="fileInput.click()">
+                    <div class="upload-icon">
+                      <i class="fa fa-cloud-upload-alt"></i>
+                    </div>
+
+                    <h4>Subir imagen</h4>
+                    <p>Haz clic aquí para seleccionar una imagen</p>
+                    <span class="upload-hint">JPG, PNG o WEBP</span>
+                  </div>
+
+                  <input type="file" #fileInput hidden accept="image/*" (change)="onFileSelected($event)">
+                </div>
+
+                <div class="modal-footer-modern">
+                  <button type="submit" class="btn-agregar-pill" >
+                    {{ editando ? 'Actualizar' : 'Guardar' }}
+                  </button>
+                  <button type="button" class="btn-cancelar-md" (click)="toggleFormulario()">
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-ubicaciones">
+          <div class="card-ubicacion" *ngFor="let e of registrosPaginados || []">
+
+            <div class="card-top">
+              <img
+                *ngIf="e.imagenUrl"
+                [src]="'http://localhost:7000' + e.imagenUrl"
+                class="img-escuela"
+                alt="Escuela">
+
+              <div class="icon-circle" *ngIf="!e.imagenUrl">
+                <i class="fa fa-graduation-cap"></i>
+              </div>
+
+              <div class="card-options">
+                <button class="btn-dots" (click)="toggleOpciones(e.id, $event)">
+                  <i class="fa fa-ellipsis-v"></i>
+                </button>
+
+                <div class="options-menu" *ngIf="menuAbiertoId === e.id">
+                  <button class="op-edit" (click)="editarEscuela(e)">
+                    <i class="fa fa-pen"></i> Editar
+                  </button>
+
+                  <button class="op-delete" (click)="eliminarEscuela(e.id)">
+                    <i class="fa fa-trash"></i> Eliminar
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-titulos">
+              <h3 class="ubi-name">{{ e.nombre }}</h3>
+              <p class="ubi-desc"><i class="fa fa-building"></i> {{ obtenerNombreFacultad(e.facultadId) }}</p>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="empty-state" *ngIf="registrosPaginados.length === 0">
+          <i class="fa fa-folder-open-o"></i>
+          <p>No se encontraron escuelas con los filtros aplicados.</p>
+        </div>
+
+        <div class="footer-paginacion">
+          <div class="pag-info">
+            Mostrando <strong>{{ registrosPaginados.length }}</strong> de <strong>{{ escuelasFiltradas.length
+              }}</strong> escuelas
+          </div>
+          <div class="pag-botones">
+            <button class="btn-pag-nav" [disabled]="paginaActual === 1"
+              (click)="cambiarPagina(paginaActual - 1)">Anterior</button>
+            <button class="btn-pag-nav active" [disabled]="paginaActual === totalPaginas"
+              (click)="cambiarPagina(paginaActual + 1)">Siguiente</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

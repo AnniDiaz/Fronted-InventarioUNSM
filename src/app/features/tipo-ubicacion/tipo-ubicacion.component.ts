@@ -56,19 +56,7 @@ cargarUbicaciones() {
 
       const data = Array.isArray(resp.data) ? resp.data : [];
 
- this.ubicaciones = data.filter((u: any) => {
-  const nombre = (u.nombre || '').toLowerCase();
-
-  if (this.rolId === 1) {
-    // 👑 ADMIN: SOLO facultades y oficinas
-    return nombre === 'facultades' || nombre === 'oficinas';
-  }
-
-  // 👤 otros roles: ocultar esas 2
-  return nombre !== 'facultades'
-      && nombre !== 'oficinas'
-      && nombre !== '';
-});
+      this.ubicaciones = data;
 
       this.aplicarFiltro();
     },
@@ -119,6 +107,16 @@ aplicarFiltro() {
   }
 
 guardarUbicacion() {
+
+  if (!this.nuevaUbicacion.nombre?.trim()) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Campos incompletos',
+      text: 'Debe completar todos los campos obligatorios.'
+    });
+    return;
+  }
+
   const servicio = this.editando
     ? this.ubicacionService.updateTipoUbicacion(this.nuevaUbicacion.id, this.nuevaUbicacion)
     : this.ubicacionService.addTipoUbicacion(this.nuevaUbicacion);

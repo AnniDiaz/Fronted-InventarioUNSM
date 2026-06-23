@@ -229,14 +229,14 @@
 }
 
 .icon-box.ubicacion-icon {
-  background: #eff6ff;
+  background: #eaeaea98;
     width: 70px;
   height: 60px;
 }
 
 .icon-box.ubicacion-icon i {
   font-size: 40px;
-  color: #3b82f6;
+  color: #008f5a;
 }
 
 .card-body {

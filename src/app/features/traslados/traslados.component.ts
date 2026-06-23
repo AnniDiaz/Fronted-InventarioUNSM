@@ -28,7 +28,9 @@ ubicacionUsuarioId: number = 0;
   traslados: any[] = [];
   listaArticulos: any[] = [];
   listaUbicaciones: any[] = [];
-
+articuloBusqueda: string = '';
+articulosFiltrados: any[] = [];
+mostrarListaArticulos = false;
   nuevoTraslado: any = {
     articulo: '',
     origen: '',
@@ -37,7 +39,7 @@ ubicacionUsuarioId: number = 0;
   };
 
   paginaActual = 1;
-  registrosPorPagina = 5;
+  registrosPorPagina = 3;
 
   constructor(
     private trasladoService: TrasladosService,
@@ -48,7 +50,29 @@ ubicacionUsuarioId: number = 0;
   ngOnInit(): void {
     this.cargarDatosIniciales();
   }
+filtrarArticulos(): void {
 
+  const texto = this.articuloBusqueda.toLowerCase().trim();
+
+  this.articulosFiltrados = this.listaArticulos.filter(a =>
+    a.nombre?.toLowerCase().includes(texto) ||
+    a.codigoPatrimonial?.toLowerCase().includes(texto)
+  );
+
+  this.mostrarListaArticulos = true;
+}
+
+seleccionarArticulo(articulo: any): void {
+
+  this.nuevoTraslado.articulo = articulo.id;
+
+  this.articuloBusqueda =
+    `${articulo.codigoPatrimonial} - ${articulo.nombre}`;
+
+  this.mostrarListaArticulos = false;
+
+  this.onArticuloChange(articulo.id);
+}
   cargarDatosIniciales(): void {
     this.cargarTraslados();
     this.cargarArticulos();

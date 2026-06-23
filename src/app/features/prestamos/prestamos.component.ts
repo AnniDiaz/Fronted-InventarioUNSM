@@ -486,7 +486,7 @@ this._prestamosService.addPrestamo(dataParaEnviar).subscribe({
    marcarDevuelto(prestamo: any) {
     Swal.fire({
       title: '¿Confirmar devolución?',
-      text: `El equipo ${prestamo.nombre} será marcado como devuelto`,
+      text: `El equipo será marcado como devuelto`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Sí, devuelto',

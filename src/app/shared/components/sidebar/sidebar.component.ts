@@ -74,7 +74,7 @@ export class SidebarComponent implements OnInit {
           );
 
         } else {
-          this.ubicacionNombre = 'Sin ubicación asignada';
+          this.ubicacionNombre = 'OFICINA DE INFORMÁTICA Y COMUNICACIONES';
           this.ubicacionLogo = '';
         }
       },
@@ -109,6 +109,9 @@ export class SidebarComponent implements OnInit {
             .sort((a: any, b: any) => {
               if (a.nombre === 'Dashboard') return -1;
               if (b.nombre === 'Dashboard') return 1;
+                if (a.nombre === 'Gestion institucional') return -1;
+  if (b.nombre === 'Gestion   ') return 1;
+
               return 0;
             });
 

@@ -1,12 +1,20 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { HeaderComponent } from "../shared/components/header/header.component";
 import { SidebarComponent } from "../shared/components/sidebar/sidebar.component";
-import { TipoUbicacionService } from '../core/services/tipo-ubicacion.service';
 import { UbicacionService } from '../core/services/ubicacion.service';
+import { ArticuloService } from '../core/services/articulos.service';
+import { MantenimientoService } from '../core/services/mantenimiento.service';
+import { SedeService } from '../core/services/sede.service';
+import { FacultadService } from '../core/services/facultad.service';
+import { EscuelaService } from '../core/services/escuela.service';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import Chart from 'chart.js/auto';
 import Swal from 'sweetalert2';
-import { UsuariosService } from '../core/services/usuarios.service';
+
 @Component({
   selector: 'app-superadmin',
   standalone: true,
@@ -18,289 +26,379 @@ export class SuperadminComponent implements OnInit {
 
   menuAbierto = false;
 
-  tabs: any[] = [];
-  usuarios: any[] = [];
-  tabActivo: string = '';
-  tipoActivoId: number = 0;
-imagenFile: File | null = null;
-imagenPreview: string | ArrayBuffer | null = null;
-  ubicaciones: any[] = [];
+  // Banner
+  sedeActualNombre = 'Sede Principal';
+  conexionSegura = false;
 
-  mostrarFormulario = false;
-  editando = false;
+  // KPIs
+  totalBienes = 0;
+  valorTotalAprox = 0;
+  bienesOperativos = 0;
+  porcentajeOperativos = 0;
+  bienesMantenimiento = 0;
+  diasPromedioMantenimiento = 0;
+  bienesBaja = 0;
 
-  nuevaUbicacion: any = {
-    id: 0,
-    nombre: '',
-    descripcion: '',
-    tipoUbicacionId: 0
-  };
+  // Crecimiento patrimonial
+  modoCrecimiento: 'mensual' | 'anual' = 'mensual';
+  private crecimientoMensual: { labels: string[]; valores: number[] } = { labels: [], valores: [] };
+  private crecimientoAnual: { labels: string[]; valores: number[] } = { labels: [], valores: [] };
+  private chartCrecimiento: any;
 
-  tiposUbicacion: any[] = [];
+  // Carga por sede
+  cargaPorSede: { nombre: string; cantidad: number }[] = [];
+  private chartCargaSede: any;
+
+  // Composición
+  composicion: { nombre: string; cantidad: number; color: string }[] = [];
+  porcentajeDisponible = 0;
+  private chartComposicion: any;
+
+  // Incidencias (mantenimientos recientes)
+  incidencias: { titulo: string; detalle: string; tiempo: string }[] = [];
+
+  private articulos: any[] = [];
+  private mantenimientos: any[] = [];
+  private ubicaciones: any[] = [];
+  private escuelas: any[] = [];
+  private facultades: any[] = [];
+  private sedes: any[] = [];
+
+  private mesesNombres = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
   constructor(
-    private tipoService: TipoUbicacionService,
     private ubicacionService: UbicacionService,
-      private usuariosService: UsuariosService
+    private articuloService: ArticuloService,
+    private mantenimientoService: MantenimientoService,
+    private sedeService: SedeService,
+    private facultadService: FacultadService,
+    private escuelaService: EscuelaService,
+    private router: Router
+  ) { }
 
-  ) {}
-ngOnInit(): void {
-  this.cargarTipos();
-  this.cargarUsuarios(); // 🔥 IMPORTANTE
-}
+  ngOnInit(): void {
+    this.conexionSegura = typeof window !== 'undefined' && window.location.protocol === 'https:';
+    this.cargarDatos();
+  }
 
   toggleMenu() {
     this.menuAbierto = !this.menuAbierto;
   }
 
-  toggleFormulario() {
-    this.mostrarFormulario = !this.mostrarFormulario;
-
-    if (!this.mostrarFormulario) {
-      this.resetFormulario();
-    }
+  private aArray(res: any): any[] {
+    if (Array.isArray(res)) return res;
+    return Array.isArray(res?.data) ? res.data : [];
   }
 
-  resetFormulario() {
-    this.editando = false;
+  cargarDatos() {
+    forkJoin({
+      articulos: this.articuloService.getArticulosConCampos().pipe(catchError(() => of([]))),
+      mantenimientos: this.mantenimientoService.getMantenimientos().pipe(catchError(() => of([]))),
+      sedes: this.sedeService.getSedes().pipe(catchError(() => of([]))),
+      facultades: this.facultadService.getFacultades().pipe(catchError(() => of([]))),
+      escuelas: this.escuelaService.getEscuelas().pipe(catchError(() => of([]))),
+      ubicaciones: this.ubicacionService.getUbicaciones().pipe(catchError(() => of([])))
+    }).subscribe(({ articulos, mantenimientos, sedes, facultades, escuelas, ubicaciones }: any) => {
+      this.articulos = this.aArray(articulos);
+      this.mantenimientos = this.aArray(mantenimientos);
+      this.sedes = this.aArray(sedes);
+      this.facultades = this.aArray(facultades);
+      this.escuelas = this.aArray(escuelas);
+      this.ubicaciones = this.aArray(ubicaciones);
 
-    this.nuevaUbicacion = {
-      id: 0,
-      nombre: '',
-      descripcion: '',
-      tipoUbicacionId: this.tipoActivoId
-    };
-  }
-cargarUsuarios() {
-  this.usuariosService.getUsuarios().subscribe({
-    next: (resp: any) => {
+      this.sedeActualNombre = this.sedes[0]?.nombre || 'Sede Principal';
 
-      if (resp?.success && Array.isArray(resp.data)) {
-        this.usuarios = resp.data;
-      } else {
-        this.usuarios = [];
-      }
+      this.calcularKpis();
+      this.calcularCrecimiento();
+      this.calcularCargaPorSede();
+      this.calcularComposicion();
+      this.calcularIncidencias();
 
-    },
-    error: () => {
-      this.usuarios = [];
-    }
-  });
-}
-  cargarTipos() {
-    this.tipoService.getTipoUbicaciones().subscribe((resp: any) => {
-      const data = Array.isArray(resp.data) ? resp.data : [];
-
-  this.tabs = data.filter((u: any) => {
-  const nombre = (u.nombre || '').trim().toLowerCase();
-  return nombre === 'oficina' || nombre === 'facultades';
-});
-      this.tiposUbicacion = data;
-
-      if (this.tabs.length > 0) {
-        this.cambiarTab(this.tabs[0]);
-      }
+      setTimeout(() => this.renderGraficos());
     });
   }
 
-cambiarTab(tab: any) {
-  this.tabActivo = tab.nombre.toLowerCase();
-  this.tipoActivoId = tab.id;
+  private calcularKpis() {
+    const idsEnMantenimiento = new Set(
+      this.mantenimientos
+        .filter((m: any) => m.estadoMantenimiento === true)
+        .map((m: any) => Number(m.articuloId))
+    );
 
-  this.cargarUbicacionesPorTipo(tab.id);
-}
+    this.totalBienes = this.articulos.length;
+    this.bienesMantenimiento = idsEnMantenimiento.size;
+    this.bienesBaja = this.articulos.filter((a: any) => Number(a.estado) === 0).length;
+    this.bienesOperativos = Math.max(this.totalBienes - this.bienesMantenimiento - this.bienesBaja, 0);
+    this.porcentajeOperativos = this.totalBienes ? Math.round((this.bienesOperativos / this.totalBienes) * 100) : 0;
 
-cargarUbicacionesPorTipo(tipoId: number) {
-  this.ubicacionService.getUbicacionesPorTipo(tipoId).subscribe({
-    next: (resp: any) => {
+    this.valorTotalAprox = this.articulos.reduce((suma: number, a: any) => suma + (Number(a.valorAdquisitivo) || 0), 0);
 
-      if (!resp.success) {
-        this.ubicaciones = [];
-        this.mensajeInfo = resp.message;
-
-        Swal.fire('Información', resp.message, 'info');
-        return;
-      }
-
-      this.ubicaciones = Array.isArray(resp.data) ? resp.data : [];
-      this.mensajeInfo = '';
-    },
-error: (err) => {
-
-  if (err.status === 404) {
-    this.ubicaciones = [];
-    this.mensajeInfo = 'No hay ubicaciones para este tipo';
-    return;
-  }
-
-  this.ubicaciones = [];
-  this.mensajeInfo = 'Error al cargar ubicaciones';
-
-  Swal.fire('Error', 'No se pudieron cargar las ubicaciones', 'error');
-}
-  });
-}
-abrirModalUbicacion() {
-  this.resetFormulario();
-  this.resetImagen();
-
-  this.nuevaUbicacion.tipoUbicacionId = this.tipoActivoId; // 🔥 CLAVE
-  this.mostrarFormulario = true;
-}
-guardarUbicacion() {
-
-  if (!this.nuevaUbicacion.nombre) {
-    Swal.fire('Error', 'El nombre es obligatorio', 'warning');
-    return;
-  }
-
-  const formData = new FormData();
-
-  formData.append('nombre', this.nuevaUbicacion.nombre);
-  formData.append('descripcion', this.nuevaUbicacion.descripcion || '');
-formData.append(
-  'tipoUbicacionId',
-  this.nuevaUbicacion.tipoUbicacionId.toString()
-);
-  if (this.imagenFile) {
-    formData.append('imagen', this.imagenFile);
-  }
-
-  const request = !this.editando
-    ? this.ubicacionService.addUbicacionForm(formData)
-    : this.ubicacionService.updateUbicacionForm(this.nuevaUbicacion.id, formData);
-
-  request.subscribe({
-    next: (resp: any) => {
-
-      // 🔥 AQUÍ manejas error lógico del backend
-      if (resp && resp.success === false) {
-        Swal.fire('Error', resp.message, 'error');
-        return;
-      }
-
-      Swal.fire(
-        'Éxito',
-        this.editando ? 'Ubicación actualizada' : 'Ubicación creada correctamente',
-        'success'
-      );
-
-      this.toggleFormulario();
-      this.cargarUbicacionesPorTipo(this.tipoActivoId);
-      this.resetImagen();
-    },
-
-    error: (err) => {
-      console.error(err);
-      Swal.fire('Error', 'Error en el servidor', 'error');
+    const activos = this.mantenimientos.filter((m: any) => m.estadoMantenimiento === true && m.fechaMantenimiento);
+    if (activos.length) {
+      const ahora = Date.now();
+      const totalDias = activos.reduce((suma: number, m: any) => {
+        const dias = (ahora - new Date(m.fechaMantenimiento).getTime()) / (1000 * 60 * 60 * 24);
+        return suma + Math.max(dias, 0);
+      }, 0);
+      this.diasPromedioMantenimiento = Math.round((totalDias / activos.length) * 10) / 10;
+    } else {
+      this.diasPromedioMantenimiento = 0;
     }
-  });
-}
-mensajeInfo: string = '';
-  selectedFile: File | null = null;
-onFileSelected(event: any) {
-  const file = event.target.files[0];
+  }
 
-  if (file) {
-    this.imagenFile = file;
+  get valorTotalFormateado(): string {
+    const valor = this.valorTotalAprox;
+    if (valor >= 1_000_000) return `S/. ${(valor / 1_000_000).toFixed(1)}M`;
+    if (valor >= 1_000) return `S/. ${(valor / 1_000).toFixed(1)}K`;
+    return `S/. ${valor.toFixed(0)}`;
+  }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.imagenPreview = reader.result;
+  private calcularCrecimiento() {
+    const ahora = new Date();
+
+    const mesesLabels: string[] = [];
+    const mesesValores: number[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const fecha = new Date(ahora.getFullYear(), ahora.getMonth() - i, 1);
+      const limite = new Date(fecha.getFullYear(), fecha.getMonth() + 1, 1);
+      mesesLabels.push(this.mesesNombres[fecha.getMonth()]);
+      mesesValores.push(this.articulos.filter((a: any) => a.fechaAdquision && new Date(a.fechaAdquision) < limite).length);
+    }
+    this.crecimientoMensual = { labels: mesesLabels, valores: mesesValores };
+
+    const anioActual = ahora.getFullYear();
+    const aniosLabels: string[] = [];
+    const aniosValores: number[] = [];
+    for (let i = 4; i >= 0; i--) {
+      const anio = anioActual - i;
+      const limite = new Date(anio + 1, 0, 1);
+      aniosLabels.push(String(anio));
+      aniosValores.push(this.articulos.filter((a: any) => a.fechaAdquision && new Date(a.fechaAdquision) < limite).length);
+    }
+    this.crecimientoAnual = { labels: aniosLabels, valores: aniosValores };
+  }
+
+  cambiarModoCrecimiento(modo: 'mensual' | 'anual') {
+    if (this.modoCrecimiento === modo) return;
+    this.modoCrecimiento = modo;
+    this.renderChartCrecimiento();
+  }
+
+  private calcularCargaPorSede() {
+    const conteoPorSede = new Map<number, number>();
+
+    this.articulos.forEach((a: any) => {
+      const ubicacion = this.ubicaciones.find((u: any) => u.id === a.ubicacionId);
+      const escuela = ubicacion ? this.escuelas.find((e: any) => e.id === ubicacion.escuelaId) : null;
+      const facultad = escuela ? this.facultades.find((f: any) => f.id === escuela.facultadId) : null;
+      const sedeId = facultad?.sedeId;
+
+      if (sedeId == null) return;
+      conteoPorSede.set(sedeId, (conteoPorSede.get(sedeId) || 0) + 1);
+    });
+
+    this.cargaPorSede = this.sedes
+      .map((s: any) => ({ nombre: s.nombre, cantidad: conteoPorSede.get(s.id) || 0 }))
+      .sort((a, b) => b.cantidad - a.cantidad)
+      .slice(0, 5);
+  }
+
+  private calcularComposicion() {
+    const colores: Record<string, string> = {
+      nuevo: '#10b981',
+      bueno: '#3b82f6',
+      regular: '#f59e0b',
+      malo: '#ef4444'
     };
 
-    reader.readAsDataURL(file);
-  }
-}
-mostrarModalUsuario = false;
-ubicacionSeleccionada: any = null;
-usuarioSeleccionadoId: number = 0;
-resetImagen() {
-  this.imagenPreview = null;
-  this.imagenFile = null;
-}
+    const conteo: Record<string, number> = {};
+    this.articulos.forEach((a: any) => {
+      const key = (a.condicion || 'sin dato').toLowerCase();
+      conteo[key] = (conteo[key] || 0) + 1;
+    });
 
-editarUbicacion(u: any) {
-  this.editando = true;
-  this.mostrarFormulario = true;
+    this.composicion = Object.keys(conteo).map(key => ({
+      nombre: key.charAt(0).toUpperCase() + key.slice(1),
+      cantidad: conteo[key],
+      color: colores[key] || '#8b5cf6'
+    }));
 
-  this.nuevaUbicacion = {
-    id: u.id,
-    nombre: u.nombre,
-    descripcion: u.descripcion,
-    tipoUbicacionId: u.tipoUbicacionId ?? this.tipoActivoId
-  };
-
-  if (u.imagenUrl) {
-    this.imagenPreview = 'http://localhost:7000' + u.imagenUrl;
-  } else {
-    this.imagenPreview = null;
+    const disponibles = (conteo['nuevo'] || 0) + (conteo['bueno'] || 0);
+    this.porcentajeDisponible = this.totalBienes ? Math.round((disponibles / this.totalBienes) * 100) : 0;
   }
 
-  this.imagenFile = null;
-}
-asignarResponsable(u: any) {
-  this.ubicacionSeleccionada = u;
+  private calcularIncidencias() {
+    this.incidencias = [...this.mantenimientos]
+      .filter((m: any) => m.fechaMantenimiento)
+      .sort((a: any, b: any) => new Date(b.fechaMantenimiento).getTime() - new Date(a.fechaMantenimiento).getTime())
+      .slice(0, 3)
+      .map((m: any) => {
+        const articulo = this.articulos.find((a: any) => a.id === m.articuloId);
+        const ubicacion = articulo ? this.ubicaciones.find((u: any) => u.id === articulo.ubicacionId) : null;
 
-  // 🔥 AQUÍ es la clave
-  this.usuarioSeleccionadoId = u.usuarioId ?? 0;
-
-  this.mostrarModalUsuario = true;
-}
-cerrarModalUsuario() {
-  this.mostrarModalUsuario = false;
-  this.ubicacionSeleccionada = null;
-  this.usuarioSeleccionadoId = 0;
-}
-asignarUsuario() {
-
-  if (!this.usuarioSeleccionadoId) {
-    Swal.fire('Error', 'Seleccione un usuario', 'warning');
-    return;
+        return {
+          titulo: 'Solicitud de Mantenimiento',
+          detalle: ubicacion?.nombre || articulo?.nombre || 'Sin ubicación',
+          tiempo: this.tiempoRelativo(m.fechaMantenimiento)
+        };
+      });
   }
 
-  const ubicacionId = this.ubicacionSeleccionada.id;
+  private tiempoRelativo(fechaIso: string): string {
+    const diffMs = Math.max(Date.now() - new Date(fechaIso).getTime(), 0);
+    const minutos = Math.floor(diffMs / 60000);
 
-  this.ubicacionService
-    .asignarUsuario(ubicacionId, this.usuarioSeleccionadoId)
-    .subscribe({
-      next: (resp: any) => {
+    if (minutos < 1) return 'Justo ahora';
+    if (minutos < 60) return `Hace ${minutos} min`;
 
-        if (resp?.success === false) {
-          Swal.fire('Error', resp.message, 'error');
-          return;
-        }
+    const horas = Math.floor(minutos / 60);
+    if (horas < 24) return `Hace ${horas} h`;
 
-        Swal.fire('Éxito', 'Usuario asignado correctamente', 'success');
+    const dias = Math.floor(horas / 24);
+    return `Hace ${dias} d`;
+  }
 
-        this.cerrarModalUsuario();
+  private renderGraficos() {
+    this.renderChartCrecimiento();
+    this.renderChartCargaSede();
+    this.renderChartComposicion();
+  }
 
-        // 🔥 refrescar lista
-        this.cargarUbicacionesPorTipo(this.tipoActivoId);
+  private renderChartCrecimiento() {
+    const datos = this.modoCrecimiento === 'mensual' ? this.crecimientoMensual : this.crecimientoAnual;
+
+    if (this.chartCrecimiento) this.chartCrecimiento.destroy();
+
+    const canvas = document.getElementById('chartCrecimientoPatrimonial') as HTMLCanvasElement;
+    if (!canvas) return;
+
+    this.chartCrecimiento = new Chart(canvas, {
+      type: 'line',
+      data: {
+        labels: datos.labels,
+        datasets: [{
+          data: datos.valores,
+          borderColor: '#10b981',
+          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          fill: true,
+          tension: 0.4,
+          pointRadius: 0,
+          borderWidth: 3
+        }]
       },
-
-      error: (err) => {
-        console.error(err);
-        Swal.fire('Error', 'No se pudo asignar usuario', 'error');
-      }
-    });
-}
-  eliminarUbicacion(u: any) {
-    Swal.fire({
-      title: '¿Estás seguro?',
-      text: `Se eliminará "${u.nombre}"`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#ef4444',
-      confirmButtonText: 'Sí, eliminar'
-    }).then(r => {
-      if (r.isConfirmed) {
-        this.ubicacionService.deleteUbicacion(u.id).subscribe(() => {
-          Swal.fire('Eliminado', 'Ubicación eliminada', 'success');
-          this.cargarUbicacionesPorTipo(this.tipoActivoId);
-        });
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+          x: { grid: { display: false } }
+        }
       }
     });
   }
 
+  private renderChartCargaSede() {
+    if (this.chartCargaSede) this.chartCargaSede.destroy();
+
+    const canvas = document.getElementById('chartCargaPorSede') as HTMLCanvasElement;
+    if (!canvas) return;
+
+    this.chartCargaSede = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: this.cargaPorSede.map(s => s.nombre),
+        datasets: [{
+          data: this.cargaPorSede.map(s => s.cantidad),
+          backgroundColor: '#0f5132',
+          borderRadius: 6,
+          barThickness: 22
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+          y: { grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  private renderChartComposicion() {
+    if (this.chartComposicion) this.chartComposicion.destroy();
+
+    const canvas = document.getElementById('chartComposicion') as HTMLCanvasElement;
+    if (!canvas) return;
+
+    const porcentaje = this.porcentajeDisponible;
+
+    const centerTextPlugin = {
+      id: 'centerTextComposicion',
+      beforeDraw: (chart: any) => {
+        const { ctx, chartArea } = chart;
+        if (!chartArea) return;
+
+        const centerX = (chartArea.left + chartArea.right) / 2;
+        const centerY = (chartArea.top + chartArea.bottom) / 2;
+
+        ctx.save();
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        ctx.font = 'bold 22px Inter, sans-serif';
+        ctx.fillStyle = '#111827';
+        ctx.fillText(`${porcentaje}%`, centerX, centerY - 8);
+
+        ctx.font = 'bold 10px Inter, sans-serif';
+        ctx.fillStyle = '#6b7280';
+        ctx.fillText('DISPONIBLE', centerX, centerY + 12);
+
+        ctx.restore();
+      }
+    };
+
+    this.chartComposicion = new Chart(canvas, {
+      type: 'doughnut',
+      plugins: [centerTextPlugin],
+      data: {
+        labels: this.composicion.map(c => c.nombre),
+        datasets: [{
+          data: this.composicion.map(c => c.cantidad),
+          backgroundColor: this.composicion.map(c => c.color),
+          borderWidth: 0
+        }]
+      },
+      options: {
+        cutout: '75%',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } }
+      }
+    });
+  }
+
+  // Acciones OTI
+  registrarBien() {
+    this.router.navigate(['/articulos']);
+  }
+
+  generarReportePDF() {
+    this.router.navigate(['/reportes']);
+  }
+
+  verTrasladosPendientes() {
+    this.router.navigate(['/traslados']);
+  }
+
+  auditarPatrimonio() {
+    Swal.fire('Próximamente', 'El módulo de auditoría de patrimonio estará disponible pronto.', 'info');
+  }
+
+  verTodasLasAlertas() {
+    this.router.navigate(['/mantenimiento']);
+  }
 }

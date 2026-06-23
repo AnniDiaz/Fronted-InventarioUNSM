@@ -84,21 +84,20 @@
 </div>
 
 <div class="form-group-full">
-  <label>Facultad</label>
+  <label>Escuela Profesional</label>
 
-  <select [(ngModel)]="nuevaUbicacion.padreId" name="padreId">
+  <select [(ngModel)]="nuevaUbicacion.escuelaId" name="escuelaId">
 
-    <option [ngValue]="null">Sin facultad</option>
+    <option [ngValue]="null">Sin escuela</option>
 
-    <!-- SOLO FACULTAD DEL USUARIO -->
-    <option *ngIf="facultadUsuario" [ngValue]="facultadUsuario.id">
-      {{ facultadUsuario.nombre }}
+    <option *ngFor="let e of escuelas || []" [ngValue]="e.id">
+      {{ e.nombre }}
     </option>
 
   </select>
 </div>
                 <div class="modal-footer-modern">
-                  <button type="submit" class="btn-guardar-md" [disabled]="ubicacionForm.invalid">
+                  <button type="submit" class="btn-agregar-pill">
                     {{ editando ? 'Actualizar' : 'Guardar' }}
                   </button>
                   <button type="button" class="btn-cancelar-md" (click)="toggleFormulario()">
@@ -112,34 +111,43 @@
 
         <div class="grid-ubicaciones">
         <div class="card-ubicacion" *ngFor="let u of registrosPaginados || []">
-            <div class="card-top">
-              <div class="icon-circle">
-                <i class="fa fa-map-marker-alt"></i>
-              </div>
+    <div class="card-top">
 
-              <div class="card-options">
-                <button class="btn-dots" (click)="toggleOpciones(u.id, $event)">
-                  <i class="fa fa-ellipsis-v"></i>
-                </button>
+  <!-- ICONO -->
+  <div class="contenedor-imagen">
 
-               <div class="options-menu" *ngIf="menuAbiertoId === u.id">
+    <div class="icon-circle">
+      <i class="fa fa-map-marker-alt"></i>
+    </div>
 
-  <button class="op-edit" (click)="editarUbicacion(u)">
-    <i class="fa fa-pen"></i> Editar
-  </button>
+  </div>
 
-  <button class="op-delete" (click)="eliminarUbicacion(u.id)">
-    <i class="fa fa-trash"></i> Eliminar
-  </button>
+  <!-- OPCIONES -->
+  <div class="card-options">
 
-  <!-- 🔥 NUEVO BOTÓN -->
-  <button class="op-assign" (click)="asignarUsuario(u)">
-    <i class="fa fa-user-plus"></i> Asignar usuario
-  </button>
+    <button class="btn-dots" (click)="toggleOpciones(u.id, $event)">
+      <i class="fa fa-ellipsis-v"></i>
+    </button>
+
+    <div class="options-menu" *ngIf="menuAbiertoId === u.id">
+
+      <button class="op-edit" (click)="editarUbicacion(u)">
+        <i class="fa fa-pen"></i> Editar
+      </button>
+
+      <button class="op-delete" (click)="eliminarUbicacion(u.id)">
+        <i class="fa fa-trash"></i> Eliminar
+      </button>
+
+      <button class="op-assign" (click)="asignarUsuario(u)">
+        <i class="fa fa-user-plus"></i> Asignar usuario
+      </button>
+
+    </div>
+
+  </div>
 
 </div>
-              </div>
-            </div>
 
             <div class="card-titulos">
               <h3 class="ubi-name">{{ u.nombre }}</h3>
@@ -153,9 +161,12 @@
               </div>
             </div>
 
-            <button class="btn-ver-articulos" (click)="irAArticulos(u.id)">
-              Ver Artículos <i class="fa fa-chevron-right ml-1"></i>
-            </button>
+    <button
+  *ngIf="!esAdministrador()"
+  class="btn-ver-articulos"
+  (click)="irAArticulos(u.id)">
+  Ver Artículos <i class="fa fa-chevron-right ml-1"></i>
+</button>
 
           </div>
         </div>

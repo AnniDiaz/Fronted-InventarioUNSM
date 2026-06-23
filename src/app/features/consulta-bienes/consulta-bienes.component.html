@@ -1,0 +1,183 @@
+<div class="container" [class.menu-activo]="menuAbierto">
+
+  <div class="sidebar-overlay" (click)="toggleMenu()"></div>
+
+  <div class="barra-lateral">
+    <app-sidebar></app-sidebar>
+  </div>
+
+  <div class="main-section">
+    <app-header></app-header>
+
+    <div class="contenido-principal">
+      <div class="page-container">
+
+        <div class="header-bienes">
+          <div class="header-titulo-wrapper">
+            <button class="menu-toggle" (click)="toggleMenu()">
+              <i class="fa fa-bars"></i>
+            </button>
+
+            <div class="titulos-header">
+              <h2>Inventario y Consultas de Bienes</h2>
+              <p>Consulta y filtra los bienes patrimoniales de toda la institución.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="toolbar-bienes">
+          <div class="search-input-box">
+            <i class="fa fa-search icon-search"></i>
+            <input type="text" placeholder="Buscar por código, nombre o serie..."
+              [(ngModel)]="busqueda" (input)="aplicarFiltro()">
+          </div>
+
+          <div class="toolbar-acciones">
+            <button class="btn-registrar" (click)="registrarBien()">
+              <i class="fa fa-plus"></i> Registrar Bien
+            </button>
+
+            <button class="btn-excel" (click)="exportarExcel()">
+              <i class="fa fa-file-excel"></i> Excel
+            </button>
+
+            <button class="btn-pdf" (click)="imprimirPDF()">
+              <i class="fa fa-print"></i> Imprimir PDF
+            </button>
+          </div>
+        </div>
+
+        <div class="filtros-card">
+          <div class="filtros-titulo">
+            <span class="filtros-icono"><i class="fa fa-filter"></i></span>
+            <span>Filtros de Búsqueda y Consultas</span>
+          </div>
+
+          <div class="filtros-grid">
+            <div class="filtro-campo">
+              <label>SEDE</label>
+              <select [(ngModel)]="filtroSedeId" (change)="onSedeChange()">
+                <option [ngValue]="0">Todas las Sedes</option>
+                <option *ngFor="let s of sedes" [ngValue]="s.id">{{ s.nombre }}</option>
+              </select>
+            </div>
+
+            <div class="filtro-campo">
+              <label>FACULTAD</label>
+              <select [(ngModel)]="filtroFacultadId" (change)="onFacultadChange()">
+                <option [ngValue]="0">Todas las Facultades</option>
+                <option *ngFor="let f of facultadesFiltradas" [ngValue]="f.id">{{ f.nombre }}</option>
+              </select>
+            </div>
+
+            <div class="filtro-campo">
+              <label>ESCUELA</label>
+              <select [(ngModel)]="filtroEscuelaId" (change)="aplicarFiltro()">
+                <option [ngValue]="0">Todas las Escuelas</option>
+                <option *ngFor="let e of escuelasFiltradas" [ngValue]="e.id">{{ e.nombre }}</option>
+              </select>
+            </div>
+
+            <div class="filtro-campo">
+              <label>ESTADO DEL BIEN</label>
+              <select [(ngModel)]="filtroEstado" (change)="aplicarFiltro()">
+                <option value="Todos">Todos los Estados</option>
+                <option value="Nuevo">Nuevo</option>
+                <option value="Bueno">Bueno</option>
+                <option value="Regular">Regular</option>
+                <option value="Malo">Malo</option>
+              </select>
+            </div>
+
+            <div class="filtro-campo">
+              <label>FECHA ADQUISICIÓN</label>
+              <input type="date" [(ngModel)]="filtroFecha" (change)="aplicarFiltro()">
+            </div>
+          </div>
+        </div>
+
+        <div class="tabla-card" id="tablaBienes">
+          <table class="tabla-bienes" *ngIf="registrosPaginados.length > 0">
+            <thead>
+              <tr>
+                <th>BIEN PATRIMONIAL</th>
+                <th>CATEGORÍA</th>
+                <th>UBICACIÓN</th>
+                <th>RESPONSABLE</th>
+                <th>ESTADO</th>
+                <th>ACCIONES</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr *ngFor="let b of registrosPaginados">
+                <td>
+                  <div class="bien-info">
+                    <div class="bien-icon">
+                      <i class="fa" [ngClass]="getIconoBien(b.categoriaNombre)"></i>
+                    </div>
+                    <div>
+                      <div class="texto-principal">{{ b.nombre }}</div>
+                      <div class="texto-secundario">{{ b.codigoPatrimonial }}</div>
+                    </div>
+                  </div>
+                </td>
+
+                <td>
+                  <div class="texto-principal">{{ b.categoriaNombre }}</div>
+                </td>
+
+                <td>
+                  <div class="texto-principal">{{ b.sedeNombre }}</div>
+                  <div class="texto-secundario">{{ (b.escuelaNombre || b.ubicacionNombre) | uppercase }}</div>
+                </td>
+
+                <td>
+                  <div class="texto-principal">{{ b.responsableNombre }}</div>
+                  <div class="texto-secundario" *ngIf="b.fechaAdquision">
+                    Adquirido el {{ formatearFecha(b.fechaAdquision) }}
+                  </div>
+                </td>
+
+                <td>
+                  <span class="badge-estado" [ngClass]="getBadgeClass(b.condicion)">
+                    {{ b.condicion }}
+                  </span>
+                </td>
+
+                <td>
+                  <button class="btn-icon-tabla" (click)="verBien(b.id)" title="Ver detalle">
+                    <i class="fa fa-eye"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="empty-state" *ngIf="!cargando && registrosPaginados.length === 0">
+            <i class="fa fa-box-open"></i>
+            <p>No se encontraron bienes con los filtros aplicados.</p>
+          </div>
+        </div>
+
+        <div class="footer-paginacion" *ngIf="bienesFiltrados.length > 0">
+          <div class="pag-info">
+            Mostrando <strong>{{ registrosPaginados.length }}</strong> de <strong>{{ bienesFiltrados.length }}</strong> registros
+          </div>
+
+          <div class="pag-botones">
+            <button class="btn-pag-nav" [disabled]="paginaActual === 1"
+              (click)="cambiarPagina(paginaActual - 1)">Anterior</button>
+
+            <button class="btn-pag-num" *ngFor="let p of paginasArray"
+              [class.active]="p === paginaActual" (click)="cambiarPagina(p)">{{ p }}</button>
+
+            <button class="btn-pag-nav" [disabled]="paginaActual === totalPaginas"
+              (click)="cambiarPagina(paginaActual + 1)">Siguiente</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

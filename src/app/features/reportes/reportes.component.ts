@@ -231,25 +231,37 @@ async generarReporte() {
 
   const idsPermitidos = await this.obtenerUbicacionesPermitidas();
 
+  let ubicacionesEnviar: number[] = idsPermitidos;
+
+  // Si el usuario seleccionó una ubicación específica
+  if (
+    this.filtroUbicacionId > 0 &&
+    this.filtroUbicacionId !== 100
+  ) {
+    ubicacionesEnviar = [Number(this.filtroUbicacionId)];
+  }
+
   const request: any = {
     tipo: this.activeTab,
     fechaInicio: this.filtroFechaInicio?.toISOString(),
     fechaFin: this.filtroFechaFin?.toISOString(),
 
-    // 🔥 ESTE ES EL IMPORTANTE
-    ubicacionIds: idsPermitidos,
+    ubicacionIds: ubicacionesEnviar,
 
-    ubicacionOrigenId: this.filtroUbicacionOrigenId > 0
-      ? this.filtroUbicacionOrigenId
-      : undefined,
+    ubicacionOrigenId:
+      this.filtroUbicacionOrigenId > 0
+        ? this.filtroUbicacionOrigenId
+        : undefined,
 
-    ubicacionDestinoId: this.filtroUbicacionDestinoId > 0
-      ? this.filtroUbicacionDestinoId
-      : undefined,
+    ubicacionDestinoId:
+      this.filtroUbicacionDestinoId > 0
+        ? this.filtroUbicacionDestinoId
+        : undefined,
 
-    categoriaId: this.filtroCategoriaId > 0
-      ? this.filtroCategoriaId
-      : undefined,
+    categoriaId:
+      this.filtroCategoriaId > 0
+        ? this.filtroCategoriaId
+        : undefined,
 
     estado: this.filtroEstado
   };
@@ -260,7 +272,10 @@ async generarReporte() {
     next: (res) => {
       this.kpis = res.kpis;
       this.tablaDatos = res.tabla;
-      this.renderChart(res.grafico.labels, res.grafico.valores);
+      this.renderChart(
+        res.grafico.labels,
+        res.grafico.valores
+      );
       this.loading = false;
     },
     error: () => {

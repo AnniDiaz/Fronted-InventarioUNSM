@@ -356,7 +356,51 @@
   overflow-y: auto;
   /* Scroll solo si es necesario */
 }
+.empty-state {
+  text-align: center;
+  vertical-align: middle;
+  height: 300px; /* ajusta la altura */
+}
 
+.empty-state i,
+.empty-state p {
+  display: block;
+}
+
+.empty-state p {
+  margin-top: 10px;
+  color: #64748b;
+  font-size: 16px;
+  font-weight: 500;
+}
+.btn-action-edit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.btn-action-delete {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 10px;
+  background: #fee2e2;
+  color: #dc2626;
+  cursor: pointer;
+  transition: all .25s ease;
+}
+
+.btn-action-delete:hover {
+  background: #dc2626;
+  color: white;
+  transform: scale(1.05);
+}
+.btn-action-edit:disabled,
+.btn-action-delete:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+  transform: none;
+}
 .form-group label {
   font-size: 10px;
   font-weight: 800;
