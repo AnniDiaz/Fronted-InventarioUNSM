@@ -97,8 +97,15 @@
                 <div class="form-group">
                   <label for="nombre">Nombre</label>
                   <input id="nombre" type="text" name="nombre" [(ngModel)]="articulo.nombre" required
-                    [disabled]="!editando && articulo.id > 0" placeholder="Ej: Proyector Epson" />
+                    [disabled]="!editando && articulo.id > 0" placeholder="Ej: Laptop Dell Optiplex" />
                 </div>
+
+ <div class="form-group">
+                  <label for="nroSerie">Nro. de Serie</label>
+                  <input id="nroSerie" type="text" name="nroSerie" [(ngModel)]="articulo.nroSerie"
+                    [disabled]="!editando && articulo.id > 0" placeholder="Nro de serie del fabricante" />
+                </div>
+
 
                 <div class="form-group">
                   <label for="codigoPatrimonial">Código Patrimonial</label>
@@ -135,23 +142,9 @@
                   </select>
                 </div>
 
-                <div class="form-group">
-                  <label for="fechaAdquision">Fecha Adquisición</label>
-                  <input id="fechaAdquision" type="date" name="fechaAdquision" [(ngModel)]="articulo.fechaAdquision"
-                    required [disabled]="!editando && articulo.id > 0" />
-                </div>
 
-                <div class="form-group">
-                  <label for="vidaUtil">Vida útil (años)</label>
-                  <input id="vidaUtil" type="number" name="vidaUtil" [(ngModel)]="articulo.vidaUtil" min="0"
-                    [disabled]="!editando && articulo.id > 0" placeholder="Ej: 5" />
-                </div>
 
-                <div class="form-group">
-                  <label for="codigoBarra">Código de Barras</label>
-                  <input id="codigoBarra" type="text" name="codigoBarra" [(ngModel)]="articulo.codigoBarra"
-                    [disabled]="!editando && articulo.id > 0" placeholder="Código de barras alterno" />
-                </div>
+
 
                 <div class="form-group">
                   <label for="marca">Marca</label>
@@ -165,11 +158,7 @@
                     [disabled]="!editando && articulo.id > 0" placeholder="Ej: ThinkPad E14" />
                 </div>
 
-                <div class="form-group">
-                  <label for="nroSerie">Nro. de Serie</label>
-                  <input id="nroSerie" type="text" name="nroSerie" [(ngModel)]="articulo.nroSerie"
-                    [disabled]="!editando && articulo.id > 0" placeholder="Nro de serie del fabricante" />
-                </div>
+
 
                 <div class="form-group">
                   <label for="medidas">Medidas</label>
@@ -184,46 +173,15 @@
                 </div>
 
                 <div class="form-group">
-                  <label for="mayor">Cuenta Mayor</label>
-                  <input id="mayor" type="text" name="mayor" [(ngModel)]="articulo.mayor"
-                    [disabled]="!editando && articulo.id > 0" placeholder="Ej: 33" />
+                  <label for="tiempoVidaUtil">Tiempo de Vida Útil (años)</label>
+                  <input id="tiempoVidaUtil" type="number" name="tiempoVidaUtil" [(ngModel)]="articulo.tiempoVidaUtil"
+                    min="0" [disabled]="!editando && articulo.id > 0" placeholder="Ej: 5" />
                 </div>
 
-                <div class="form-group">
-                  <label for="subCta">Sub Cuenta</label>
-                  <input id="subCta" type="text" name="subCta" [(ngModel)]="articulo.subCta"
-                    [disabled]="!editando && articulo.id > 0" placeholder="Ej: 33311" />
-                </div>
 
-                <div class="form-group">
-                  <label for="hValorInicial">Historial Valor Inicial</label>
-                  <input id="hValorInicial" type="number" name="hValorInicial" [(ngModel)]="articulo.hValorInicial"
-                    [disabled]="!editando && articulo.id > 0" />
-                </div>
 
-                <div class="form-group">
-                  <label for="hDeprInicial">Historial Depr. Inicial</label>
-                  <input id="hDeprInicial" type="number" name="hDeprInicial" [(ngModel)]="articulo.hDeprInicial"
-                    [disabled]="!editando && articulo.id > 0" />
-                </div>
 
-                <div class="form-group">
-                  <label for="hDeprAjustada">Depr. Ajustada</label>
-                  <input id="hDeprAjustada" type="number" name="hDeprAjustada" [(ngModel)]="articulo.hDeprAjustada"
-                    [disabled]="!editando && articulo.id > 0" />
-                </div>
 
-                <div class="form-group">
-                  <label for="hDeprEjercicio">Depr. Ejercicio</label>
-                  <input id="hDeprEjercicio" type="number" name="hDeprEjercicio" [(ngModel)]="articulo.hDeprEjercicio"
-                    [disabled]="!editando && articulo.id > 0" />
-                </div>
-
-                <div class="form-group">
-                  <label for="valorNeto">Valor Neto</label>
-                  <input id="valorNeto" type="number" name="valorNeto" [(ngModel)]="articulo.valorNeto"
-                    [disabled]="!editando && articulo.id > 0" />
-                </div>
 
                 <div class="form-group" *ngFor="let campo of camposDelTipo; let i = index">
                   <label>{{ campo.nombreCampo }}</label>
@@ -272,6 +230,9 @@
                 <th width="130">MARCA</th>
                 <th width="130">MODELO</th>
                 <th width="130">NRO DE SERIE</th>
+                <th width="120">VALOR ACTUAL</th>
+                <th width="120">MEDIDAS</th>
+                <th width="100">COLOR</th>
                 <th width="150" class="text-right th-acciones-sticky">ACCIONES</th>
               </tr>
             </thead>
@@ -317,6 +278,15 @@
                 <td><span class="texto-secundario">{{ a.modelo || '-' }}</span></td>
 
                 <td><span class="texto-secundario">{{ a.nroSerie || '-' }}</span></td>
+
+                <td class="td-valor">
+                  <span class="precio-fuerte" *ngIf="a.valorActual != null">S/ {{ a.valorActual | number:'1.2-2' }}</span>
+                  <span class="texto-secundario" *ngIf="a.valorActual == null">-</span>
+                </td>
+
+                <td><span class="texto-secundario">{{ a.medidas || '-' }}</span></td>
+
+                <td><span class="texto-secundario">{{ a.color || '-' }}</span></td>
 
                 <td class="td-acciones td-acciones-sticky">
                   <div class="action-icons">

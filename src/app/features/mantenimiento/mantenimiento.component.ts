@@ -64,7 +64,34 @@ idsUbicacionesPermitidas: number[] = [];
   ) { }
 
 ngOnInit(): void {
-  this.cargarUbicaciones();
+  if (this.esAdministrador()) {
+    this.cargarArticulosSinFiltro();
+  } else {
+    this.cargarPorEscuela();
+  }
+}
+
+cargarPorEscuela(): void {
+  const escuelaId = Number(localStorage.getItem('escuelaId'));
+
+  if (!escuelaId) {
+    this.cargarUbicaciones();
+    return;
+  }
+
+  this._articuloService.getArticulosPorEscuela(escuelaId).subscribe({
+    next: (res: any) => {
+      const data = Array.isArray(res) ? res : res?.data ?? [];
+      this.articulosDisponibles = data;
+      this.articulosFiltradosSelect = [...data];
+      this.cargarMantenimientos();
+    },
+    error: (err) => console.error(err)
+  });
+}
+
+esAdministrador(): boolean {
+  return Number(localStorage.getItem('rolId')) === 1;
 }
 cargarUbicaciones(): void {
 
@@ -124,6 +151,18 @@ cargarUbicaciones(): void {
     }
   });
 }
+cargarArticulosSinFiltro(): void {
+  this._articuloService.getArticulosConCampos().subscribe({
+    next: (res: any) => {
+      const data = Array.isArray(res) ? res : res?.data ?? [];
+      this.articulosDisponibles = data;
+      this.articulosFiltradosSelect = [...data];
+      this.cargarMantenimientos();
+    },
+    error: (err) => console.error(err)
+  });
+}
+
 cargarArticulosParaSelect(): void {
 
   this._articuloService.getArticulosConCampos().subscribe({
@@ -243,18 +282,12 @@ cargarMantenimientos(): void {
 
       const data = Array.isArray(res) ? res : res?.data ?? [];
 
-this.mantenimientos = data.filter((m: any) => {
-
-  const articulo = this.articulosDisponibles.find(
-    a => Number(a.id) === Number(m.articuloId)
-  );
-
-  if (!articulo) return false;
-
-  return this.idsUbicacionesPermitidas.includes(
-    Number(articulo.ubicacionId)
-  );
-});
+      if (this.esAdministrador()) {
+        this.mantenimientos = data;
+      } else {
+        const idsPermitidos = new Set(this.articulosDisponibles.map((a: any) => Number(a.id)));
+        this.mantenimientos = data.filter((m: any) => idsPermitidos.has(Number(m.articuloId)));
+      }
 
       this.aplicarFiltro();
     },

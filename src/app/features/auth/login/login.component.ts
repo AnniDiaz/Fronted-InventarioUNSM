@@ -65,7 +65,7 @@ export class LoginComponent implements OnInit {
             switch (rolId) {
 
               case 1:
-                this.router.navigate(['/seguridad']);
+                this.router.navigate(['/gestion-institucional']);
                 break;
 
               default:

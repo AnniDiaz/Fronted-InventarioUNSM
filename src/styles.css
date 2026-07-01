@@ -403,6 +403,22 @@ body {
   transform: translateY(-1px);
 }
 
+.btn-excel-completo {
+  background: #0d4a2a;
+  border-left: 3px solid #4ade80;
+}
+
+.btn-excel-completo:hover {
+  background: #0a3520;
+}
+
+.btn-excel:disabled,
+.btn-excel-completo:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
 @media (max-width: 1024px) {
   .header-inventario {
     flex-direction: column;

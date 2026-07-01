@@ -46,34 +46,38 @@
       <div class="grupo">
   <label>REPRESENTANTE RESPONSABLE</label>
 
- <input
-  type="text"
-  placeholder="Buscar solicitante..."
-  [(ngModel)]="nombreSolicitanteCtrl"
-  [matAutocomplete]="auto">
+  <div class="buscador-solicitante">
+    <input
+      type="text"
+      placeholder="Buscar solicitante por nombre o DNI..."
+      [(ngModel)]="nombreSolicitanteCtrl"
+      (input)="filtrarSolicitantes($event)"
+      [matAutocomplete]="auto">
 
-<mat-autocomplete
-  #auto="matAutocomplete"
-  [displayWith]="mostrarSolicitante"
-  (optionSelected)="seleccionarSolicitante($event.option.value)">
+    <button
+      class="btn-add-solicitante"
+      (click)="abrirModalNuevoSolicitante()"
+      title="Registrar nuevo solicitante">
+      <i class="fa fa-user-plus"></i>
+    </button>
+  </div>
 
-  <mat-option
-    *ngFor="let s of solicitantesFiltrados"
-    [value]="s">
+  <mat-autocomplete
+    #auto="matAutocomplete"
+    [displayWith]="mostrarSolicitante"
+    (optionSelected)="seleccionarSolicitante($event.option.value)">
 
-    {{ s.nombres }} {{ s.apellidos }} - {{ s.codigo }}
+    <mat-option *ngFor="let s of solicitantesFiltrados" [value]="s">
+      {{ obtenerNombres(s) }} {{ obtenerApellidos(s) }} — {{ s.codigo }}
+    </mat-option>
 
-  </mat-option>
-
-</mat-autocomplete>
+  </mat-autocomplete>
 
   <div class="grid-2">
     <input type="text" [(ngModel)]="dni" placeholder="DNI">
     <input type="text" [(ngModel)]="ciclo" placeholder="Ciclo">
-
   </div>
-    <input type="text" [(ngModel)]="telefono" placeholder="Teléfono">
-
+  <input type="text" [(ngModel)]="telefono" placeholder="Teléfono">
   <input type="email" [(ngModel)]="correo" placeholder="Correo institucional">
 </div>
 
@@ -180,7 +184,8 @@
                  <input
                 type="text"
                 [(ngModel)]="nuevoParticipante.codigo"
-                placeholder="Código universitario">
+                placeholder="DNI / Código (8 dígitos)"
+                maxlength="8">
 
 
 
@@ -191,7 +196,8 @@
                <input
                 type="text"
                 [(ngModel)]="nuevoParticipante.telefono"
-                placeholder="Teléfono">
+                placeholder="Teléfono (9 dígitos)"
+                maxlength="9">
 
 
               <input
@@ -487,4 +493,98 @@
   </div>
 
 
+</div>
+
+<!-- MODAL: NUEVO SOLICITANTE -->
+<div class="modal-overlay" *ngIf="mostrarModalSolicitante">
+  <div class="modal-ns">
+
+    <div class="modal-ns-header">
+      <div class="modal-ns-titulo">
+        <div class="modal-ns-icono">
+          <i class="fa fa-user-plus"></i>
+        </div>
+        <div>
+          <h3>Nuevo Solicitante</h3>
+          <span>Se registrará en la ubicación de tu laboratorio</span>
+        </div>
+      </div>
+      <button class="modal-ns-close" (click)="cerrarModalNuevoSolicitante()">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-ns-body">
+
+      <div class="ns-grid-2">
+        <div class="ns-field">
+          <label>Nombres *</label>
+          <input type="text" [(ngModel)]="nuevoSolicitante.nombres" placeholder="Ej: Juan Carlos">
+        </div>
+        <div class="ns-field">
+          <label>Apellidos *</label>
+          <input type="text" [(ngModel)]="nuevoSolicitante.apellidos" placeholder="Ej: Pérez López">
+        </div>
+      </div>
+
+      <div class="ns-grid-2">
+        <div class="ns-field">
+          <label>DNI *</label>
+          <input type="text" [(ngModel)]="nuevoSolicitante.codigo" placeholder="8 dígitos" maxlength="8">
+        </div>
+        <div class="ns-field">
+          <label>Teléfono *</label>
+          <input type="text" [(ngModel)]="nuevoSolicitante.telefono" placeholder="9 dígitos" maxlength="9">
+        </div>
+      </div>
+
+      <div class="ns-field">
+        <label>Correo *</label>
+        <input type="email" [(ngModel)]="nuevoSolicitante.correo" placeholder="correo@ejemplo.com">
+      </div>
+
+      <div class="ns-grid-2">
+        <div class="ns-field">
+          <label>Cargo *</label>
+          <select [(ngModel)]="nuevoSolicitante.cargo" (change)="onCargoNuevoChange()">
+            <option value="">Seleccione</option>
+            <option value="Estudiante">Estudiante</option>
+            <option value="Docente">Docente</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+
+        <div class="ns-field" *ngIf="nuevoSolicitante.cargo === 'Estudiante'">
+          <label>Ciclo</label>
+          <select [(ngModel)]="nuevoSolicitante.ciclo">
+            <option value="">Seleccione ciclo</option>
+            <option *ngFor="let c of ciclos" [value]="c">{{ c }}</option>
+          </select>
+        </div>
+
+        <div class="ns-field" *ngIf="nuevoSolicitante.cargo === 'Otro'">
+          <label>Especifique el cargo</label>
+          <input type="text" [(ngModel)]="cargoPersonalizadoNuevo" placeholder="Cargo personalizado">
+        </div>
+      </div>
+
+      <div class="ns-ubicacion-info">
+        <i class="fa fa-map-marker-alt"></i>
+        <span>Ubicación asignada:
+          <strong>{{ escuelaNombreUsuario || ubicacionUsuarioNombre || 'Tu ubicación' }}</strong>
+        </span>
+      </div>
+
+    </div>
+
+    <div class="modal-ns-footer">
+      <button class="btn-ns-cancelar" (click)="cerrarModalNuevoSolicitante()">
+        Cancelar
+      </button>
+      <button class="btn-ns-guardar" (click)="guardarNuevoSolicitante()">
+        <i class="fa fa-check"></i> Guardar y seleccionar
+      </button>
+    </div>
+
+  </div>
 </div>

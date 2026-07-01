@@ -118,28 +118,9 @@ verSolicitante(item: any) {
 }
 cargarSolicitantes() {
 
-  const usuario = this.loginService.getUser();
-  const usuarioId = usuario?.data?.id;
-
-  // Obtener ubicación del usuario logueado
-  const ubicacionesUsuario = JSON.parse(
-    localStorage.getItem('ubicacionUsuario') || '[]'
-  );
-
-  const ubicacionIdUsuario = ubicacionesUsuario.length > 0
-    ? ubicacionesUsuario[0].id
-    : 0;
-
-  this.solicitantesService.getSolicitantesPorUsuario(usuarioId).subscribe({
+  this.solicitantesService.getSolicitantes().subscribe({
     next: (res: any) => {
-
-      const lista = res.data || [];
-
-      // Filtrar por ubicación
-      this.solicitantes = lista.filter(
-        (s: any) => s.ubicacionId === ubicacionIdUsuario
-      );
-
+      this.solicitantes = res.data || res || [];
       this.aplicarPaginacion();
     },
     error: (err) => {
@@ -179,15 +160,34 @@ cargarUbicacionUsuario() {
     .getUbicacionesPorUsuario(usuarioId)
     .subscribe({
 
-      next: (res: any[]) => {
+      next: (res: any) => {
 
-        this.ubicaciones = res;
+        const padres: any[] = Array.isArray(res) ? res : res?.data ?? [];
 
-        if (res.length > 0) {
-
-          // Selecciona automáticamente la ubicación del usuario
-          this.solicitante.ubicacionId = res[0].id;
+        if (padres.length === 0) {
+          this.ubicaciones = [];
+          return;
         }
+
+        // La respuesta es la ubicación padre (edificio/sede).
+        // Cargamos los laboratorios hijos de esa ubicación padre.
+        const padreId = padres[0].id;
+
+        this.ubicacionService.getUbicacionesPorPadre(padreId).subscribe({
+
+          next: (hijos: any) => {
+
+            const lista: any[] = Array.isArray(hijos) ? hijos : hijos?.data ?? [];
+
+            this.ubicaciones = lista;
+
+            if (lista.length > 0) {
+              this.solicitante.ubicacionId = lista[0].id;
+            }
+          },
+
+          error: (err) => console.error(err)
+        });
       },
 
       error: (err) => {

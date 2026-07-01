@@ -53,7 +53,7 @@ export const routes: Routes = [
 
   { path: 'mantenimiento', component: MantenimientoComponent },
   { path: 'gestion-institucional', component: SuperadminComponent },
-  { path: 'consulta-bienes', component: ConsultaBienesComponent },
+  { path: 'inventario', component: ConsultaBienesComponent },
   {path: 'solicitantes', component: SolicitantesComponent},
 
   { path: '**', redirectTo: 'login' },

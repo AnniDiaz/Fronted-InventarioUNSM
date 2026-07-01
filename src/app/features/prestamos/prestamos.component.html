@@ -44,12 +44,13 @@
                                     <th>F. PRÉSTAMO</th>
                                     <th>F. DEVOLUCIÓN</th>
                                     <th>ESTADO</th>
+                                    <th>FIRMA</th>
                                     <th class="text-right">ACCIONES</th>
                                 </tr>
                             </thead>
                            <tbody>
   <tr *ngIf="registrosPaginados.length === 0">
-    <td colspan="6" style="text-align: center; padding: 20px; font-weight: bold;">
+    <td colspan="7" style="text-align: center; padding: 20px; font-weight: bold;">
       No hay préstamos registrados
     </td>
   </tr>
@@ -69,14 +70,34 @@
       </span>
     </td>
 
+    <td>
+      <div class="firma-info" *ngIf="estaFirmado(p); else sinFirmar">
+        <i class="fa fa-signature firma-icono"></i>
+        <div class="firma-texto">
+          <strong>{{ getFirmadoPor(p) }}</strong>
+          <small>{{ getFechaFirma(p) | date:'dd/MM/yyyy HH:mm' }}</small>
+        </div>
+      </div>
+
+      <ng-template #sinFirmar>
+        <button
+          class="btn-firmar"
+          *ngIf="puedeFirmarPrestamos"
+          (click)="abrirModalFirma(p)">
+          <i class="fa fa-pen-nib"></i> Firmar
+        </button>
+
+        <span class="firma-no-autorizado" *ngIf="!puedeFirmarPrestamos">
+          Sin firmar
+        </span>
+      </ng-template>
+    </td>
+
     <td class="text-right">
       <button class="btn-icon btn-pdf" (click)="verPDF(p)">
         <i class="fa fa-file-pdf"></i>
       </button>
 
-      <button class="btn-icon btn-ok" *ngIf="!p.aprobar" (click)="aprobarPrestamo(p)">
-        <i class="fa fa-check"></i>
-      </button>
 
       <button class="btn-icon btn-return" *ngIf="p.estadoPrestamo" (click)="marcarDevuelto(p)">
         <i class="fa fa-rotate-left"></i>
@@ -200,4 +221,75 @@
             </div>
         </div>
     </div>
+</div>
+
+<!-- MODAL: FIRMAR PRÉSTAMO -->
+<div class="modal-overlay" *ngIf="mostrarModalFirma">
+  <div class="modal-modern modal-firma">
+
+    <div class="modal-header modal-header-firma">
+      <div class="modal-header-titulo">
+        <div class="modal-header-icono-firma">
+          <i class="fa fa-pen-nib"></i>
+        </div>
+        <div>
+          <h3>Firmar Préstamo</h3>
+          <span class="modal-header-subt">Confirma tu identidad para autorizar el documento</span>
+        </div>
+      </div>
+      <button class="btn-cerrar" (click)="cerrarModalFirma()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="firma-resumen-card">
+        <div class="firma-resumen-fila">
+          <i class="fa fa-laptop"></i>
+          <span>{{ getNombreArticulo(prestamoSeleccionadoFirma?.articuloId) }}</span>
+        </div>
+        <div class="firma-resumen-fila">
+          <i class="fa fa-user"></i>
+          <span>{{ prestamoSeleccionadoFirma?.nombreSolicitante }}</span>
+        </div>
+      </div>
+
+      <div class="firmante-card">
+        <div class="firmante-avatar">
+          <i class="fa fa-user-shield"></i>
+        </div>
+        <div class="firmante-datos">
+          <small>Firmando como</small>
+          <strong>{{ nombreFirmante || 'Usuario actual' }}</strong>
+        </div>
+        <span class="firmante-badge"><i class="fa fa-check-circle"></i> Admin</span>
+      </div>
+
+      <div class="form-group">
+        <label>NOMBRE DEL FIRMANTE</label>
+        <input
+          type="text"
+          [(ngModel)]="nombreFirmante"
+          name="nombreFirmante"
+          placeholder="Ej: Juan Pérez"
+          (keyup.enter)="confirmarFirma()">
+        <span class="firma-input-hint">
+          <i class="fa fa-info-circle"></i> Puedes editarlo si la firma corresponde a otra persona
+        </span>
+      </div>
+    </div>
+
+    <div class="modal-footer-btns">
+      <button type="button" class="btn-cancelar" (click)="cerrarModalFirma()">
+        Cancelar
+      </button>
+
+      <button
+        type="button"
+        class="btn-registrar"
+        [disabled]="firmandoPrestamo"
+        (click)="confirmarFirma()">
+        <i class="fa fa-check"></i> {{ firmandoPrestamo ? 'Firmando...' : 'Confirmar Firma' }}
+      </button>
+    </div>
+
+  </div>
 </div>

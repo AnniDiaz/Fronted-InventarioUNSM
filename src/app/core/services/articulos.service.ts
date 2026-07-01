@@ -63,6 +63,10 @@ public getArticulosConCampos() {
   public getPivotPorTipo(tipoArticuloId: number) {
     return this.http.get<any[]>(`${baseUrl}/articulos/pivot/tipo/${tipoArticuloId}`);
   }
+public getArticulosPorEscuela(escuelaId: number) {
+  return this.http.get<any>(`${baseUrl}/articulos/por-escuela/${escuelaId}`);
+}
+
 cargarMasivaExcel(archivo: File, ubicacionId: number): Observable<any> {
   const formData = new FormData();
 

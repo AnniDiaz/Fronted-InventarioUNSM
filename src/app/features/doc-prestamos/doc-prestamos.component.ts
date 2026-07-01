@@ -11,7 +11,6 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatOptionModule } from '@angular/material/core';
 import { ArticuloService } from '../../core/services/articulos.service';
-import { SolicitantesComponent } from '../solicitantes/solicitantes.component';
 import { SolicitantesService } from '../../core/services/solicitantes.service';
 import { PrestamosService } from '../../core/services/prestamos.service';
 import jsPDF from 'jspdf';
@@ -45,6 +44,15 @@ solicitanteSeleccionado: any = null;
 documentoPDF!: ElementRef;
 
 nombreSolicitanteCtrl = '';
+
+// --- Modal nuevo solicitante ---
+mostrarModalSolicitante = false;
+cargoPersonalizadoNuevo = '';
+ciclos = ['I','II','III','IV','V','VI','VII','VIII','IX','X'];
+nuevoSolicitante = {
+  nombres: '', apellidos: '', codigo: '',
+  telefono: '', correo: '', cargo: '', ciclo: '', ubicacionId: 0
+};
   constructor(
     private articuloService: ArticuloService,
     private solicitanteService: SolicitantesService,
@@ -59,6 +67,8 @@ nombreSolicitanteCtrl = '';
   articulos: any[] = [];
 articuloId: number = 0;  equipo = '';
 ubicacionUsuarioId: number = 0;
+ubicacionUsuarioNombre: string = '';
+escuelaNombreUsuario: string = '';
 prestamos: any[] = [];
   destinatario = '';
 ubicaciones: any[] = [];
@@ -109,7 +119,9 @@ solicitanteId: number = 0;
   };
 ngOnInit(): void {
 
-  this.cargarUbicaciones(); // ← carga ubicación padre + hijas
+  this.escuelaNombreUsuario = localStorage.getItem('escuelaNombre') || '';
+
+  this.cargarPorEscuela();
 
   this.cargarSolicitantes();
 
@@ -118,8 +130,34 @@ ngOnInit(): void {
 
 }
 mostrarSolicitante = (s: any): string => {
-  return s ? `${s.nombres} ${s.apellidos}` : '';
+  if (!s) return '';
+  return `${this.obtenerNombres(s)} ${this.obtenerApellidos(s)}`.trim();
 };
+cargarPorEscuela(): void {
+  const escuelaId = Number(localStorage.getItem('escuelaId'));
+
+  if (!escuelaId) {
+    this.cargarUbicaciones();
+    return;
+  }
+
+  this.cargarUbicacionUsuarioInfo();
+
+  this.ubicService.getUbicacionesPorEscuela(escuelaId).subscribe({
+    next: (res: any) => {
+      this.ubicaciones = Array.isArray(res) ? res : res?.data ?? [];
+    },
+    error: () => {}
+  });
+
+  this.articuloService.getArticulosPorEscuela(escuelaId).subscribe({
+    next: (res: any) => {
+      this.articulos = Array.isArray(res) ? res : res?.data ?? [];
+    },
+    error: () => Swal.fire('Error', 'No se pudieron cargar los artículos', 'error')
+  });
+}
+
 cargarUbicaciones(): void {
 
   const usuario = JSON.parse(
@@ -150,6 +188,7 @@ cargarUbicaciones(): void {
       this.ubicacionUsuarioId = Number(
         ubicacionesUsuario[0].id
       );
+      this.ubicacionUsuarioNombre = ubicacionesUsuario[0].nombre ?? '';
 
       console.log(
         '📍 UBICACION PADRE:',
@@ -185,6 +224,25 @@ cargarUbicaciones(): void {
   });
 
 }
+
+cargarUbicacionUsuarioInfo(): void {
+  const usuario = JSON.parse(localStorage.getItem('user') || '{}');
+  const usuarioId = usuario?.data?.id || usuario?.id || usuario?.usuarioId;
+
+  if (!usuarioId) return;
+
+  this.ubicService.getUbicacionesPorUsuario(usuarioId).subscribe({
+    next: (resp: any) => {
+      const ubicacionesUsuario = Array.isArray(resp) ? resp : resp?.data ?? [];
+      if (ubicacionesUsuario.length === 0) return;
+
+      this.ubicacionUsuarioId = Number(ubicacionesUsuario[0].id);
+      this.ubicacionUsuarioNombre = ubicacionesUsuario[0].nombre ?? '';
+    },
+    error: (err) => console.error(err)
+  });
+}
+
 listarSolicitantes(): void {
   this.solicitanteService.getSolicitantes().subscribe({
     next: (res: any) => {
@@ -228,7 +286,7 @@ async generarPrestamo(): Promise<void> {
           Swal.fire({
             icon: 'success',
             title: '¡Éxito!',
-            text: 'Préstamo y PDF guardados correctamente',
+            text: 'Préstamo guardados correctamente',
              confirmButtonText: 'OK'
 
           }).then(() => {
@@ -284,11 +342,19 @@ async generarPDFBlob(): Promise<Blob> {
 
   return pdf.output('blob'); // 🔥 importante
 }
+obtenerNombres(s: any): string {
+  return s?.nombres ?? s?.Nombres ?? s?.nombre ?? s?.Nombre ?? '';
+}
+
+obtenerApellidos(s: any): string {
+  return s?.apellidos ?? s?.Apellidos ?? s?.apellido ?? s?.Apellido ?? '';
+}
+
 filtrarSolicitantes(event: any): void {
   const value = event.target.value.toLowerCase();
 
   this.solicitantesFiltrados = this.solicitantes.filter(s =>
-    (s.nombres + ' ' + s.apellidos + ' ' + s.codigo)
+    (this.obtenerNombres(s) + ' ' + this.obtenerApellidos(s) + ' ' + (s.codigo ?? ''))
       .toLowerCase()
       .includes(value)
   );
@@ -296,39 +362,95 @@ filtrarSolicitantes(event: any): void {
 seleccionarSolicitante(s: any): void {
   this.solicitanteSeleccionado = s;
 
-  this.nombre = `${s.nombres} ${s.apellidos}`;
-  this.dni = s.dni ?? s.codigo;
-  this.ciclo = s.ciclo;
-  this.correo = s.correo;
+  const nombres = this.obtenerNombres(s);
+  const apellidos = this.obtenerApellidos(s);
 
-  this.telefono = s.telefono ?? ''; // 👈 AÑADIR ESTO
+  this.nombre = `${nombres} ${apellidos}`.trim();
+  this.dni = s.dni ?? s.codigo ?? s.Codigo ?? '';
+  this.ciclo = s.ciclo ?? s.Ciclo ?? '';
+  this.correo = s.correo ?? s.Correo ?? '';
 
-  this.escuela = s.escuela ?? '';
-  this.direccion = s.direccion ?? '';
+  this.telefono = s.telefono ?? s.Telefono ?? '';
+
+  this.escuela = s.escuela ?? s.Escuela ?? '';
+  this.direccion = s.direccion ?? s.Direccion ?? '';
     this.solicitanteId = s.id; // 👈 IMPORTANTE
 
 }
 cargarSolicitantes(): void {
-
-  const ubicacionesUsuario = JSON.parse(
-    localStorage.getItem('ubicacionUsuario') || '[]'
-  );
-
-  const idsUbicaciones = ubicacionesUsuario.map(
-    (u: any) => Number(u.id)
-  );
-
   this.solicitanteService.getSolicitantes().subscribe({
     next: (response: any) => {
-
-      this.solicitantes = (response.data ?? []).filter(
-        (s: any) => idsUbicaciones.includes(Number(s.ubicacionId))
-      );
-
+      this.solicitantes = response.data ?? response ?? [];
       this.solicitantesFiltrados = [...this.solicitantes];
     },
-    error: (error) => {
-      console.error(error);
+    error: (error) => console.error(error)
+  });
+}
+
+abrirModalNuevoSolicitante(): void {
+  // Asigna automáticamente la ubicación propia del usuario logueado
+  const ubicacionId = this.ubicacionUsuarioId || (this.ubicaciones[0]?.id ?? 0);
+
+  this.nuevoSolicitante = {
+    nombres: '', apellidos: '', codigo: '',
+    telefono: '', correo: '', cargo: '', ciclo: '',
+    ubicacionId
+  };
+  this.cargoPersonalizadoNuevo = '';
+  this.mostrarModalSolicitante = true;
+}
+
+cerrarModalNuevoSolicitante(): void {
+  this.mostrarModalSolicitante = false;
+}
+
+onCargoNuevoChange(): void {
+  if (this.nuevoSolicitante.cargo !== 'Estudiante') this.nuevoSolicitante.ciclo = '';
+  if (this.nuevoSolicitante.cargo !== 'Otro') this.cargoPersonalizadoNuevo = '';
+}
+
+guardarNuevoSolicitante(): void {
+  if (this.nuevoSolicitante.cargo === 'Otro') {
+    if (!this.cargoPersonalizadoNuevo.trim()) {
+      Swal.fire('Validación', 'Ingrese el cargo personalizado', 'warning'); return;
+    }
+    this.nuevoSolicitante.cargo = this.cargoPersonalizadoNuevo.trim();
+  }
+
+  if (!this.nuevoSolicitante.nombres.trim()) {
+    Swal.fire('Validación', 'Ingrese los nombres', 'warning'); return;
+  }
+  if (!this.nuevoSolicitante.apellidos.trim()) {
+    Swal.fire('Validación', 'Ingrese los apellidos', 'warning'); return;
+  }
+  if (!/^\d{8}$/.test(this.nuevoSolicitante.codigo)) {
+    Swal.fire('Validación', 'El DNI debe tener 8 dígitos', 'warning'); return;
+  }
+  if (!/^\d{9}$/.test(this.nuevoSolicitante.telefono)) {
+    Swal.fire('Validación', 'El teléfono debe tener 9 dígitos', 'warning'); return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.nuevoSolicitante.correo)) {
+    Swal.fire('Validación', 'Ingrese un correo válido', 'warning'); return;
+  }
+  if (!this.nuevoSolicitante.cargo) {
+    Swal.fire('Validación', 'Seleccione un cargo', 'warning'); return;
+  }
+
+  this.solicitanteService.addSolicitante(this.nuevoSolicitante).subscribe({
+    next: (res: any) => {
+      Swal.fire('Registrado', 'Solicitante registrado correctamente', 'success');
+      this.cerrarModalNuevoSolicitante();
+
+      // Auto-seleccionar el solicitante recién creado
+      const creado = res.data || res;
+      const s = { ...this.nuevoSolicitante, id: creado?.id ?? creado?.Id ?? 0 };
+      this.seleccionarSolicitante(s);
+      this.nombreSolicitanteCtrl = `${s.nombres} ${s.apellidos}`;
+
+      this.cargarSolicitantes();
+    },
+    error: (err) => {
+      Swal.fire('Error', err?.error?.message || 'No se pudo registrar el solicitante', 'error');
     }
   });
 }
@@ -343,6 +465,7 @@ listarArticulos(): void {
 
       const idsUbicaciones = [
         Number(this.ubicacionUsuarioId),
+        100, // Otros — ubicación comodín sin padre asignado
         ...this.ubicaciones.map(
           (u: any) => Number(u.id)
         )
@@ -381,9 +504,32 @@ listarArticulos(): void {
 }
   agregarParticipante(): void {
 
-    if (
-      !this.nuevoParticipante.nombre.trim()
-    ) {
+    if (!this.nuevoParticipante.nombre.trim()) {
+      Swal.fire('Validación', 'Ingrese el nombre del participante', 'warning');
+      return;
+    }
+
+    if (!/^\d{8}$/.test(this.nuevoParticipante.codigo)) {
+      Swal.fire('Validación', 'El DNI/código debe tener 8 dígitos', 'warning');
+      return;
+    }
+
+    if (!/^\d{9}$/.test(this.nuevoParticipante.telefono)) {
+      Swal.fire('Validación', 'El teléfono debe tener 9 dígitos', 'warning');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.nuevoParticipante.correo)) {
+      Swal.fire('Validación', 'Ingrese un correo válido', 'warning');
+      return;
+    }
+
+    const yaExiste = this.participantes.some(
+      p => p.codigo === this.nuevoParticipante.codigo
+    );
+
+    if (yaExiste) {
+      Swal.fire('Validación', 'Ese DNI/código ya fue agregado como participante', 'warning');
       return;
     }
 

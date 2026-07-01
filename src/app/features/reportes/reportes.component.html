@@ -24,8 +24,13 @@
           </div>
 
           <div class="acciones-top">
-            <button class="btn-excel" (click)="exportarExcel()">
-              <i class="fa fa-file-excel"></i> Exportar Excel
+            <button class="btn-excel" (click)="exportarExcel()" [disabled]="tablaDatos.length === 0">
+              <i class="fa fa-file-excel"></i> Excel (pestaña actual)
+            </button>
+            <button class="btn-excel btn-excel-completo" (click)="exportarReporteCompleto()" [disabled]="exportandoCompleto">
+              <i class="fa fa-file-excel" *ngIf="!exportandoCompleto"></i>
+              <i class="fa fa-spinner fa-spin" *ngIf="exportandoCompleto"></i>
+              {{ exportandoCompleto ? 'Generando...' : 'Excel Completo (4 módulos)' }}
             </button>
             <button class="btn-agregar-pill" (click)="descargarPDF()">
               <i class="fa fa-file-pdf"></i> Exportar PDF

@@ -5,6 +5,7 @@ import { HeaderComponent } from '../../shared/components/header/header.component
 import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
 import { EscuelaService } from '../../core/services/escuela.service';
 import { FacultadService } from '../../core/services/facultad.service';
+import { UsuariosService } from '../../core/services/usuarios.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -32,6 +33,11 @@ export class EscuelasComponent implements OnInit {
 
   menuAbiertoId: number | null = null;
 
+  mostrarModalUsuario = false;
+  escuelaSeleccionada: any = null;
+  usuarioSeleccionadoId: number = 0;
+  usuarios: any[] = [];
+
   imagenFile: File | null = null;
   imagenPreview: string | ArrayBuffer | null = null;
 
@@ -44,12 +50,14 @@ export class EscuelasComponent implements OnInit {
 
   constructor(
     private escuelaService: EscuelaService,
-    private facultadService: FacultadService
+    private facultadService: FacultadService,
+    private usuariosService: UsuariosService
   ) { }
 
   ngOnInit(): void {
     this.cargarFacultades();
     this.cargarEscuelas();
+    this.cargarUsuarios();
   }
 
   toggleMenu() {
@@ -222,6 +230,55 @@ export class EscuelasComponent implements OnInit {
             Swal.fire('Error', msg, 'error');
           }
         });
+      }
+    });
+  }
+
+  cargarUsuarios() {
+    this.usuariosService.getUsuarios().subscribe({
+      next: (res: any) => {
+        const data = res?.data ?? res;
+        this.usuarios = Array.isArray(data) ? data : [];
+      },
+      error: () => { this.usuarios = []; }
+    });
+  }
+
+  abrirModalUsuario(e: any) {
+    this.escuelaSeleccionada = e;
+    this.mostrarModalUsuario = true;
+    this.menuAbiertoId = null;
+
+    this.escuelaService.getEscuelaById(e.id).subscribe({
+      next: (res: any) => {
+        const detalle = res?.data ?? res;
+        this.usuarioSeleccionadoId = detalle?.usuarioId ?? 0;
+      },
+      error: () => { this.usuarioSeleccionadoId = 0; }
+    });
+  }
+
+  cerrarModalUsuario() {
+    this.mostrarModalUsuario = false;
+    this.escuelaSeleccionada = null;
+    this.usuarioSeleccionadoId = 0;
+  }
+
+  guardarAsignacionUsuario() {
+    if (!this.usuarioSeleccionadoId) {
+      Swal.fire('Error', 'Seleccione un usuario', 'warning');
+      return;
+    }
+
+    this.escuelaService.asignarUsuario(this.escuelaSeleccionada.id, this.usuarioSeleccionadoId).subscribe({
+      next: () => {
+        Swal.fire('OK', 'Usuario asignado correctamente', 'success');
+        this.cerrarModalUsuario();
+        this.cargarEscuelas();
+      },
+      error: (err) => {
+        const msg = err?.error?.message || 'No se pudo asignar el usuario';
+        Swal.fire('Error', msg, 'error');
       }
     });
   }

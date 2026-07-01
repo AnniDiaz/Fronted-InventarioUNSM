@@ -47,55 +47,69 @@
         <div class="modal-overlay" *ngIf="mostrarFormulario">
           <div class="modal-modern">
             <div class="modal-header">
-              <h3>{{ editando ? 'Editar Ubicación' : 'Registrar nueva ubicación' }}</h3>
+              <div class="modal-header-titulo">
+                <div class="modal-header-icono">
+                  <i class="fa fa-map-marker-alt"></i>
+                </div>
+                <div>
+                  <h3>{{ editando ? 'Editar Ubicación' : 'Registrar nueva ubicación' }}</h3>
+                  <span class="modal-header-subt">Espacios y laboratorios de la facultad</span>
+                </div>
+              </div>
               <button class="btn-cerrar" (click)="toggleFormulario()">&times;</button>
             </div>
 
             <div class="modal-body">
               <form (ngSubmit)="guardarUbicacion()" #ubicacionForm="ngForm" class="form-ubicacion">
                 <div class="form-group-full">
-                  <label>Nombre</label>
+                  <label><i class="fa fa-tag campo-icono"></i> Nombre</label>
                   <input type="text" [(ngModel)]="nuevaUbicacion.nombre" name="nombre" placeholder="Ej: Lab de Sistemas"
                     required>
                 </div>
 
                 <div class="form-group-full">
-                  <label>Descripción</label>
+                  <label><i class="fa fa-align-left campo-icono"></i> Descripción</label>
                   <textarea [(ngModel)]="nuevaUbicacion.descripcion" name="descripcion"
                     placeholder="Breve descripción de la ubicación..." required></textarea>
                 </div>
 
-                <div class="form-group-full">
-                  <label>Tipo de Ubicación</label>
-                  <select [(ngModel)]="nuevaUbicacion.tipoUbicacionId" name="tipoUbicacionId" required>
-                    <option value="0" disabled>Seleccione un tipo</option>
-                    <option *ngFor="let tipo of tiposUbicacion" [value]="tipo.id">
-                      {{ tipo.nombre }}
+                <div class="form-grid-2">
+                  <div class="form-group-full">
+                    <label><i class="fa fa-th-large campo-icono"></i> Tipo de Ubicación</label>
+                    <select [(ngModel)]="nuevaUbicacion.tipoUbicacionId" name="tipoUbicacionId" required>
+                      <option value="0" disabled>Seleccione un tipo</option>
+                      <option *ngFor="let tipo of tiposUbicacion" [value]="tipo.id">
+                        {{ tipo.nombre }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <div class="form-group-full">
+                    <label><i class="fa fa-hashtag campo-icono"></i> Piso</label>
+                    <input type="number"
+                           [(ngModel)]="nuevaUbicacion.piso"
+                           name="piso"
+                           placeholder="Ej: 1, 2, 3..."
+                           required>
+                  </div>
+                </div>
+
+                <div class="form-group-escuela">
+                  <label><i class="fa fa-graduation-cap campo-icono"></i> Escuela Profesional asignada</label>
+
+                  <select [(ngModel)]="nuevaUbicacion.escuelaId" name="escuelaId">
+                    <option [ngValue]="null">Sin escuela asignada</option>
+                    <option *ngFor="let e of escuelas || []" [ngValue]="e.id">
+                      {{ e.nombre }}
                     </option>
                   </select>
+
+                  <span class="form-hint">
+                    <i class="fa fa-info-circle"></i>
+                    Define qué escuela podrá ver y usar esta ubicación.
+                  </span>
                 </div>
-<div class="form-group-full">
-  <label>Piso</label>
-  <input type="number"
-         [(ngModel)]="nuevaUbicacion.piso"
-         name="piso"
-         placeholder="Ej: 1, 2, 3..."
-         required>
-</div>
 
-<div class="form-group-full">
-  <label>Escuela Profesional</label>
-
-  <select [(ngModel)]="nuevaUbicacion.escuelaId" name="escuelaId">
-
-    <option [ngValue]="null">Sin escuela</option>
-
-    <option *ngFor="let e of escuelas || []" [ngValue]="e.id">
-      {{ e.nombre }}
-    </option>
-
-  </select>
-</div>
                 <div class="modal-footer-modern">
                   <button type="submit" class="btn-agregar-pill">
                     {{ editando ? 'Actualizar' : 'Guardar' }}

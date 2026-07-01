@@ -4,7 +4,7 @@ import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { ModulosService, Modulo } from '../../../../app/core/services/modulos.service';
 import { MatIconModule } from '@angular/material/icon';
 import { LoginService } from '../../../core/services/login.service';
-import { UbicacionService } from '../../../core/services/ubicacion.service';
+import { EscuelaService } from '../../../core/services/escuela.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -25,7 +25,7 @@ export class SidebarComponent implements OnInit {
     private modulosService: ModulosService,
     private loginService: LoginService,
     public router: Router,
-    private ubicacionService: UbicacionService,
+    private escuelaService: EscuelaService
   ) { }
 
   ngOnInit(): void {
@@ -47,41 +47,28 @@ export class SidebarComponent implements OnInit {
       return;
     }
 
-    // ==============================
-    // 🔥 1. CARGAR UBICACIÓN
-    // ==============================
-    this.ubicacionService.getUbicacionesPorUsuario(usuarioId).subscribe({
+    // Cargar escuela asignada al usuario
+    this.escuelaService.getEscuelaPorUsuario(usuarioId).subscribe({
       next: (res: any) => {
+        const escuela = res?.data ?? res;
 
-        console.log("Ubicaciones del usuario:", res);
-
-        const ubicaciones = Array.isArray(res) ? res : res?.data ?? [];
-
-        if (ubicaciones.length > 0) {
-
-          const ubicacion = ubicaciones[0];
-
-          this.ubicacionNombre = ubicacion.nombre;
-
-          this.ubicacionLogo = ubicacion.imagenUrl
-            ? `http://localhost:7000${ubicacion.imagenUrl}`
+        if (escuela?.id) {
+          this.ubicacionNombre = escuela.nombre;
+          this.ubicacionLogo = escuela.imagenUrl
+            ? `http://localhost:7000${escuela.imagenUrl}`
             : '';
-
-          // ✅ 🔥 GUARDAR EN LOCALSTORAGE (IMPORTANTE)
-          localStorage.setItem(
-            'ubicacionUsuario',
-            JSON.stringify(ubicaciones)
-          );
-
+          localStorage.setItem('escuelaId', String(escuela.id));
+          localStorage.setItem('escuelaNombre', escuela.nombre);
         } else {
-          this.ubicacionNombre = 'OFICINA DE INFORMÁTICA Y COMUNICACIONES';
+          this.ubicacionNombre = 'Sin escuela asignada';
           this.ubicacionLogo = '';
+          localStorage.removeItem('escuelaId');
         }
       },
-      error: (err) => {
-        console.error(err);
-        this.ubicacionNombre = 'Error al cargar ubicación';
+      error: () => {
+        this.ubicacionNombre = 'Sin escuela asignada';
         this.ubicacionLogo = '';
+        localStorage.removeItem('escuelaId');
       }
     });
 

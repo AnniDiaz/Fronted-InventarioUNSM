@@ -29,4 +29,12 @@ export class EscuelaService {
     return this.httpClient.delete(`${baseUrl}/Escuelas/${id}`);
   }
 
+  public asignarUsuario(id: number, usuarioId: number) {
+    return this.httpClient.put(`${baseUrl}/Escuelas/${id}/asignar-usuario`, { usuarioId });
+  }
+
+  public getEscuelaPorUsuario(usuarioId: number) {
+    return this.httpClient.get<any>(`${baseUrl}/Escuelas/usuario/${usuarioId}`);
+  }
+
 }

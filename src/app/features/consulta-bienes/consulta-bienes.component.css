@@ -108,12 +108,12 @@
 }
 
 .btn-registrar {
-  background: #2563eb;
+  background: #10b981;
   color: white;
 }
 
 .btn-registrar:hover {
-  background: #1d4ed8;
+  background: #059669;
 }
 
 .btn-excel {
@@ -129,11 +129,11 @@
 .btn-pdf {
   background: white;
   border-color: #e2e8f0;
-  color: #2563eb;
+  color: #10b981;
 }
 
 .btn-pdf:hover {
-  background: #eff6ff;
+  background: #ecfdf5;
 }
 
 /* FILTROS */
@@ -141,7 +141,7 @@
   background: white;
   border-radius: 12px;
   border: 1px solid #f1f5f9;
-  border-left: 4px solid #3b82f6;
+  border-left: 4px solid #10b981;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   padding: 20px 24px;
   margin-bottom: 20px;
@@ -160,8 +160,8 @@
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  background: #eff6ff;
-  color: #3b82f6;
+  background: #ecfdf5;
+  color: #10b981;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -201,8 +201,8 @@
 
 .filtro-campo select:focus,
 .filtro-campo input:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
 /* TABLA */
@@ -251,8 +251,8 @@
   width: 38px;
   height: 38px;
   border-radius: 10px;
-  background: #eff6ff;
-  color: #3b82f6;
+  background: #ecfdf5;
+  color: #10b981;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -319,7 +319,7 @@
 }
 
 .btn-icon-tabla:hover {
-  background: #3b82f6;
+  background: #10b981;
   color: white;
 }
 
@@ -372,8 +372,8 @@
 }
 
 .btn-pag-num.active {
-  background: #2563eb;
-  border-color: #2563eb;
+  background: #10b981;
+  border-color: #10b981;
   color: white;
 }
 

@@ -46,7 +46,7 @@ export class HeaderComponent implements OnInit {
     { match: /^\/articulos/, titulo: 'Artículos' },
     { match: /^\/perfil/, titulo: 'Mi Perfil' },
     { match: /^\/seguridad/, titulo: 'Seguridad' },
-    { match: /^\/prestamos\/generar-documento/, titulo: 'Generar Documento de Préstamo' },
+    { match: /^\/prestamos\/generar-documento/, titulo: 'Generar Préstamo' },
     { match: /^\/prestamos/, titulo: 'Préstamos' },
     { match: /^\/mantenimiento/, titulo: 'Mantenimiento' },
     { match: /^\/gestion-institucional/, titulo: 'Panel de Control (Dashboard)' },

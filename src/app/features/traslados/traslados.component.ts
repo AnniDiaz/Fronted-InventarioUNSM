@@ -50,6 +50,35 @@ mostrarListaArticulos = false;
   ngOnInit(): void {
     this.cargarDatosIniciales();
   }
+
+  esAdministrador(): boolean {
+    return Number(localStorage.getItem('rolId')) === 1;
+  }
+cargarPorEscuela(): void {
+  const escuelaId = Number(localStorage.getItem('escuelaId'));
+
+  if (!escuelaId) {
+    this.cargarUbicaciones();
+    return;
+  }
+
+  this.ubicacionService.getUbicacionesPorEscuela(escuelaId).subscribe({
+    next: (res: any) => {
+      this.listaUbicaciones = Array.isArray(res) ? res : res?.data ?? [];
+
+      this.articuloService.getArticulosPorEscuela(escuelaId).subscribe({
+        next: (r: any) => {
+          this.listaArticulos = Array.isArray(r) ? r : r?.data ?? [];
+          this.articulosFiltrados = [...this.listaArticulos];
+          this.cargarTraslados();
+        },
+        error: () => Swal.fire('Error', 'No se pudieron cargar los artículos', 'error')
+      });
+    },
+    error: () => Swal.fire('Error', 'No se pudieron cargar las ubicaciones', 'error')
+  });
+}
+
 filtrarArticulos(): void {
 
   const texto = this.articuloBusqueda.toLowerCase().trim();
@@ -74,9 +103,11 @@ seleccionarArticulo(articulo: any): void {
   this.onArticuloChange(articulo.id);
 }
   cargarDatosIniciales(): void {
-    this.cargarTraslados();
-    this.cargarArticulos();
-    this.cargarUbicaciones();
+    if (this.esAdministrador()) {
+      this.cargarTodasLasUbicaciones();
+    } else {
+      this.cargarPorEscuela();
+    }
   }
 cargarTraslados(): void {
   this.trasladoService.getTraslados().subscribe({
@@ -182,6 +213,38 @@ cargarUbicaciones(): void {
   });
 
 }
+  cargarTodasLasUbicaciones(): void {
+    this.ubicacionService.getUbicaciones().subscribe({
+      next: (res: any) => {
+        const data = Array.isArray(res) ? res : res?.data ?? [];
+        this.listaUbicaciones = data;
+        this.cargarArticulosSinFiltro();
+        this.cargarTrasladosSinFiltro();
+      },
+      error: () => Swal.fire('Error', 'No se pudieron cargar las ubicaciones', 'error')
+    });
+  }
+
+  cargarArticulosSinFiltro(): void {
+    this.articuloService.getArticulosConCampos().subscribe({
+      next: (resp: any) => {
+        this.listaArticulos = Array.isArray(resp) ? resp : resp?.data ?? [];
+        this.articulosFiltrados = [...this.listaArticulos];
+      },
+      error: () => console.error('Error cargando artículos')
+    });
+  }
+
+  cargarTrasladosSinFiltro(): void {
+    this.trasladoService.getTraslados().subscribe({
+      next: (resp: any) => {
+        this.traslados = Array.isArray(resp) ? resp : resp?.data ?? [];
+        this.paginaActual = 1;
+      },
+      error: () => Swal.fire('Error', 'No se pudieron cargar los traslados', 'error')
+    });
+  }
+
   // FILTROS
   get trasladosFiltrados(): any[] {
     return this.traslados.filter(t => {

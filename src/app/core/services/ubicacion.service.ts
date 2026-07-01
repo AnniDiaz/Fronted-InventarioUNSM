@@ -47,4 +47,8 @@ public getUbicacionesPorPadre(padreId: number) {
   public getUbicacionesPorTipo(tipoId: number) {
     return this.httpClient.get<any[]>(`${baseUrl}/ubicaciones/por-tipo/${tipoId}`);
   }
+
+  public getUbicacionesPorEscuela(escuelaId: number) {
+    return this.httpClient.get<any>(`${baseUrl}/ubicaciones/por-escuela/${escuelaId}`);
+  }
 }

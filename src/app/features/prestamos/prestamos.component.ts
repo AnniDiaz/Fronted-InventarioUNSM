@@ -8,6 +8,7 @@ import { ArticuloService } from '../../core/services/articulos.service';
 import { NgxPaginationModule } from 'ngx-pagination';
 import Swal from 'sweetalert2';
 import { UbicacionService } from '../../core/services/ubicacion.service';
+import { RolesService } from '../../core/services/roles.service';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { ViewChild, ElementRef, AfterViewInit } from '@angular/core';
@@ -28,6 +29,13 @@ aprobado: boolean = false;  // --- Propiedades para el Layout Responsivo ---
 listaUbicaciones: any[] = [];
 idsUbicacionesPermitidas: number[] = [];
 articulosTodos: any[] = [];
+
+// --- Firma de préstamos ---
+puedeFirmarPrestamos = false;
+mostrarModalFirma = false;
+prestamoSeleccionadoFirma: any = null;
+nombreFirmante = '';
+firmandoPrestamo = false;
   // --- Datos ---
   prestamos: any[] = [];
   prestamosFiltrados: any[] = [];
@@ -117,35 +125,59 @@ generarPDF() {
 constructor(
   private _prestamosService: PrestamosService,
   private _articulosService: ArticuloService,
-  private _ubicacionService: UbicacionService   // 🔥 FALTABA
+  private _ubicacionService: UbicacionService,   // 🔥 FALTABA
+  private _rolesService: RolesService
 ) { }
 ngOnInit(): void {
 
   const usuario = JSON.parse(localStorage.getItem('user') || '{}');
   this.usuarioActual = usuario;
 
-  const usuarioId = usuario?.data?.id;
+  const escuelaId = Number(localStorage.getItem('escuelaId'));
 
-  if (!usuarioId) return;
+  this.evaluarPermisoFirma(!!escuelaId);
 
-  this._ubicacionService.getUbicacionesPorUsuario(usuarioId).subscribe({
+  if (escuelaId) {
+    this._articulosService.getArticulosPorEscuela(escuelaId).subscribe({
+      next: (res: any) => {
+        const data = Array.isArray(res) ? res : res?.data ?? [];
+        this.articulosTodos = data;
+        this.articulosDisponibles = data;
+        this.cargarPrestamosPorEscuela();
+      },
+      error: (err) => console.error('Error cargando artículos', err)
+    });
+  } else {
+    const usuarioId = usuario?.data?.id;
+    if (!usuarioId) return;
+    this._ubicacionService.getUbicacionesPorUsuario(usuarioId).subscribe({
+      next: (res: any) => {
+        const ubicaciones = Array.isArray(res) ? res : res?.data ?? [];
+        if (ubicaciones.length > 0) {
+          this.ubicacionId = ubicaciones[0].id;
+          this.cargarUbicaciones();
+        }
+      },
+      error: (err) => console.error('Error cargando ubicación', err)
+    });
+  }
+}
+
+evaluarPermisoFirma(tieneEscuelaAsignada: boolean): void {
+  this.puedeFirmarPrestamos = false;
+
+  const rolId = Number(localStorage.getItem('rolId'));
+  if (!rolId) return;
+
+  this._rolesService.getRolById(rolId).subscribe({
     next: (res: any) => {
+      const nombreRol: string = res?.data?.rol?.nombre ?? res?.data?.nombre ?? '';
+      const esAdmin = nombreRol.trim().toLowerCase() === 'admin';
 
-      const ubicaciones = Array.isArray(res) ? res : res?.data ?? [];
-
-      if (ubicaciones.length > 0) {
-        this.ubicacionId = ubicaciones[0].id;
-
-        // 🔥 ahora recién cargas préstamos
-        this.cargarUbicaciones();
-      } else {
-        console.warn("Usuario sin ubicación");
-      }
-
+      // Solo puede firmar el ADMIN cuya ubicación está asignada a una escuela
+      this.puedeFirmarPrestamos = esAdmin && tieneEscuelaAsignada;
     },
-    error: (err) => {
-      console.error("Error cargando ubicación", err);
-    }
+    error: (err) => console.error('Error verificando rol para firma', err)
   });
 }
   // --- Lógica del Menú Hamburguesa ---
@@ -199,6 +231,33 @@ cargarPrestamos() {
         console.error("Error cargando préstamos", err);
       }
     });
+}
+
+cargarPrestamosPorEscuela() {
+
+  this._prestamosService.getPrestamos().subscribe({
+    next: (res: any) => {
+
+      const data = Array.isArray(res) ? res : res?.data ?? [];
+
+      const idsArticulos = new Set(
+        this.articulosDisponibles.map((a: any) => Number(a.id))
+      );
+
+      this.prestamos = data.filter((p: any) =>
+        idsArticulos.has(Number(p.articuloId))
+      );
+      this.prestamosFiltrados = [...this.prestamos];
+
+      // 🔍 DIAGNÓSTICO: revisar si el endpoint de listado trae firmadoPor/fechaFirma
+      console.log('🖊️ Campos del primer préstamo recibido del backend:', this.prestamos[0]);
+
+      this.actualizarPaginacion();
+    },
+    error: (err) => {
+      console.error("Error cargando préstamos", err);
+    }
+  });
 }
 
 
@@ -313,6 +372,95 @@ this._prestamosService.cambiarEstado2(p.id).subscribe({
   });
 
 }
+
+estaFirmado(p: any): boolean {
+  return !!(p?.firmadoPor || p?.FirmadoPor);
+}
+
+getFirmadoPor(p: any): string {
+  return p?.firmadoPor || p?.FirmadoPor || '';
+}
+
+getFechaFirma(p: any): any {
+  return p?.fechaFirma || p?.FechaFirma || null;
+}
+
+abrirModalFirma(p: any) {
+  if (!this.puedeFirmarPrestamos) {
+    Swal.fire('No autorizado', 'Solo el personal con ubicación asignada a una escuela puede firmar préstamos', 'warning');
+    return;
+  }
+
+  this.prestamoSeleccionadoFirma = p;
+  this.nombreFirmante = this.obtenerNombreUsuarioActual();
+  this.mostrarModalFirma = true;
+}
+
+obtenerNombreUsuarioActual(): string {
+  const datos = this.usuarioActual?.data ?? this.usuarioActual;
+  if (!datos) return '';
+  return `${datos.nombre ?? ''} ${datos.apellido ?? ''}`.trim();
+}
+
+cerrarModalFirma() {
+  this.mostrarModalFirma = false;
+  this.prestamoSeleccionadoFirma = null;
+  this.nombreFirmante = '';
+}
+
+confirmarFirma() {
+  if (!this.nombreFirmante.trim()) {
+    Swal.fire('Validación', 'Ingrese el nombre del firmante', 'warning');
+    return;
+  }
+
+  const prestamo = this.prestamoSeleccionadoFirma;
+  if (!prestamo) return;
+
+  this.firmandoPrestamo = true;
+
+  this._prestamosService.firmarPrestamo(prestamo.id, this.nombreFirmante.trim()).subscribe({
+    next: (res: any) => {
+      this.firmandoPrestamo = false;
+
+      const actualizado = res?.data ?? res;
+
+      prestamo.firmadoPor =
+        actualizado?.firmadoPor ?? actualizado?.FirmadoPor ?? this.nombreFirmante.trim();
+      prestamo.fechaFirma =
+        actualizado?.fechaFirma ?? actualizado?.FechaFirma ?? new Date().toISOString();
+
+      // Firmar aprueba automáticamente el préstamo en el backend
+      prestamo.aprobar = actualizado?.aprobar ?? actualizado?.Aprobar ?? true;
+
+      Swal.fire('Firmado', 'El préstamo fue firmado y aprobado correctamente', 'success');
+      this.cerrarModalFirma();
+    },
+    error: (err) => {
+      this.firmandoPrestamo = false;
+
+      console.error('Error al firmar préstamo:', err);
+
+      const errores = err?.error?.errors;
+      const erroresTexto = errores && typeof errores === 'object'
+        ? Object.values(errores).flat().join(' | ')
+        : null;
+
+      const msg =
+        err?.error?.detail ||
+        err?.error?.message ||
+        err?.error?.Message ||
+        erroresTexto ||
+        (typeof errores === 'string' ? errores : null) ||
+        (err?.error?.title && err.error.title !== 'Bad Request' ? err.error.title : null) ||
+        (typeof err?.error === 'string' ? err.error : null) ||
+        `No se pudo firmar el préstamo (HTTP ${err?.status ?? '400'})`;
+
+      Swal.fire('Error', String(msg), 'error');
+    }
+  });
+}
+
 aplicarFiltroPrestamos() {
 
   const mapaArticulos = new Map(
@@ -334,15 +482,16 @@ if (!articulo) {
 }
 cargarArticulosDisponibles() {
 
-  this._articulosService.getArticulos().subscribe({
+  this._articulosService.getArticulosConCampos().subscribe({
     next: (res: any) => {
 
-      const data = res.data || [];
+      const data = Array.isArray(res) ? res : res?.data ?? [];
 
       this.articulosTodos = data; // ← IMPORTANTE
 
       this.articulosDisponibles = data.filter((a: any) =>
-        this.idsUbicacionesPermitidas.includes(a.ubicacionId)
+        this.idsUbicacionesPermitidas.includes(a.ubicacionId) ||
+        Number(a.ubicacionId) === 100
       );
 
       this.cargarPrestamos();

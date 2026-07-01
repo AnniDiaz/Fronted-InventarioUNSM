@@ -125,6 +125,10 @@
                     <i class="fa fa-pen"></i> Editar
                   </button>
 
+                  <button class="op-edit" (click)="abrirModalUsuario(e)">
+                    <i class="fa fa-user"></i> Asignar Usuario
+                  </button>
+
                   <button class="op-delete" (click)="eliminarEscuela(e.id)">
                     <i class="fa fa-trash"></i> Eliminar
                   </button>
@@ -160,5 +164,40 @@
 
       </div>
     </div>
+  </div>
+</div>
+
+<!-- MODAL ASIGNAR USUARIO -->
+<div class="modal-overlay" *ngIf="mostrarModalUsuario">
+  <div class="modal-modern">
+
+    <div class="modal-header">
+      <h3>Asignar Usuario</h3>
+      <button class="btn-cerrar" (click)="cerrarModalUsuario()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <p style="margin-bottom:10px;">
+        Escuela: <b>{{ escuelaSeleccionada?.nombre }}</b>
+      </p>
+
+      <label>Seleccionar usuario</label>
+      <select [(ngModel)]="usuarioSeleccionadoId">
+        <option [ngValue]="0">-- Seleccione usuario --</option>
+        <option *ngFor="let u of usuarios" [ngValue]="u.id">
+          {{ u.nombre }} {{ u.apellido }}
+        </option>
+      </select>
+    </div>
+
+    <div class="modal-footer-modern1">
+      <button class="btn-guardar-md" (click)="guardarAsignacionUsuario()">
+        Asignar
+      </button>
+      <button class="btn-cancelar-md" (click)="cerrarModalUsuario()">
+        Cancelar
+      </button>
+    </div>
+
   </div>
 </div>

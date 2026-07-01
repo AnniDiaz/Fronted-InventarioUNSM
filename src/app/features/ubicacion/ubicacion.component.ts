@@ -87,38 +87,56 @@ ngOnInit(): void {
     return;
   }
 
+  this.cargarTiposUbicacion();
+  this.cargarUsuarios();
 
-  this.ubicacionService.getUbicacionesPorUsuario(usuarioId).subscribe({
-    next: (res: any) => {
+  const escuelaId = Number(localStorage.getItem('escuelaId'));
 
-      if (Array.isArray(res) && res.length > 0) {
+  if (escuelaId) {
 
-        this.facultadUsuario = res[0];
-        this.ubicacionesPadre = [this.facultadUsuario];
+    this.nuevaUbicacion.escuelaId = escuelaId;
 
-        this.cargarSubUbicaciones(this.facultadUsuario.id);
+    this.ubicacionService.getUbicacionesPorEscuela(escuelaId).subscribe({
+      next: (res: any) => {
+        const data = Array.isArray(res) ? res : res?.data ?? [];
+        this.ubicaciones = data;
+        this.aplicarFiltro();
+      },
+      error: () => {
+        this.ubicaciones = [];
+        this.ubicacionesFiltradas = [];
+      }
+    });
 
-      } else {
+  } else {
 
+    this.ubicacionService.getUbicacionesPorUsuario(usuarioId).subscribe({
+      next: (res: any) => {
+
+        if (Array.isArray(res) && res.length > 0) {
+
+          this.facultadUsuario = res[0];
+          this.ubicacionesPadre = [this.facultadUsuario];
+          this.cargarSubUbicaciones(this.facultadUsuario.id);
+
+        } else {
+
+          this.facultadUsuario = null;
+          this.ubicacionesPadre = [];
+          this.ubicaciones = [];
+          this.ubicacionesFiltradas = [];
+
+        }
+      },
+      error: () => {
         this.facultadUsuario = null;
         this.ubicacionesPadre = [];
         this.ubicaciones = [];
         this.ubicacionesFiltradas = [];
-
       }
+    });
 
-      this.cargarTiposUbicacion();
-      this.cargarUsuarios();
-    },
-    error: () => {
-
-      this.facultadUsuario = null;
-      this.ubicacionesPadre = [];
-      this.ubicaciones = [];
-      this.ubicacionesFiltradas = [];
-
-    }
-  });
+  }
 
 }
  esAdministrador(): boolean {
@@ -129,6 +147,21 @@ ngOnInit(): void {
 recargarUbicaciones(): void {
   if (this.esAdministrador()) {
     this.cargarTodasLasUbicaciones();
+    return;
+  }
+  const escuelaId = Number(localStorage.getItem('escuelaId'));
+  if (escuelaId) {
+    this.ubicacionService.getUbicacionesPorEscuela(escuelaId).subscribe({
+      next: (res: any) => {
+        const data = Array.isArray(res) ? res : res?.data ?? [];
+        this.ubicaciones = data;
+        this.aplicarFiltro();
+      },
+      error: () => {
+        this.ubicaciones = [];
+        this.ubicacionesFiltradas = [];
+      }
+    });
   } else if (this.facultadUsuario?.id) {
     this.cargarSubUbicaciones(this.facultadUsuario.id);
   }
@@ -288,6 +321,7 @@ cargarTiposUbicacion(): Promise<void> {
   toggleFormulario() {
     this.mostrarFormulario = !this.mostrarFormulario;
     if (!this.mostrarFormulario) {
+      const escuelaId = Number(localStorage.getItem('escuelaId')) || null;
       this.nuevaUbicacion = {
         id: 0,
         nombre: '',
@@ -295,7 +329,7 @@ cargarTiposUbicacion(): Promise<void> {
         piso: 0,
         tipoUbicacionId: 0,
         usuarioId: null,
-        escuelaId: null
+        escuelaId: escuelaId
       };
       this.editando = false;
     }

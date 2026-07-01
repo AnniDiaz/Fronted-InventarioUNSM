@@ -29,4 +29,8 @@ export class FacultadService {
     return this.httpClient.delete(`${baseUrl}/Facultades/${id}`);
   }
 
+  public asignarUsuario(id: number, usuarioId: number) {
+    return this.httpClient.put(`${baseUrl}/Facultades/${id}/asignar-usuario`, { usuarioId });
+  }
+
 }

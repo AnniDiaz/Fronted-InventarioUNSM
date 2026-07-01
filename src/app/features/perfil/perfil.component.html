@@ -7,97 +7,132 @@
     <app-header></app-header>
 
     <div class="contenido-principal">
-      <div class="perfil-layout">
+      <div class="page-container">
 
-        <!-- Menú Lateral del Perfil -->
-        <div class="perfil-sidebar">
-          <div class="perfil-sidebar-header">
-            <div class="perfil-foto">
-              <img [src]="usuario?.imagenPreview || '/assets/perfil.png'" alt="Foto de usuario" />
-              <input type="file" #inputImagen (change)="onFileSelected($event)" hidden />
-              <button class="btn-subir-foto-icon" (click)="inputImagen.click()" title="Cambiar foto">
-                📷
-              </button>
-            </div>
-            <h3 class="perfil-name">{{ usuario?.data.nombre || 'Usuario' }}</h3>
-            <span class="perfil-role">{{ rol?.nombre }}</span>
-
-            <div *ngIf="imagenSeleccionada" class="container-btn-foto">
-              <button class="btn-guardar-foto" (click)="guardarImagen()">Guardar</button>
-              <button class="btn-quitar-foto" (click)="quitarImagen()">Cancelar</button>
-            </div>
-          </div>
-
-          <div class="perfil-menu">
-            <button class="menu-item" [class.active]="activeTab === 'datos'" (click)="activeTab = 'datos'">
-              <span class="icon">👤</span> Datos personales
-            </button>
-            <button class="menu-item" [class.active]="activeTab === 'seguridad'" (click)="activeTab = 'seguridad'">
-              <span class="icon">🔒</span> Seguridad
-            </button>
+        <!-- Header estilo módulos -->
+        <div class="header-perfil">
+          <div class="titulos-header">
+            <h2>Mi Perfil</h2>
+            <p>Administra tu información personal y configuración de seguridad</p>
           </div>
         </div>
 
-        <!-- Contenido Central del Perfil -->
-        <div class="perfil-content">
+        <!-- Layout principal del perfil -->
+        <div class="perfil-layout">
 
-          <!-- PESTAÑA DATOS -->
-          <div class="tab-content" *ngIf="activeTab === 'datos'">
-            <h2 class="tab-title">Información Básica</h2>
-            <p class="tab-subtitle">Visualiza los datos personales de tu cuenta.</p>
-
-            <div class="perfil-info-grid">
-              <div class="input-group">
-                <label>Nombre completo</label>
-                <input type="text" [value]="usuario?.data.nombre" disabled />
-              </div>
-              <div class="input-group">
-                <label>Correo electrónico</label>
-                <input type="text" [value]="usuario?.data.email" disabled />
-              </div>
-              <div class="input-group">
-                <label>Usuario</label>
-                <input type="text" [value]="usuario?.data.username" disabled />
-              </div>
-              <div class="input-group">
-                <label>Rol asignado</label>
-                <input type="text" [value]="rol?.nombre" disabled />
-              </div>
-            </div>
-          </div>
-
-          <!-- PESTAÑA SEGURIDAD -->
-          <div class="tab-content" *ngIf="activeTab === 'seguridad'">
-            <h2 class="tab-title">Seguridad</h2>
-            <p class="tab-subtitle">Actualiza tu contraseña para mantener tu cuenta segura.</p>
-
-            <form (ngSubmit)="cambiarPassword()" #formPass="ngForm" class="password-form">
-              <div class="input-group">
-                <label>Contraseña actual</label>
-                <input type="password" name="actual" [(ngModel)]="password.actual" required
-                  placeholder="Ingresa tu contraseña actual" />
-              </div>
-              <div class="input-group">
-                <label>Nueva contraseña</label>
-                <input type="password" name="nueva" [(ngModel)]="password.nueva" required minlength="6"
-                  placeholder="Mínimo 6 caracteres" />
-              </div>
-              <div class="input-group">
-                <label>Confirmar nueva contraseña</label>
-                <input type="password" name="confirmar" [(ngModel)]="password.confirmar" required minlength="6"
-                  placeholder="Repite tu nueva contraseña" />
-              </div>
-
-              <div class="form-actions">
-                <button type="submit" class="btn-guardar" [disabled]="formPass.invalid">
-                  Guardar cambios
+          <!-- Menú Lateral del Perfil -->
+          <div class="perfil-sidebar">
+            <div class="perfil-sidebar-header">
+              <div class="perfil-foto">
+                <img [src]="usuario?.imagenPreview || '/assets/perfil.png'" alt="Foto de usuario" />
+                <input type="file" #inputImagen (change)="onFileSelected($event)" hidden />
+                <button class="btn-subir-foto-icon" (click)="inputImagen.click()" title="Cambiar foto">
+                  <i class="fa fa-camera"></i>
                 </button>
               </div>
-            </form>
+              <h3 class="perfil-name">{{ usuario?.data.nombre || 'Usuario' }}</h3>
+              <span class="perfil-role">
+                <i class="fa fa-shield-alt"></i> {{ rol?.nombre }}
+              </span>
+
+              <div *ngIf="imagenSeleccionada" class="container-btn-foto">
+                <button class="btn-guardar-foto" (click)="guardarImagen()">
+                  <i class="fa fa-check"></i> Guardar
+                </button>
+                <button class="btn-quitar-foto" (click)="quitarImagen()">
+                  <i class="fa fa-times"></i> Cancelar
+                </button>
+              </div>
+            </div>
+
+            <div class="perfil-menu">
+              <button class="menu-item" [class.active]="activeTab === 'datos'" (click)="activeTab = 'datos'">
+                <i class="fa fa-user"></i> Datos personales
+              </button>
+              <button class="menu-item" [class.active]="activeTab === 'seguridad'" (click)="activeTab = 'seguridad'">
+                <i class="fa fa-lock"></i> Seguridad
+              </button>
+            </div>
           </div>
 
-        </div>
+          <!-- Contenido Central del Perfil -->
+          <div class="perfil-content">
 
+            <!-- PESTAÑA DATOS -->
+            <div class="tab-content" *ngIf="activeTab === 'datos'">
+              <div class="tab-header-row">
+                <div class="tab-titulo-icono">
+                  <div class="tab-icono-wrap">
+                    <i class="fa fa-user"></i>
+                  </div>
+                  <div>
+                    <h2 class="tab-title">Información Básica</h2>
+                    <p class="tab-subtitle">Visualiza los datos personales de tu cuenta.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="perfil-info-grid">
+                <div class="input-group">
+                  <label><i class="fa fa-user"></i> Nombre completo</label>
+                  <input type="text" [value]="usuario?.data.nombre" disabled />
+                </div>
+                <div class="input-group">
+                  <label><i class="fa fa-envelope"></i> Correo electrónico</label>
+                  <input type="text" [value]="usuario?.data.email" disabled />
+                </div>
+                <div class="input-group">
+                  <label><i class="fa fa-id-badge"></i> Usuario</label>
+                  <input type="text" [value]="usuario?.data.username" disabled />
+                </div>
+                <div class="input-group">
+                  <label><i class="fa fa-shield-alt"></i> Rol asignado</label>
+                  <input type="text" [value]="rol?.nombre" disabled />
+                </div>
+              </div>
+            </div>
+
+            <!-- PESTAÑA SEGURIDAD -->
+            <div class="tab-content" *ngIf="activeTab === 'seguridad'">
+              <div class="tab-header-row">
+                <div class="tab-titulo-icono">
+                  <div class="tab-icono-wrap">
+                    <i class="fa fa-lock"></i>
+                  </div>
+                  <div>
+                    <h2 class="tab-title">Seguridad</h2>
+                    <p class="tab-subtitle">Actualiza tu contraseña para mantener tu cuenta segura.</p>
+                  </div>
+                </div>
+              </div>
+
+              <form (ngSubmit)="cambiarPassword()" #formPass="ngForm" class="password-form">
+                <div class="input-group">
+                  <label><i class="fa fa-lock"></i> Contraseña actual</label>
+                  <input type="password" name="actual" [(ngModel)]="password.actual" required
+                    placeholder="Ingresa tu contraseña actual" />
+                </div>
+                <div class="input-group">
+                  <label><i class="fa fa-key"></i> Nueva contraseña</label>
+                  <input type="password" name="nueva" [(ngModel)]="password.nueva" required minlength="6"
+                    placeholder="Mínimo 6 caracteres" />
+                </div>
+                <div class="input-group">
+                  <label><i class="fa fa-check-circle"></i> Confirmar nueva contraseña</label>
+                  <input type="password" name="confirmar" [(ngModel)]="password.confirmar" required minlength="6"
+                    placeholder="Repite tu nueva contraseña" />
+                </div>
+
+                <div class="form-actions">
+                  <button type="submit" class="btn-guardar" [disabled]="formPass.invalid">
+                    <i class="fa fa-save"></i> Guardar cambios
+                  </button>
+                </div>
+              </form>
+            </div>
+
+          </div>
+        </div>
       </div>
     </div>
   </div>

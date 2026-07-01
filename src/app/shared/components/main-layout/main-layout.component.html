@@ -1,0 +1,12 @@
+<div class="container" [class.menu-activo]="menuAbierto">
+  <div class="sidebar-overlay" *ngIf="menuAbierto" (click)="cerrarMenu()"></div>
+  <div class="barra-lateral">
+    <app-sidebar></app-sidebar>
+  </div>
+  <div class="main-section">
+    <app-header></app-header>
+    <div class="contenido-principal">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>

@@ -154,38 +154,26 @@ ngOnInit(): void {
   }
 
 listarArticulos() {
-  this.articuloService.getArticulosConCampos().subscribe({
+  const escuelaId = Number(localStorage.getItem('escuelaId'));
+  const fuente$ = escuelaId
+    ? this.articuloService.getArticulosPorEscuela(escuelaId)
+    : this.articuloService.getArticulosConCampos();
+
+  fuente$.subscribe({
     next: (res: any) => {
-      const data = Array.isArray(res)
-        ? res
-        : res?.data ?? [];
+      let data = Array.isArray(res) ? res : res?.data ?? [];
 
-      const idsUbicaciones = [
-        this.ubicacionUsuarioId,
-        ...this.ubicaciones.map(u => Number(u.id))
-      ];
+      if (!escuelaId && this.ubicacionFiltroId) {
+        data = data.filter((a: any) => Number(a.ubicacionId) === this.ubicacionFiltroId);
+      }
 
-      console.log('✅ IDS PERMITIDOS:', idsUbicaciones);
-let articulosFiltrados = data.filter((a: any) =>
-  idsUbicaciones.includes(Number(a.ubicacionId))
-);
-
-if (this.ubicacionFiltroId) {
-  articulosFiltrados = articulosFiltrados.filter(
-    (a: any) => Number(a.ubicacionId) === this.ubicacionFiltroId
-  );
-}
-
-this.articulos = articulosFiltrados.map((a: any) => {
-
-  if (a.id) {
-    const urlQR = `http://localhost:4200/tipos-articulos/articulo/${a.id}`;
-    a.qrCodeBase64 = this.generarQR(urlQR);
-  }
-
-  return a;
-});
-      console.log('📦 ARTICULOS FILTRADOS:', this.articulos);
+      this.articulos = data.map((a: any) => {
+        if (a.id) {
+          const urlQR = `http://localhost:4200/tipos-articulos/articulo/${a.id}`;
+          a.qrCodeBase64 = this.generarQR(urlQR);
+        }
+        return a;
+      });
 
       this.aplicarFiltro();
     },
@@ -217,59 +205,28 @@ this.articulos = articulosFiltrados.map((a: any) => {
   }
 
 cargarUbicaciones(): void {
-  const usuario = JSON.parse(localStorage.getItem('user') || '{}');
+  const escuelaId = Number(localStorage.getItem('escuelaId'));
 
-  console.log('👤 USUARIO LOCALSTORAGE:', usuario);
-
-  const usuarioId =
-    usuario?.data?.id ||
-    usuario?.id ||
-    usuario?.usuarioId;
-
-  if (!usuarioId) {
-    console.error('No se encontró el ID del usuario en localStorage');
-    return;
-  }
-
-  this.ubicService.getUbicacionesPorUsuario(usuarioId).subscribe({
-    next: (resp: any) => {
-      const ubicacionesUsuario = Array.isArray(resp)
-        ? resp
-        : resp?.data ?? [];
-
-      console.log('📍 UBICACIONES DEL USUARIO:', ubicacionesUsuario);
-
-      if (ubicacionesUsuario.length === 0) {
-        this.ubicaciones = [];
-        this.articulos = [];
-        return;
+  if (escuelaId) {
+    this.ubicService.getUbicacionesPorEscuela(escuelaId).subscribe({
+      next: (res: any) => {
+        this.ubicaciones = Array.isArray(res) ? res : res?.data ?? [];
+        this.listarArticulos();
+      },
+      error: () => { this.listarArticulos(); }
+    });
+  } else {
+    this.ubicService.getUbicaciones().subscribe({
+      next: (res: any) => {
+        this.ubicaciones = Array.isArray(res) ? res : res?.data ?? [];
+        this.listarArticulos();
+      },
+      error: (err) => {
+        console.error('Error obteniendo ubicaciones:', err);
+        Swal.fire('Error', 'No se pudieron cargar las ubicaciones', 'error');
       }
-
-      // Ubicación principal
-      this.ubicacionUsuarioId = Number(ubicacionesUsuario[0].id);
-
-      this.ubicService.getUbicacionesPorPadre(this.ubicacionUsuarioId).subscribe({
-        next: (res: any) => {
-          const ubicacionesHijas = Array.isArray(res)
-            ? res
-            : res?.data ?? [];
-
-          this.ubicaciones = ubicacionesHijas;
-
-          console.log('🏢 UBICACION PADRE:', this.ubicacionUsuarioId);
-          console.log('🏢 UBICACIONES HIJAS:', this.ubicaciones);
-
-          this.listarArticulos();
-        },
-        error: (err) => {
-          console.error('Error obteniendo ubicaciones hijas', err);
-        }
-      });
-    },
-    error: (err) => {
-      console.error('Error obteniendo ubicaciones del usuario', err);
-    }
-  });
+    });
+  }
 }
   obtenerTipoArticulo(id: number) {
     return this.tipos.find(t => t.id === id)?.nombre || '-';
@@ -516,15 +473,15 @@ this.articuloService.cargarMasivaExcel(
       nombre: '',
       fechaAdquision: '',
       valorAdquisitivo: null,
+      valorActual: null,
       condicion: '',
       tipoArticuloId: 0,
       ubicacionId: 0,
       estado: 1,
       camposValores: [],
-      vidaUtil: null,
+      tiempoVidaUtil: 0,
 
       // ✨ CAMPOS DE CARGA MASIVA / ADICIONALES
-      codigoBarra: '',
       marca: '',
       modelo: '',
       nroSerie: '',
