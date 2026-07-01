@@ -5,6 +5,9 @@ import { ModulosService, Modulo } from '../../../../app/core/services/modulos.se
 import { MatIconModule } from '@angular/material/icon';
 import { LoginService } from '../../../core/services/login.service';
 import { EscuelaService } from '../../../core/services/escuela.service';
+import { RolesService } from '../../../core/services/roles.service';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-sidebar',
@@ -20,55 +23,57 @@ export class SidebarComponent implements OnInit {
   usuarioActual: any = null;
   ubicacionNombre: string = '';
   ubicacionLogo: string = '';
+  esSuperAdmin = false;
 
   constructor(
     private modulosService: ModulosService,
     private loginService: LoginService,
     public router: Router,
-    private escuelaService: EscuelaService
+    private escuelaService: EscuelaService,
+    private rolesService: RolesService
   ) { }
 
   ngOnInit(): void {
-
     this.usuarioActual = this.loginService.getUser();
 
-    console.log('Usuario actual:', this.usuarioActual);
-
-    if (!this.usuarioActual) {
-      console.error('No hay usuario logueado');
-      return;
-    }
+    if (!this.usuarioActual) return;
 
     const usuarioId = this.usuarioActual.data.id;
     const rolId = this.usuarioActual.data.rolId;
 
-    if (!rolId) {
-      console.error('El usuario no tiene rol asignado');
-      return;
-    }
+    if (!rolId) return;
 
-    // Cargar escuela asignada al usuario
-    this.escuelaService.getEscuelaPorUsuario(usuarioId).subscribe({
-      next: (res: any) => {
-        const escuela = res?.data ?? res;
+    // Carga rol y escuela en paralelo
+    forkJoin({
+      rol: this.rolesService.getRolById(rolId).pipe(catchError(() => of(null))),
+      escuela: this.escuelaService.getEscuelaPorUsuario(usuarioId).pipe(catchError(() => of(null)))
+    }).subscribe(({ rol, escuela }: any) => {
+      const nombreRol = (
+        rol?.data?.rol?.nombre ?? rol?.data?.nombre ?? ''
+      ).toLowerCase().trim();
 
-        if (escuela?.id) {
-          this.ubicacionNombre = escuela.nombre;
-          this.ubicacionLogo = escuela.imagenUrl
-            ? `http://localhost:7000${escuela.imagenUrl}`
-            : '';
-          localStorage.setItem('escuelaId', String(escuela.id));
-          localStorage.setItem('escuelaNombre', escuela.nombre);
-        } else {
-          this.ubicacionNombre = 'Sin escuela asignada';
-          this.ubicacionLogo = '';
-          localStorage.removeItem('escuelaId');
-        }
-      },
-      error: () => {
-        this.ubicacionNombre = 'Sin escuela asignada';
+      this.esSuperAdmin = nombreRol === 'superadmin';
+
+      if (this.esSuperAdmin) {
+        this.ubicacionNombre = 'Oficina de Tecnologías de la Información';
         this.ubicacionLogo = '';
         localStorage.removeItem('escuelaId');
+        localStorage.removeItem('escuelaNombre');
+      } else {
+        const escuelaData = escuela?.data ?? escuela;
+        if (escuelaData?.id) {
+          this.ubicacionNombre = escuelaData.nombre;
+          this.ubicacionLogo = escuelaData.imagenUrl
+            ? `http://localhost:7000${escuelaData.imagenUrl}`
+            : '';
+          localStorage.setItem('escuelaId', String(escuelaData.id));
+          localStorage.setItem('escuelaNombre', escuelaData.nombre);
+        } else {
+          this.ubicacionNombre = 'Sin asignar';
+          this.ubicacionLogo = '';
+          localStorage.removeItem('escuelaId');
+          localStorage.removeItem('escuelaNombre');
+        }
       }
     });
 

@@ -95,9 +95,10 @@
                 </div>
 
                 <div class="form-group">
-                  <label for="nombre">Nombre</label>
+                  <label for="nombre">Descripcion</label>
                   <input id="nombre" type="text" name="nombre" [(ngModel)]="articulo.nombre" required
-                    [disabled]="!editando && articulo.id > 0" placeholder="Ej: Laptop Dell Optiplex" />
+                    readonly placeholder="Se llenará al seleccionar el tipo"
+                    style="background:#f0fdf4; cursor:default; color:#15803d;" />
                 </div>
 
  <div class="form-group">
@@ -132,7 +133,6 @@
 
                     <ng-container *ngIf="editando || articulo.id === 0">
                       <option value="" disabled>Seleccione condición</option>
-                        <option value="Todos">Todos</option>
                 <option value="Nuevo">Nuevo</option>
                 <option value="Bueno">Bueno</option>
                 <option value="Regular">Regular</option>

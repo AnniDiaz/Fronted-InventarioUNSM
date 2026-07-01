@@ -233,6 +233,15 @@ cargarPrestamos() {
     });
 }
 
+recargarPrestamos() {
+  const escuelaId = Number(localStorage.getItem('escuelaId'));
+  if (escuelaId) {
+    this.cargarPrestamosPorEscuela();
+  } else {
+    this.cargarPrestamos();
+  }
+}
+
 cargarPrestamosPorEscuela() {
 
   this._prestamosService.getPrestamos().subscribe({
@@ -433,6 +442,7 @@ confirmarFirma() {
       // Firmar aprueba automáticamente el préstamo en el backend
       prestamo.aprobar = actualizado?.aprobar ?? actualizado?.Aprobar ?? true;
 
+      this.actualizarPaginacion();
       Swal.fire('Firmado', 'El préstamo fue firmado y aprobado correctamente', 'success');
       this.cerrarModalFirma();
     },
@@ -655,7 +665,7 @@ this._prestamosService.addPrestamo(dataParaEnviar).subscribe({
         this._prestamosService.updatePrestamo(idFinal, updateData).subscribe({
           next: () => {
             Swal.fire('Actualizado', 'Equipo marcado como devuelto', 'success');
-            this.cargarPrestamos();
+            this.recargarPrestamos();
           },
           error: (err) => {
             console.error(err);

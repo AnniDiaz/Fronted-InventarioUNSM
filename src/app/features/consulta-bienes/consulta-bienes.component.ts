@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { forkJoin } from 'rxjs';
-import * as XLSX from 'xlsx';
+import * as XLSX from 'xlsx-js-style';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import Swal from 'sweetalert2';
@@ -29,6 +29,7 @@ export class ConsultaBienesComponent implements OnInit {
 
   menuAbierto = false;
   cargando = false;
+  filtrosLocked = false;
 
   busqueda = '';
   filtroSedeId = 0;
@@ -102,7 +103,7 @@ export class ConsultaBienesComponent implements OnInit {
 
         this.bienes = this.aArray(res.articulos).map((a: any) => this.enriquecerBien(a));
 
-        this.aplicarFiltro();
+        this.aplicarFiltroUsuario();
         this.cargando = false;
       },
       error: () => {
@@ -131,6 +132,35 @@ export class ConsultaBienesComponent implements OnInit {
       sedeNombre: sede?.nombre || 'Sin sede',
       responsableNombre: responsable ? `${responsable.nombre} ${responsable.apellido || ''}`.trim() : 'Sin asignar'
     };
+  }
+
+  aplicarFiltroUsuario() {
+    const escuelaId = Number(localStorage.getItem('escuelaId'));
+
+    if (!escuelaId) {
+      this.filtrosLocked = false;
+      this.aplicarFiltro();
+      return;
+    }
+
+    const escuela = this.escuelas.find(e => Number(e.id) === escuelaId);
+    const facultad = escuela ? this.facultades.find(f => Number(f.id) === Number(escuela.facultadId)) : null;
+    const sede = facultad ? this.sedes.find(s => Number(s.id) === Number(facultad.sedeId)) : null;
+
+    this.filtroSedeId = sede ? Number(sede.id) : 0;
+    this.filtroFacultadId = facultad ? Number(facultad.id) : 0;
+    this.filtroEscuelaId = escuelaId;
+
+    this.facultadesFiltradas = sede
+      ? this.facultades.filter(f => Number(f.sedeId) === Number(sede.id))
+      : [...this.facultades];
+
+    this.escuelasFiltradas = facultad
+      ? this.escuelas.filter(e => Number(e.facultadId) === Number(facultad.id))
+      : [...this.escuelas];
+
+    this.filtrosLocked = true;
+    this.aplicarFiltro();
   }
 
   onSedeChange() {
@@ -239,23 +269,81 @@ export class ConsultaBienesComponent implements OnInit {
       return;
     }
 
-    const filas = this.bienesFiltrados.map(b => ({
-      Codigo: b.codigoPatrimonial,
-      Nombre: b.nombre,
-      Categoria: b.categoriaNombre,
-      Sede: b.sedeNombre,
-      Facultad: this.facultades.find(f => f.id === b.facultadId)?.nombre || '',
-      Escuela: b.escuelaNombre,
-      Ubicacion: b.ubicacionNombre,
-      Responsable: b.responsableNombre,
-      Estado: b.condicion,
-      FechaAdquisicion: this.formatearFecha(b.fechaAdquision)
-    }));
+    const cabeceras = [
+      'Código', 'Nombre / Descripción', 'Categoría', 'Sede',
+      'Facultad', 'Escuela', 'Ubicación', 'Responsable', 'Estado', 'Fecha Adquisición'
+    ];
 
-    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(filas);
-    const wb: XLSX.WorkBook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Bienes');
+    const datos = this.bienesFiltrados.map(b => [
+      b.codigoPatrimonial || '',
+      b.nombre || '',
+      b.categoriaNombre || '',
+      b.sedeNombre || '',
+      this.facultades.find((f: any) => f.id === b.facultadId)?.nombre || '',
+      b.escuelaNombre || '',
+      b.ubicacionNombre || '',
+      b.responsableNombre || '',
+      b.condicion || '',
+      this.formatearFecha(b.fechaAdquision)
+    ]);
 
+    const ws: any = XLSX.utils.aoa_to_sheet([cabeceras, ...datos]);
+
+    // Anchos de columna
+    ws['!cols'] = [
+      { wch: 18 }, { wch: 32 }, { wch: 20 }, { wch: 15 },
+      { wch: 38 }, { wch: 30 }, { wch: 20 }, { wch: 25 },
+      { wch: 12 }, { wch: 20 }
+    ];
+
+    // Alto de la fila de cabecera
+    ws['!rows'] = [{ hpt: 28 }];
+
+    const letras = ['A','B','C','D','E','F','G','H','I','J'];
+
+    // Estilo cabecera: verde oscuro, texto blanco en negrita
+    const estiloHeader = {
+      font: { bold: true, color: { rgb: 'FFFFFF' }, sz: 11, name: 'Calibri' },
+      fill: { patternType: 'solid', fgColor: { rgb: '00A468' } },
+      alignment: { horizontal: 'center', vertical: 'center' },
+      border: {
+        top:    { style: 'medium', color: { rgb: '007A4D' } },
+        bottom: { style: 'medium', color: { rgb: '007A4D' } },
+        left:   { style: 'thin',   color: { rgb: '007A4D' } },
+        right:  { style: 'thin',   color: { rgb: '007A4D' } }
+      }
+    };
+
+    letras.forEach(col => {
+      const ref = `${col}1`;
+      if (ws[ref]) ws[ref].s = estiloHeader;
+    });
+
+    // Estilo filas de datos: alternado verde claro / blanco
+    for (let r = 0; r < datos.length; r++) {
+      const esPar = r % 2 === 0;
+      const estiloFila: any = {
+        font: { sz: 10, name: 'Calibri', color: { rgb: '1F2937' } },
+        fill: esPar
+          ? { patternType: 'solid', fgColor: { rgb: 'F0FDF4' } }
+          : { patternType: 'solid', fgColor: { rgb: 'FFFFFF' } },
+        alignment: { vertical: 'center' },
+        border: {
+          top:    { style: 'thin', color: { rgb: 'D1FAE5' } },
+          bottom: { style: 'thin', color: { rgb: 'D1FAE5' } },
+          left:   { style: 'thin', color: { rgb: 'D1FAE5' } },
+          right:  { style: 'thin', color: { rgb: 'D1FAE5' } }
+        }
+      };
+
+      letras.forEach(col => {
+        const ref = `${col}${r + 2}`;
+        if (ws[ref]) ws[ref].s = estiloFila;
+      });
+    }
+
+    const wb: any = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Inventario Bienes');
     XLSX.writeFile(wb, `Inventario_Bienes_${new Date().toISOString().split('T')[0]}.xlsx`);
   }
 

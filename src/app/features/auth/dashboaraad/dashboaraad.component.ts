@@ -78,6 +78,16 @@ ngOnInit() {
   this.obtenerUbicacionesPermitidas().then((idsPermitidos) => {
     this.idsUbicacionesPermitidas = idsPermitidos;
 
+    const escuelaId = Number(localStorage.getItem('escuelaId'));
+    if (escuelaId && idsPermitidos.length === 0) {
+      // Escuela asignada pero sin ubicaciones aún: todo en 0, no consultar el backend
+      this.totalArticulos = 0;
+      this.totalValor = 0;
+      this.totalUbicaciones = 0;
+      this.totalTraslados = 0;
+      return;
+    }
+
     this.cargarDatosDashboard(idsPermitidos);
     this.cargarTotalArticulosPorUbicacion(idsPermitidos);
     this.totalUbicaciones = idsPermitidos.length;

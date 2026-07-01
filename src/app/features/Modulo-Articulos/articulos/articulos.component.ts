@@ -206,11 +206,14 @@ listarArticulos() {
 
 cargarUbicaciones(): void {
   const escuelaId = Number(localStorage.getItem('escuelaId'));
+  const usuario = JSON.parse(localStorage.getItem('user') || '{}');
+  const usuarioId = usuario?.data?.id || usuario?.id;
 
   if (escuelaId) {
     this.ubicService.getUbicacionesPorEscuela(escuelaId).subscribe({
       next: (res: any) => {
         this.ubicaciones = Array.isArray(res) ? res : res?.data ?? [];
+        this.resolverUbicacionUsuario(usuarioId);
         this.listarArticulos();
       },
       error: () => { this.listarArticulos(); }
@@ -219,6 +222,7 @@ cargarUbicaciones(): void {
     this.ubicService.getUbicaciones().subscribe({
       next: (res: any) => {
         this.ubicaciones = Array.isArray(res) ? res : res?.data ?? [];
+        this.resolverUbicacionUsuario(usuarioId);
         this.listarArticulos();
       },
       error: (err) => {
@@ -227,6 +231,26 @@ cargarUbicaciones(): void {
       }
     });
   }
+}
+
+resolverUbicacionUsuario(usuarioId: number): void {
+  if (!usuarioId) {
+    if (this.ubicaciones.length > 0) this.ubicacionUsuarioId = Number(this.ubicaciones[0].id);
+    return;
+  }
+  this.ubicService.getUbicacionesPorUsuario(usuarioId).subscribe({
+    next: (resp: any) => {
+      const ubs = Array.isArray(resp) ? resp : resp?.data ?? [];
+      if (ubs.length > 0) {
+        this.ubicacionUsuarioId = Number(ubs[0].id);
+      } else if (this.ubicaciones.length > 0) {
+        this.ubicacionUsuarioId = Number(this.ubicaciones[0].id);
+      }
+    },
+    error: () => {
+      if (this.ubicaciones.length > 0) this.ubicacionUsuarioId = Number(this.ubicaciones[0].id);
+    }
+  });
 }
   obtenerTipoArticulo(id: number) {
     return this.tipos.find(t => t.id === id)?.nombre || '-';
@@ -251,6 +275,9 @@ cargarUbicaciones(): void {
     this.articulo.camposValores = [];
 
     if (!this.articulo.tipoArticuloId) return;
+
+    const tipoSeleccionado = this.tipos.find(t => Number(t.id) === Number(this.articulo.tipoArticuloId));
+    if (tipoSeleccionado) this.articulo.nombre = tipoSeleccionado.nombre;
 
     this.campoService.getCamposByTipoArticulo(this.articulo.tipoArticuloId).subscribe({
       next: (res: any) => {
@@ -343,6 +370,12 @@ this.articuloService.addArticuloConCampos(payload).subscribe({
     const archivo: File = event.target.files[0];
 
     if (!archivo) return;
+
+    if (!this.ubicacionUsuarioId) {
+      Swal.fire('Sin ubicación', 'No se pudo determinar tu ubicación. Recarga la página e intenta de nuevo.', 'warning');
+      event.target.value = '';
+      return;
+    }
 
     // Alerta visual de espera para que el usuario no desespere si el Excel es grande
     Swal.fire({

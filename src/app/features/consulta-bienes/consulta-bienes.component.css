@@ -205,6 +205,21 @@
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
+.filtro-bloqueado {
+  background: #f0fdf4 !important;
+  border-color: #a7f3d0 !important;
+  color: #15803d !important;
+  cursor: not-allowed !important;
+  opacity: 1 !important;
+}
+
+.filtro-lock-icon {
+  color: #16a34a;
+  font-size: 0.65rem;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
 /* TABLA */
 .tabla-card {
   background: white;

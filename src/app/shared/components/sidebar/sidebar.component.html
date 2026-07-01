@@ -3,17 +3,28 @@
   <!-- HEADER -->
   <div class="sidebar-header">
     <div class="logo-box">
-<img
-  [src]="ubicacionLogo || '/assets/oti-unsm.png'"
-  alt="Ubicación logo"
-  class="ubicacion-logo"
-/>
 
-<div class="logo-text">
-  <p class="title">{{ ubicacionNombre }}</p>
-  <p class="subtitle">Panel de gestión</p>
-</div>
+      <!-- SuperAdmin: logo OTI -->
+      <img *ngIf="esSuperAdmin"
+        src="/assets/oti-unsm.png"
+        alt="OTI"
+        class="ubicacion-logo" />
 
+      <!-- Otro rol con logo de escuela -->
+      <img *ngIf="!esSuperAdmin && ubicacionLogo"
+        [src]="ubicacionLogo"
+        alt="Logo escuela"
+        class="ubicacion-logo" />
+
+      <!-- Otro rol sin logo: icono por defecto -->
+      <div *ngIf="!esSuperAdmin && !ubicacionLogo" class="ubicacion-icon-default">
+        <i class="fa fa-university"></i>
+      </div>
+
+      <div class="logo-text">
+        <p class="title">{{ ubicacionNombre }}</p>
+        <p class="subtitle">Panel de gestión</p>
+      </div>
 
     </div>
   </div>

@@ -149,7 +149,12 @@
                 <span class="kpi-label">{{ kpi.label }}</span>
                 <h2 class="kpi-value">{{ kpi.value }}</h2>
               </div>
-              <div *ngIf="kpis.length === 0" class="no-data-msg">Cargando indicadores...</div>
+              <div *ngIf="kpis.length === 0 && loading" class="no-data-msg">
+                <i class="fa fa-spinner fa-spin"></i> Cargando indicadores...
+              </div>
+              <div *ngIf="kpis.length === 0 && !loading" class="no-data-msg sin-datos-msg">
+                <i class="fa fa-inbox"></i> No hay registros para este módulo
+              </div>
             </div>
 
             <!-- CARD PRINCIPAL: GRÁFICO / TABLA -->

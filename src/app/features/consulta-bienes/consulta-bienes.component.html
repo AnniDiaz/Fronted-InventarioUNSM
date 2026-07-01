@@ -55,24 +55,33 @@
 
           <div class="filtros-grid">
             <div class="filtro-campo">
-              <label>SEDE</label>
-              <select [(ngModel)]="filtroSedeId" (change)="onSedeChange()">
+              <label>
+                SEDE
+                <i *ngIf="filtrosLocked" class="fa fa-lock filtro-lock-icon" title="Filtro asignado a tu escuela"></i>
+              </label>
+              <select [(ngModel)]="filtroSedeId" (change)="onSedeChange()" [disabled]="filtrosLocked" [class.filtro-bloqueado]="filtrosLocked">
                 <option [ngValue]="0">Todas las Sedes</option>
                 <option *ngFor="let s of sedes" [ngValue]="s.id">{{ s.nombre }}</option>
               </select>
             </div>
 
             <div class="filtro-campo">
-              <label>FACULTAD</label>
-              <select [(ngModel)]="filtroFacultadId" (change)="onFacultadChange()">
+              <label>
+                FACULTAD
+                <i *ngIf="filtrosLocked" class="fa fa-lock filtro-lock-icon" title="Filtro asignado a tu escuela"></i>
+              </label>
+              <select [(ngModel)]="filtroFacultadId" (change)="onFacultadChange()" [disabled]="filtrosLocked" [class.filtro-bloqueado]="filtrosLocked">
                 <option [ngValue]="0">Todas las Facultades</option>
                 <option *ngFor="let f of facultadesFiltradas" [ngValue]="f.id">{{ f.nombre }}</option>
               </select>
             </div>
 
             <div class="filtro-campo">
-              <label>ESCUELA</label>
-              <select [(ngModel)]="filtroEscuelaId" (change)="aplicarFiltro()">
+              <label>
+                ESCUELA
+                <i *ngIf="filtrosLocked" class="fa fa-lock filtro-lock-icon" title="Filtro asignado a tu escuela"></i>
+              </label>
+              <select [(ngModel)]="filtroEscuelaId" (change)="aplicarFiltro()" [disabled]="filtrosLocked" [class.filtro-bloqueado]="filtrosLocked">
                 <option [ngValue]="0">Todas las Escuelas</option>
                 <option *ngFor="let e of escuelasFiltradas" [ngValue]="e.id">{{ e.nombre }}</option>
               </select>

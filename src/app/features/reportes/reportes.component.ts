@@ -238,6 +238,17 @@ async generarReporte() {
   this.p = 1;
 
   const idsPermitidos = await this.obtenerUbicacionesPermitidas();
+  this.idsUbicacionesPermitidas = idsPermitidos;
+
+  const escuelaId = Number(localStorage.getItem('escuelaId'));
+  if (escuelaId && idsPermitidos.length === 0) {
+    // Escuela asignada sin ubicaciones: mostrar vacío sin consultar el backend
+    this.kpis = [];
+    this.tablaDatos = [];
+    this.renderChart([], []);
+    this.loading = false;
+    return;
+  }
 
   let ubicacionesEnviar: number[] = idsPermitidos;
 
@@ -701,7 +712,8 @@ async generarReporte() {
         fechaInicio: this.filtroFechaInicio?.toISOString(),
         fechaFin: this.filtroFechaFin?.toISOString(),
         estado: this.filtroEstado,
-        categoriaId: this.filtroCategoriaId > 0 ? this.filtroCategoriaId : undefined
+        categoriaId: this.filtroCategoriaId > 0 ? this.filtroCategoriaId : undefined,
+        ubicacionIds: this.idsUbicacionesPermitidas.length > 0 ? this.idsUbicacionesPermitidas : undefined
       };
       return lastValueFrom(this.reportesService.generarReporte(req));
     });
