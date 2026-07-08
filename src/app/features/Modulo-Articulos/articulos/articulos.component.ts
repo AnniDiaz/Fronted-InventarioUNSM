@@ -408,8 +408,10 @@ resolverUbicacionUsuario(usuarioId: number): void {
     // =========================================================================
 
     if (this.editando) {
+      console.log('🔵 Enviando PUT a:', `articulos/update-con-campos/${payload.id}`);
       this.articuloService.updateArticuloConCampos(payload).subscribe({
-        next: () => {
+        next: (resp) => {
+          console.log('🟢 Respuesta real del backend:', resp);
           Swal.fire('Éxito', 'Artículo actualizado correctamente', 'success');
           this.toggleFormulario();
           this.listarArticulos();
