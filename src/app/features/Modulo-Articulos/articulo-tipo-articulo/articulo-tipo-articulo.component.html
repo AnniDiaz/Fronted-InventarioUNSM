@@ -129,6 +129,20 @@
 </select>
     </div>
 
+    <div class="form-group">
+      <label>Clasificación de Depreciación (MEF)</label>
+      <select [(ngModel)]="formulario['ClasificacionDepreciacionId']" name="ClasificacionDepreciacionId"
+        (change)="onClasificacionChange()">
+        <option [ngValue]="null">Sin clasificación</option>
+        <option *ngFor="let c of clasificaciones" [ngValue]="c.id">{{ c.nombre }}</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Tiempo de Vida Útil (años)</label>
+      <input type="number" [(ngModel)]="formulario['TiempoVidaUtil']" name="TiempoVidaUtil" min="0" />
+    </div>
+
     <!-- Campos dinámicos -->
     <div *ngFor="let c of camposDefinidos" class="form-group">
       <label>{{ c.nombreCampo }}</label>

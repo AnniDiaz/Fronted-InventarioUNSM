@@ -14,10 +14,6 @@
 
         <div class="header-inventario">
           <div class="textos-inventario" style="display: flex; align-items: center; gap: 16px;">
-            <button class="menu-toggle" (click)="toggleMenu()">
-              <i class="fa fa-bars"></i>
-            </button>
-
             <div>
               <h2 style="margin: 0;">Inventario de Artículos</h2>
               <p style="margin: 0;">Gestión completa de todos los activos físicos de la FISI.</p>
@@ -77,27 +73,32 @@
 
                 <div class="form-group">
                   <label for="tipoArticulo">Tipo de artículo</label>
-                  <select id="tipoArticulo" name="tipoArticuloId" [(ngModel)]="articulo.tipoArticuloId"
-                    (change)="onTipoChange()" required [disabled]="!editando && articulo.id > 0">
-                    <option value="0" disabled>Seleccione tipo</option>
-                    <option *ngFor="let t of tipos" [value]="t.id">{{ t.nombre }}</option>
-                  </select>
+                  <app-searchable-select id="tipoArticulo" name="tipoArticuloId"
+                    [opciones]="opcionesTipos" placeholder="Seleccione tipo"
+                    [(ngModel)]="articulo.tipoArticuloId" (ngModelChange)="onTipoChange()"
+                    required [disabled]="!editando && articulo.id > 0">
+                  </app-searchable-select>
                 </div>
-
+  <div class="form-group">
+                  <label for="clasificacionDepreciacion">Selecciona el articulo</label>
+                  <app-searchable-select id="clasificacionDepreciacion" name="clasificacionDepreciacionId"
+                    [opciones]="opcionesClasificaciones" placeholder="Sin clasificación"
+                    [(ngModel)]="articulo.clasificacionDepreciacionId" (ngModelChange)="onClasificacionChange()"
+                    [disabled]="!editando && articulo.id > 0">
+                  </app-searchable-select>
+                </div>
                 <div class="form-group">
                   <label for="ubicacion">Ubicación</label>
-                  <select id="ubicacion" name="ubicacionId" [(ngModel)]="articulo.ubicacionId" required>
-                    <option value="0" disabled>Seleccione ubicación</option>
-                    <option *ngFor="let u of ubicaciones" [value]="u.id">
-                      {{ u.nombre }}
-                    </option>
-                  </select>
+                  <app-searchable-select id="ubicacion" name="ubicacionId"
+                    [opciones]="opcionesUbicaciones" placeholder="Seleccione ubicación"
+                    [(ngModel)]="articulo.ubicacionId" required>
+                  </app-searchable-select>
                 </div>
 
                 <div class="form-group">
                   <label for="nombre">Descripcion</label>
                   <input id="nombre" type="text" name="nombre" [(ngModel)]="articulo.nombre" required
-                    readonly placeholder="Se llenará al seleccionar el tipo"
+                    readonly placeholder="Se llenará al seleccionar el artículo"
                     style="background:#f0fdf4; cursor:default; color:#15803d;" />
                 </div>
 
@@ -124,22 +125,11 @@
 
                 <div class="form-group">
                   <label for="condicion">Condición</label>
-                  <select id="condicion" name="condicion" [(ngModel)]="articulo.condicion" required
+                  <app-searchable-select id="condicion" name="condicion"
+                    [opciones]="opcionesCondicion" placeholder="Seleccione condición"
+                    [(ngModel)]="articulo.condicion" required
                     [disabled]="!editando && articulo.id > 0">
-
-                    <ng-container *ngIf="!editando && articulo.id > 0">
-                      <option [value]="articulo.condicion">{{ articulo.condicion }}</option>
-                    </ng-container>
-
-                    <ng-container *ngIf="editando || articulo.id === 0">
-                      <option value="" disabled>Seleccione condición</option>
-                <option value="Nuevo">Nuevo</option>
-                <option value="Bueno">Bueno</option>
-                <option value="Regular">Regular</option>
-                <option value="Malo">Malo</option>
-                    </ng-container>
-
-                  </select>
+                  </app-searchable-select>
                 </div>
 
 
@@ -160,22 +150,26 @@
 
 
 
-                <div class="form-group">
-                  <label for="medidas">Medidas</label>
-                  <input id="medidas" type="text" name="medidas" [(ngModel)]="articulo.medidas"
-                    [disabled]="!editando && articulo.id > 0" placeholder="Ej: 40x30x15 cm" />
-                </div>
 
-                <div class="form-group">
-                  <label for="color">Color</label>
-                  <input id="color" type="text" name="color" [(ngModel)]="articulo.color"
-                    [disabled]="!editando && articulo.id > 0" placeholder="Ej: Gris" />
-                </div>
 
                 <div class="form-group">
                   <label for="tiempoVidaUtil">Tiempo de Vida Útil (años)</label>
                   <input id="tiempoVidaUtil" type="number" name="tiempoVidaUtil" [(ngModel)]="articulo.tiempoVidaUtil"
                     min="0" [disabled]="!editando && articulo.id > 0" placeholder="Ej: 5" />
+                </div>
+
+                <div class="form-group">
+                  <label for="fechaFinVidaUtil">Activo hasta</label>
+                  <input id="fechaFinVidaUtil" type="text" [value]="fechaFinVidaUtil"
+                    readonly placeholder="Se calculará automáticamente"
+                    style="background:#f0fdf4; cursor:default; color:#15803d;" />
+                </div>
+
+                <div class="form-group">
+                  <label for="otrasObservaciones">Otras Observaciones</label>
+                  <input id="otrasObservaciones" type="text" name="otrasObservaciones"
+                    [(ngModel)]="articulo.otrasObservaciones" [disabled]="!editando && articulo.id > 0"
+                    placeholder="Ej: Observaciones adicionales" />
                 </div>
 
 
@@ -193,11 +187,11 @@
                   <input *ngIf="campo.tipoDato === 's' || campo.tipoDato === 'fecha'" type="date"
                     [(ngModel)]="articulo.camposValores[i].valor" name="campo_fecha_{{campo.id}}"
                     [disabled]="!editando && articulo.id > 0" required />
-                  <select *ngIf="campo.tipoDato === 'select'" [(ngModel)]="articulo.camposValores[i].valor"
+                  <app-searchable-select *ngIf="campo.tipoDato === 'select'"
+                    [opciones]="opcionesDeCampo(campo)" placeholder="Seleccione opción"
+                    [(ngModel)]="articulo.camposValores[i].valor"
                     name="campo_select_{{campo.id}}" [disabled]="!editando && articulo.id > 0" required>
-                    <option value="">Seleccione opción</option>
-                    <option *ngFor="let op of campo.opciones" [value]="op">{{ op }}</option>
-                  </select>
+                  </app-searchable-select>
                 </div>
 
                 <div class="modal-footer-modern">
@@ -231,8 +225,7 @@
                 <th width="130">MODELO</th>
                 <th width="130">NRO DE SERIE</th>
                 <th width="120">VALOR ACTUAL</th>
-                <th width="120">MEDIDAS</th>
-                <th width="100">COLOR</th>
+                <th width="180">OTRAS OBSERVACIONES</th>
                 <th width="150" class="text-right th-acciones-sticky">ACCIONES</th>
               </tr>
             </thead>
@@ -284,9 +277,7 @@
                   <span class="texto-secundario" *ngIf="a.valorActual == null">-</span>
                 </td>
 
-                <td><span class="texto-secundario">{{ a.medidas || '-' }}</span></td>
-
-                <td><span class="texto-secundario">{{ a.color || '-' }}</span></td>
+                <td><span class="texto-secundario">{{ a.otrasObservaciones || '-' }}</span></td>
 
                 <td class="td-acciones td-acciones-sticky">
                   <div class="action-icons">

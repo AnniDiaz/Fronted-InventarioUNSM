@@ -101,11 +101,17 @@
                 </button>
 
                 <div class="options-menu" *ngIf="menuAbiertoId === f.id">
-                  <button class="op-edit" (click)="editarFacultad(f)">
+                  <button class="op-edit"
+                    [disabled]="(f.nroEscuelas ?? 0) > 0 || (f.nroBienes ?? 0) > 0"
+                    [title]="(f.nroEscuelas ?? 0) > 0 || (f.nroBienes ?? 0) > 0 ? 'No se puede editar: tiene escuelas o artículos asociados' : 'Editar'"
+                    (click)="editarFacultad(f)">
                     <i class="fa fa-pen"></i> Editar
                   </button>
 
-                  <button class="op-delete" (click)="eliminarFacultad(f.id)">
+                  <button class="op-delete"
+                    [disabled]="(f.nroEscuelas ?? 0) > 0 || (f.nroBienes ?? 0) > 0"
+                    [title]="(f.nroEscuelas ?? 0) > 0 || (f.nroBienes ?? 0) > 0 ? 'No se puede eliminar: tiene escuelas o artículos asociados' : 'Eliminar'"
+                    (click)="eliminarFacultad(f.id)">
                     <i class="fa fa-trash"></i> Eliminar
                   </button>
                 </div>

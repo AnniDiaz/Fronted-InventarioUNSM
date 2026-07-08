@@ -10,6 +10,7 @@ import { SidebarComponent } from '../../shared/components/sidebar/sidebar.compon
 import { SolicitantesService } from '../../core/services/solicitantes.service';
 import { LoginService } from '../../core/services/login.service';
 import { UbicacionService } from '../../core/services/ubicacion.service';
+import { RolesService } from '../../core/services/roles.service';
 
 @Component({
   selector: 'app-solicitantes',
@@ -53,8 +54,9 @@ ubicaciones: any[] = [];
 
   constructor(
     private solicitantesService: SolicitantesService,
-      private loginService: LoginService,
-  private ubicacionService: UbicacionService
+    private loginService: LoginService,
+    private ubicacionService: UbicacionService,
+    private rolesService: RolesService
   ) { }
 
   ngOnInit(): void {
@@ -149,51 +151,71 @@ aplicarPaginacion() {
 
 
 cargarUbicacionUsuario() {
+  const rolId = Number(localStorage.getItem('rolId'));
 
+  if (rolId) {
+    this.rolesService.getRolById(rolId).subscribe({
+      next: (res: any) => {
+        const nombreRol = (res?.data?.rol?.nombre ?? res?.data?.nombre ?? '').toLowerCase().trim();
+        if (nombreRol === 'superadmin') {
+          this.ubicacionService.getUbicaciones().subscribe({
+            next: (lista: any) => {
+              this.ubicaciones = Array.isArray(lista) ? lista : lista?.data ?? [];
+            },
+            error: (err) => console.error(err)
+          });
+        } else {
+          this.cargarUbicacionesPorEscuela();
+        }
+      },
+      error: () => this.cargarUbicacionesPorEscuela()
+    });
+  } else {
+    this.cargarUbicacionesPorEscuela();
+  }
+}
+
+cargarUbicacionesPorEscuela() {
+  const escuelaId = Number(localStorage.getItem('escuelaId'));
+
+  if (escuelaId) {
+    this.ubicacionService.getUbicacionesPorEscuela(escuelaId).subscribe({
+      next: (res: any) => {
+        const lista: any[] = Array.isArray(res) ? res : res?.data ?? [];
+        this.ubicaciones = lista;
+        if (lista.length > 0 && !this.solicitante.ubicacionId) {
+          this.solicitante.ubicacionId = lista[0].id;
+        }
+      },
+      error: (err) => console.error(err)
+    });
+    return;
+  }
+
+  // Fallback: flujo por usuario
   const usuario = this.loginService.getUser();
-
   if (!usuario?.data?.id) return;
 
   const usuarioId = usuario.data.id;
 
-  this.ubicacionService
-    .getUbicacionesPorUsuario(usuarioId)
-    .subscribe({
+  this.ubicacionService.getUbicacionesPorUsuario(usuarioId).subscribe({
+    next: (res: any) => {
+      const padres: any[] = Array.isArray(res) ? res : res?.data ?? [];
+      if (padres.length === 0) { this.ubicaciones = []; return; }
 
-      next: (res: any) => {
-
-        const padres: any[] = Array.isArray(res) ? res : res?.data ?? [];
-
-        if (padres.length === 0) {
-          this.ubicaciones = [];
-          return;
-        }
-
-        // La respuesta es la ubicación padre (edificio/sede).
-        // Cargamos los laboratorios hijos de esa ubicación padre.
-        const padreId = padres[0].id;
-
-        this.ubicacionService.getUbicacionesPorPadre(padreId).subscribe({
-
-          next: (hijos: any) => {
-
-            const lista: any[] = Array.isArray(hijos) ? hijos : hijos?.data ?? [];
-
-            this.ubicaciones = lista;
-
-            if (lista.length > 0) {
-              this.solicitante.ubicacionId = lista[0].id;
-            }
-          },
-
-          error: (err) => console.error(err)
-        });
-      },
-
-      error: (err) => {
-        console.error(err);
-      }
-    });
+      this.ubicacionService.getUbicacionesPorPadre(padres[0].id).subscribe({
+        next: (hijos: any) => {
+          const lista: any[] = Array.isArray(hijos) ? hijos : hijos?.data ?? [];
+          this.ubicaciones = lista;
+          if (lista.length > 0 && !this.solicitante.ubicacionId) {
+            this.solicitante.ubicacionId = lista[0].id;
+          }
+        },
+        error: (err) => console.error(err)
+      });
+    },
+    error: (err) => console.error(err)
+  });
 }
 aplicarFiltro() {
   this.paginaActual = 1;

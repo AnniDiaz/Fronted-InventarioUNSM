@@ -137,7 +137,13 @@ cargarPorEscuela(): void {
   const escuelaId = Number(localStorage.getItem('escuelaId'));
 
   if (!escuelaId) {
-    this.cargarUbicaciones();
+    // superadmin o usuario sin escuela asignada: cargar todo
+    this.articuloService.getArticulosConCampos().subscribe({
+      next: (res: any) => {
+        this.articulos = Array.isArray(res) ? res : res?.data ?? [];
+      },
+      error: () => Swal.fire('Error', 'No se pudieron cargar los artículos', 'error')
+    });
     return;
   }
 

@@ -24,6 +24,7 @@ import { SedesComponent } from './features/sedes/sedes.component';
 import { FacultadesComponent } from './features/facultades/facultades.component';
 import { EscuelasComponent } from './features/escuelas/escuelas.component';
 import { ConsultaBienesComponent } from './features/consulta-bienes/consulta-bienes.component';
+import { ClasificacionDepreciacionComponent } from './features/Modulo-Articulos/clasificacion-depreciacion/clasificacion-depreciacion.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -31,6 +32,7 @@ export const routes: Routes = [
   { path: 'dashboard', component: DashboardComponent },
   { path: 'tipos-articulos', component: TipoArticulosComponent },
   { path: 'tipos-articulos/:id', component: ArticuloTipoArticuloComponent },
+  { path: 'clasificacion-depreciacion', component: ClasificacionDepreciacionComponent },
 
   { path: 'tipo-ubicacion', component: TipoUbicacionComponent },
   { path: 'ubicaciones', component: UbicacionComponent },

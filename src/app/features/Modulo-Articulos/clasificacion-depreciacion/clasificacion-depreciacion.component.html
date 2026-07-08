@@ -1,0 +1,135 @@
+<div class="container" [class.menu-activo]="menuAbierto">
+
+  <div class="sidebar-overlay" *ngIf="menuAbierto" (click)="toggleMenu()"></div>
+
+  <div class="barra-lateral" [class.show]="menuAbierto">
+    <app-sidebar></app-sidebar>
+  </div>
+
+  <div class="main-section">
+    <app-header></app-header>
+
+    <div class="contenido-principal">
+      <div class="card-inventario">
+
+        <div class="header-inventario">
+          <div class="textos-inventario">
+            <button class="menu-toggle" (click)="toggleMenu()">
+              <i class="fa fa-bars"></i>
+            </button>
+            <div class="titulos">
+              <h2>Clasificación de Depreciación (MEF)</h2>
+              <p>Catálogo de vida útil y depreciación anual por tipo de bien, según la norma MEF.</p>
+            </div>
+          </div>
+
+          <div class="acciones-top">
+            <div class="buscador-sutil">
+              <i class="fa fa-search"></i>
+              <input type="text" placeholder="Buscar clasificación..." [(ngModel)]="filtro"
+                (input)="aplicarFiltro()" />
+            </div>
+            <button class="btn-agregar-pill" (click)="toggleFormulario()">
+              <i class="fa fa-plus"></i> Nueva Clasificación
+            </button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="tabla-clean">
+            <thead>
+              <tr>
+                <th>NOMBRE</th>
+                <th>DESCRIPCIÓN</th>
+                <th class="text-center">VIDA ÚTIL (AÑOS)</th>
+                <th class="text-center">% DEPRECIACIÓN ANUAL</th>
+                <th class="text-center">ESTADO</th>
+                <th class="text-right">ACCIONES</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let c of registrosPaginados">
+                <td><span class="nombre-principal">{{ c.nombre }}</span></td>
+                <td><span class="texto-secundario">{{ c.descripcion || '-' }}</span></td>
+                <td class="text-center">{{ c.vidaUtilAnios }}</td>
+                <td class="text-center">{{ c.porcentajeDepreciacionAnual }}%</td>
+                <td class="text-center">
+                  <span class="badge">{{ c.estado === 1 || c.estado === true ? 'ACTIVO' : 'INACTIVO' }}</span>
+                </td>
+                <td class="text-right">
+                  <div class="action-icons">
+                    <button class="icon-btn editar" (click)="editarClasificacion(c)" title="Editar">
+                      <i class="fa fa-pen"></i>
+                    </button>
+                    <button class="icon-btn eliminar" (click)="eliminarClasificacion(c.id)" title="Eliminar">
+                      <i class="fa fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="empty-state" *ngIf="registrosPaginados.length === 0">
+            <i class="fa fa-folder-open-o"></i>
+            <p>No se encontraron clasificaciones de depreciación.</p>
+          </div>
+        </div>
+
+        <div class="footer-paginacion">
+          <div class="pag-info">
+            Mostrando <strong>{{ registrosPaginados.length }}</strong> de <strong>{{ clasificacionesFiltradas.length }}</strong> clasificaciones
+          </div>
+          <div class="pag-botones">
+            <button class="btn-pag-nav" [disabled]="paginaActual === 1" (click)="cambiarPagina(paginaActual - 1)">
+              Anterior
+            </button>
+            <button class="btn-pag-nav active" [disabled]="paginaActual === totalPaginas"
+              (click)="cambiarPagina(paginaActual + 1)">
+              Siguiente
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="mostrarFormulario">
+  <div class="modal-modern">
+    <div class="modal-header">
+      <h3>{{ editando ? 'Editar Clasificación' : 'Nueva Clasificación de Depreciación' }}</h3>
+      <button class="btn-cerrar" (click)="toggleFormulario()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <form (ngSubmit)="guardarClasificacion()" #formClasificacion="ngForm" class="form-grid-modern">
+        <div class="form-group">
+          <label>Nombre</label>
+          <input type="text" [(ngModel)]="nuevaClasificacion.nombre" name="nombre"
+            placeholder="Ej. Computadoras portátiles (laptop)" required />
+        </div>
+
+        <div class="form-group">
+          <label>Descripción</label>
+          <textarea [(ngModel)]="nuevaClasificacion.descripcion" name="descripcion"
+            placeholder="Descripción de la clasificación..." rows="3"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Vida Útil (años)</label>
+          <input type="number" [(ngModel)]="nuevaClasificacion.vidaUtilAnios" name="vidaUtilAnios" min="0"
+            placeholder="Ej. 3" required />
+        </div>
+
+        <div class="modal-footer-modern">
+          <button type="button" class="btn-cancelar-md" (click)="toggleFormulario()">Cancelar</button>
+          <button type="submit" class="btn-guardar-md">
+            {{ editando ? 'Actualizar' : 'Guardar' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

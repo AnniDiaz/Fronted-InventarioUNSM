@@ -1,0 +1,27 @@
+<div class="searchable-select" [class.disabled]="disabled">
+  <input
+    type="text"
+    class="searchable-select-input"
+    [value]="textoMostrado"
+    [placeholder]="placeholder"
+    [disabled]="disabled"
+    (focus)="abrir()"
+    (input)="onInput($any($event.target).value)"
+    autocomplete="off"
+  />
+  <i class="fa fa-chevron-down searchable-select-icon"></i>
+
+  <div class="searchable-select-panel" *ngIf="abierto">
+    <div
+      class="searchable-select-opcion"
+      *ngFor="let op of opcionesFiltradas"
+      [class.activa]="op.value === valor"
+      (mousedown)="seleccionar(op)"
+    >
+      {{ op.label }}
+    </div>
+    <div class="searchable-select-vacio" *ngIf="opcionesFiltradas.length === 0">
+      Sin resultados
+    </div>
+  </div>
+</div>

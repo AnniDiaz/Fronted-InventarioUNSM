@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { LoginService } from '../../../core/services/login.service';
 import { Router } from '@angular/router';
 import { RolesService } from '../../../core/services/roles.service';
+import { SidebarStateService } from '../../../core/services/sidebar-state.service';
 
 // Define una interfaz para tu usuario
 interface Usuario {
@@ -57,9 +58,14 @@ export class HeaderComponent implements OnInit {
   constructor(
     private loginService: LoginService,
     private router: Router,
-    private cdr: ChangeDetectorRef, // <--- Importante
-    private rolService: RolesService
+    private cdr: ChangeDetectorRef,
+    private rolService: RolesService,
+    private sidebarState: SidebarStateService
   ) { }
+
+  toggleSidebar() {
+    this.sidebarState.toggle();
+  }
 
   irAPerfil() {
     this.router.navigate(['/perfil']);

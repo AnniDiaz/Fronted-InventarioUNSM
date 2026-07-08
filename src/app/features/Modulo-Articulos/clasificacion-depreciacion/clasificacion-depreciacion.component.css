@@ -1,0 +1,201 @@
+/* =========================================================
+   TABLA
+   ========================================================= */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  position: relative;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.tabla-clean {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.tabla-clean thead th {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.tabla-clean td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+  background: #ffffff;
+}
+
+.tabla-clean tbody tr:hover td {
+  background: #f8fafc;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.nombre-principal {
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 14px;
+}
+
+.texto-secundario {
+  color: #475569;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #00a468;
+  background: #e6f6ee;
+}
+
+.action-icons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: 0.2s;
+  border: none;
+  font-size: 14px;
+}
+
+.icon-btn.editar {
+  color: #3b82f6;
+  background: #eff6ff;
+}
+
+.icon-btn.eliminar {
+  color: #ef4444;
+  background: #fef2f2;
+}
+
+.icon-btn:hover {
+  transform: scale(1.1);
+  filter: brightness(0.9);
+}
+
+/* =========================================================
+   ESTADO VACÍO
+   ========================================================= */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #94a3b8;
+}
+
+.empty-state i {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.card-inventario {
+  display: flex;
+  flex-direction: column;
+}
+
+/* =========================================================
+   MODAL / FORMULARIO
+   ========================================================= */
+.modal-modern {
+  background: #fff;
+  border-radius: 16px;
+  width: 520px;
+  max-width: 95%;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  margin-bottom: 5px !important;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.modal-body {
+  padding: 0px 24px;
+    margin-bottom: 20px !important;
+
+}
+
+.modal-footer-modern {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.btn-cancelar-md,
+.btn-guardar-md {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.btn-cancelar-md {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.btn-cancelar-md:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.btn-guardar-md {
+  background: #00a468;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 164, 104, 0.2);
+}
+
+.btn-guardar-md:hover {
+  background: #008f5a;
+  transform: translateY(-1px);
+}
+
+.form-grid-modern {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+@media (max-width: 600px) {
+  .header-inventario {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

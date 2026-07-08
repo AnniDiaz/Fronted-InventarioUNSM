@@ -273,6 +273,11 @@ cargarTiposUbicacion(): Promise<void> {
     return this.tiposUbicacion.find(t => t.id === id)?.nombre || 'Sin tipo';
   }
 
+  obtenerEscuela(id: number | null): string {
+    if (!id) return 'Sin escuela';
+    return this.escuelas.find(e => e.id === id)?.nombre || 'Sin escuela';
+  }
+
   // =========================
   // FILTROS
   // =========================

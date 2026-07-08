@@ -1,11 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { SidebarStateService } from '../../../core/services/sidebar-state.service';
 import Swal from 'sweetalert2';
 import { ArticuloService } from '../../../core/services/articulos.service';
 import { CamposArticuloService } from '../../../core/services/campos-articulo.service';
 import { TipoArticuloService } from '../../../core/services/tipo-articulos.service';
 import { UbicacionService } from '../../../core/services/ubicacion.service';
+import { ClasificacionDepreciacionService } from '../../../core/services/clasificacion-depreciacion.service';
 import { HeaderComponent } from '../../../shared/components/header/header.component';
 import { SidebarComponent } from '../../../shared/components/sidebar/sidebar.component';
+import { SearchableSelectComponent, OpcionSelect } from '../../../shared/components/searchable-select/searchable-select.component';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import Qrious from 'qrious';
@@ -14,14 +18,14 @@ import { ActivatedRoute } from '@angular/router';
 @Component({
   selector: 'app-articulo-form',
   standalone: true,
-  imports: [HeaderComponent, SidebarComponent, FormsModule, CommonModule],
+  imports: [HeaderComponent, SidebarComponent, SearchableSelectComponent, FormsModule, CommonModule],
   templateUrl: './articulos.component.html',
   styleUrls: ['./articulos.component.css']
 })
-export class ArticuloFormComponent implements OnInit {
+export class ArticuloFormComponent implements OnInit, OnDestroy {
 
-  // Estado para el menú responsivo
   menuAbierto = false;
+  private menuSub!: Subscription;
 
   mostrarFormulario = false;
   filtro = '';
@@ -43,35 +47,39 @@ export class ArticuloFormComponent implements OnInit {
   articulo: any = this.crearArticuloVacio();
   editando = false;
 ubicacionFiltroId: number | null = null;
+  clasificaciones: any[] = [];
   constructor(
     private articuloService: ArticuloService,
     private campoService: CamposArticuloService,
     private tipoService: TipoArticuloService,
     private ubicService: UbicacionService,
-      private route: ActivatedRoute
-
+    private clasificacionService: ClasificacionDepreciacionService,
+    private route: ActivatedRoute,
+    private sidebarState: SidebarStateService
   ) { }
 
 ngOnInit(): void {
+  this.menuSub = this.sidebarState.abierto$.subscribe(v => this.menuAbierto = v);
 
   this.route.queryParams.subscribe(params => {
-
     if (params['ubicacion']) {
       this.ubicacionFiltroId = Number(params['ubicacion']);
     }
-
     this.cargarTipos();
     this.cargarUbicaciones();
-
+    this.cargarClasificaciones();
   });
+}
 
+ngOnDestroy(): void {
+  this.menuSub.unsubscribe();
 }
 
   // ---------------------------
   // TOGGLE MENÚ RESPONSIVO
   // ---------------------------
   toggleMenu() {
-    this.menuAbierto = !this.menuAbierto;
+    this.sidebarState.toggle();
   }
 
   // ---------------------------
@@ -260,6 +268,69 @@ resolverUbicacionUsuario(usuarioId: number): void {
     return this.ubicaciones.find(u => u.id === id)?.nombre || '-';
   }
 
+  cargarClasificaciones() {
+    this.clasificacionService.getClasificaciones().subscribe({
+      next: (res: any) => {
+        this.clasificaciones = Array.isArray(res) ? res : res?.data ?? [];
+      },
+      error: () => Swal.fire('Error', 'No se pudieron cargar las clasificaciones de depreciación', 'error')
+    });
+  }
+
+  // ---------------------------
+  // OPCIONES PARA LOS SELECT CON BÚSQUEDA
+  // ---------------------------
+  get opcionesTipos(): OpcionSelect[] {
+    return this.tipos.map(t => ({ value: t.id, label: t.nombre }));
+  }
+
+  get opcionesClasificaciones(): OpcionSelect[] {
+    return [
+      { value: null, label: 'Sin clasificación' },
+      ...this.clasificaciones.map(c => ({ value: c.id, label: c.nombre }))
+    ];
+  }
+
+  get opcionesUbicaciones(): OpcionSelect[] {
+    return this.ubicaciones.map(u => ({ value: u.id, label: u.nombre }));
+  }
+
+  get opcionesCondicion(): OpcionSelect[] {
+    return [
+      { value: 'Bueno', label: 'Bueno' },
+      { value: 'Regular', label: 'Regular' },
+      { value: 'Malo', label: 'Malo' }
+    ];
+  }
+
+  opcionesDeCampo(campo: any): OpcionSelect[] {
+    return (campo.opciones || []).map((op: string) => ({ value: op, label: op }));
+  }
+
+  onClasificacionChange() {
+    const clasificacion = this.clasificaciones.find(c => Number(c.id) === Number(this.articulo.clasificacionDepreciacionId));
+    if (clasificacion) {
+      this.articulo.tiempoVidaUtil = clasificacion.vidaUtilAnios;
+      this.articulo.nombre = clasificacion.nombre;
+    }
+  }
+
+  // ---------------------------
+  // FECHA HASTA LA QUE EL ARTÍCULO ESTARÍA ACTIVO
+  // (fecha de adquisición + tiempo de vida útil en años)
+  // ---------------------------
+  get fechaFinVidaUtil(): string {
+    const anios = Number(this.articulo?.tiempoVidaUtil);
+    if (!anios || anios <= 0) return '';
+
+    const base = this.articulo.fechaAdquision ? new Date(this.articulo.fechaAdquision) : new Date();
+    if (isNaN(base.getTime())) return '';
+
+    const fin = new Date(base);
+    fin.setFullYear(fin.getFullYear() + anios);
+    return this.formatearFecha(fin.toISOString());
+  }
+
   // ---------------------------
   // FORMULARIO DINÁMICO
   // ---------------------------
@@ -275,9 +346,6 @@ resolverUbicacionUsuario(usuarioId: number): void {
     this.articulo.camposValores = [];
 
     if (!this.articulo.tipoArticuloId) return;
-
-    const tipoSeleccionado = this.tipos.find(t => Number(t.id) === Number(this.articulo.tipoArticuloId));
-    if (tipoSeleccionado) this.articulo.nombre = tipoSeleccionado.nombre;
 
     this.campoService.getCamposByTipoArticulo(this.articulo.tipoArticuloId).subscribe({
       next: (res: any) => {
@@ -513,13 +581,13 @@ this.articuloService.cargarMasivaExcel(
       estado: 1,
       camposValores: [],
       tiempoVidaUtil: 0,
+      clasificacionDepreciacionId: null,
 
       // ✨ CAMPOS DE CARGA MASIVA / ADICIONALES
       marca: '',
       modelo: '',
       nroSerie: '',
-      medidas: '',
-      color: '',
+      otrasObservaciones: '',
       mayor: '',
       subCta: '',
 

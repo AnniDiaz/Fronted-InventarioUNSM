@@ -148,18 +148,8 @@ ngOnInit(): void {
       error: (err) => console.error('Error cargando artículos', err)
     });
   } else {
-    const usuarioId = usuario?.data?.id;
-    if (!usuarioId) return;
-    this._ubicacionService.getUbicacionesPorUsuario(usuarioId).subscribe({
-      next: (res: any) => {
-        const ubicaciones = Array.isArray(res) ? res : res?.data ?? [];
-        if (ubicaciones.length > 0) {
-          this.ubicacionId = ubicaciones[0].id;
-          this.cargarUbicaciones();
-        }
-      },
-      error: (err) => console.error('Error cargando ubicación', err)
-    });
+    // superadmin o usuario sin escuela: cargar todos los préstamos
+    this.cargarTodosPrestamos();
   }
 }
 
@@ -171,11 +161,11 @@ evaluarPermisoFirma(tieneEscuelaAsignada: boolean): void {
 
   this._rolesService.getRolById(rolId).subscribe({
     next: (res: any) => {
-      const nombreRol: string = res?.data?.rol?.nombre ?? res?.data?.nombre ?? '';
-      const esAdmin = nombreRol.trim().toLowerCase() === 'admin';
+      const nombreRol: string = (res?.data?.rol?.nombre ?? res?.data?.nombre ?? '').trim().toLowerCase();
+      const esAdmin = nombreRol === 'admin';
+      const esSuperAdmin = nombreRol === 'superadmin';
 
-      // Solo puede firmar el ADMIN cuya ubicación está asignada a una escuela
-      this.puedeFirmarPrestamos = esAdmin && tieneEscuelaAsignada;
+      this.puedeFirmarPrestamos = esSuperAdmin || (esAdmin && tieneEscuelaAsignada);
     },
     error: (err) => console.error('Error verificando rol para firma', err)
   });
@@ -238,8 +228,29 @@ recargarPrestamos() {
   if (escuelaId) {
     this.cargarPrestamosPorEscuela();
   } else {
-    this.cargarPrestamos();
+    this.cargarTodosPrestamos();
   }
+}
+
+cargarTodosPrestamos() {
+  this._articulosService.getArticulosConCampos().subscribe({
+    next: (res: any) => {
+      const arts = Array.isArray(res) ? res : res?.data ?? [];
+      this.articulosTodos = arts;
+      this.articulosDisponibles = arts;
+    },
+    error: (err) => console.error('Error cargando artículos', err)
+  });
+
+  this._prestamosService.getPrestamos().subscribe({
+    next: (res: any) => {
+      const data = Array.isArray(res) ? res : res?.data ?? [];
+      this.prestamos = data;
+      this.prestamosFiltrados = [...data];
+      this.actualizarPaginacion();
+    },
+    error: (err) => console.error('Error cargando préstamos', err)
+  });
 }
 
 cargarPrestamosPorEscuela() {

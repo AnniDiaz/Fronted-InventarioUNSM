@@ -1,4 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { SidebarStateService } from '../../../core/services/sidebar-state.service';
 import { SidebarComponent } from '../../../shared/components/sidebar/sidebar.component';
 import { HeaderComponent } from "../../../shared/components/header/header.component";
 import { CommonModule } from '@angular/common';
@@ -51,9 +53,10 @@ const centerTextPlugin: any = {
   templateUrl: './dashboaraad.component.html',
   styleUrls: ['./dashboaraad.component.css']
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
 
   menuAbierto = false;
+  private menuSub!: Subscription;
 
   totalArticulos = 0;
   totalUbicaciones = 0;
@@ -69,12 +72,13 @@ ubicacionId?: number;
   constructor(
     private reportesService: ReportesService,
     private ubicacionService: UbicacionService,
-      private articuloService: ArticuloService,
-      private trasladoService: TrasladosService
-
+    private articuloService: ArticuloService,
+    private trasladoService: TrasladosService,
+    private sidebarState: SidebarStateService
   ) { }
 
 ngOnInit() {
+  this.menuSub = this.sidebarState.abierto$.subscribe(v => this.menuAbierto = v);
   this.obtenerUbicacionesPermitidas().then((idsPermitidos) => {
     this.idsUbicacionesPermitidas = idsPermitidos;
 
@@ -292,6 +296,14 @@ async inicializarBarChart(data: any[]) {
   }
 
   toggleMenu() {
-    this.menuAbierto = !this.menuAbierto;
+    this.sidebarState.toggle();
+  }
+
+  cerrarMenu() {
+    this.sidebarState.close();
+  }
+
+  ngOnDestroy() {
+    this.menuSub.unsubscribe();
   }
 }

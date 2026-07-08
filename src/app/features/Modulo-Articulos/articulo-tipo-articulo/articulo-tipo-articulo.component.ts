@@ -7,6 +7,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TipoArticuloService } from '../../../core/services/tipo-articulos.service';
 import { UbicacionService } from '../../../core/services/ubicacion.service';
+import { ClasificacionDepreciacionService } from '../../../core/services/clasificacion-depreciacion.service';
 import Swal from 'sweetalert2';
 
 import Qrious from 'qrious';   // ⬅️ IMPORTANTE PARA GENERAR QR
@@ -31,10 +32,11 @@ ubicaciones: any[] = [];
   mostrarFormulario = false;
   modoFormulario: 'crear' | 'editar' = 'crear';
   formulario: any = {};
+  clasificaciones: any[] = [];
 columnaAlias: Record<string, string> = {
   TipoArticuloId: 'Tipo',
   UbicacionId: 'Ubicación',
-  vidaUtil: 'Duración',
+  TiempoVidaUtil: 'Duración',
   QRCodeBase64: 'QR',
   CodigoPatrimonial: 'Código',
   Nombre: 'Nombre',
@@ -52,7 +54,8 @@ columnaAlias: Record<string, string> = {
     private route: ActivatedRoute,
     private articuloService: ArticuloService,
     private tipoArticuloService: TipoArticuloService,
-    private ubicacionService: UbicacionService
+    private ubicacionService: UbicacionService,
+    private clasificacionService: ClasificacionDepreciacionService
   ) {}
 
 async ngOnInit(): Promise<void> {
@@ -64,6 +67,23 @@ async ngOnInit(): Promise<void> {
   // luego todo normal
   await this.cargarUbicaciones();
   this.cargarArticulos(this.tipoArticuloId);
+  this.cargarClasificaciones();
+}
+
+cargarClasificaciones(): void {
+  this.clasificacionService.getClasificaciones().subscribe({
+    next: (res: any) => {
+      this.clasificaciones = Array.isArray(res) ? res : res?.data ?? [];
+    },
+    error: () => { this.clasificaciones = []; }
+  });
+}
+
+onClasificacionChange(): void {
+  const clasificacion = this.clasificaciones.find(c => Number(c.id) === Number(this.formulario['ClasificacionDepreciacionId']));
+  if (clasificacion) {
+    this.formulario['TiempoVidaUtil'] = clasificacion.vidaUtilAnios;
+  }
 }
 async obtenerUbicacionUsuario(): Promise<void> {
   return new Promise((resolve) => {
@@ -293,7 +313,8 @@ const campos = Array.isArray(camposRaw)
     this.formulario['TipoArticuloId'] = this.tipoArticuloId;
     this.formulario['Estado'] = 1;
     this.formulario['Condicion'] = 'Bueno';
-    this.formulario['VidaUtil'] = 0;
+    this.formulario['ClasificacionDepreciacionId'] = null;
+    this.formulario['TiempoVidaUtil'] = 0;
 
     this.mostrarFormulario = true;
   }
@@ -333,7 +354,8 @@ guardarArticulo() {
     tipoArticuloId: Number(this.formulario['TipoArticuloId']),
     ubicacionId: Number(this.formulario['UbicacionId']),
     estado: Number(this.formulario['Estado']),
-    vidaUtil: Number(this.formulario['VidaUtil']),
+    clasificacionDepreciacionId: this.formulario['ClasificacionDepreciacionId'] ? Number(this.formulario['ClasificacionDepreciacionId']) : null,
+    tiempoVidaUtil: Number(this.formulario['TiempoVidaUtil']),
     camposValores
   };
 

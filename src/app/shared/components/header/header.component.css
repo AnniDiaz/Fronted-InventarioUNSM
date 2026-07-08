@@ -194,6 +194,34 @@
   background-color: #e2e8f0;
 }
 
+/* Hamburguesa */
+.btn-toggle-menu {
+  display: none;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  width: 38px;
+  height: 38px;
+  font-size: 16px;
+  color: #334155;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.btn-toggle-menu:hover {
+  background: #f1f5f9;
+  color: #04a777;
+}
+
+@media (max-width: 1024px) {
+  .btn-toggle-menu {
+    display: flex;
+  }
+}
+
 /* Responsivo */
 @media (max-width: 768px) {
   .textos-perfil {

@@ -51,7 +51,9 @@
 
 
 
-
+.stat-box{
+  text-align: center;
+}
 /* BARRA DE BUSQUEDA + FILTRO TIPO */
 .search-filter-barra {
   display: flex;
