@@ -33,8 +33,16 @@ export class EscuelaService {
     return this.httpClient.put(`${baseUrl}/Escuelas/${id}/asignar-usuario`, { usuarioId });
   }
 
+  public asignarTecnico(id: number, usuarioId: number) {
+    return this.httpClient.put(`${baseUrl}/Escuelas/${id}/asignar-tecnico`, { usuarioId });
+  }
+
   public getEscuelaPorUsuario(usuarioId: number) {
     return this.httpClient.get<any>(`${baseUrl}/Escuelas/usuario/${usuarioId}`);
+  }
+
+  public getEscuelaPorTecnico(usuarioId: number) {
+    return this.httpClient.get<any>(`${baseUrl}/Escuelas/tecnico/${usuarioId}`);
   }
 
 }

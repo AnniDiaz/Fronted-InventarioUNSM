@@ -99,23 +99,12 @@
           <div class="grupo">
 
             <label>EQUIPO / ARTÍCULO SOLICITADO</label>
-<select
+<app-searchable-select
+  [opciones]="opcionesArticulos"
+  placeholder="Seleccione un artículo"
   [(ngModel)]="articuloId"
   (ngModelChange)="seleccionarArticulo($event)">
-
-  <option [ngValue]="0">
-    Seleccione un artículo
-  </option>
-
-  <option
-    *ngFor="let a of articulos"
-    [ngValue]="a.id">
-
-    {{a.nombre}} - {{a.codigoPatrimonial}}
-
-  </option>
-
-</select>
+</app-searchable-select>
           </div>
 
 
@@ -225,7 +214,7 @@
                 <strong>{{p.nombre}}</strong>
 
                 <small>
-                  DNI: {{p.dni}}
+                  DNI: {{p.codigo}}
                 </small>
 
               </div>

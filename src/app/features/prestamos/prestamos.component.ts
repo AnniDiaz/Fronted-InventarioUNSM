@@ -32,6 +32,9 @@ articulosTodos: any[] = [];
 
 // --- Firma de préstamos ---
 puedeFirmarPrestamos = false;
+// Devolver un artículo prestado también queda restringido a administradores y superadmin
+// (técnicos y practicantes no pueden marcar devoluciones).
+puedeDevolverPrestamos = false;
 mostrarModalFirma = false;
 prestamoSeleccionadoFirma: any = null;
 nombreFirmante = '';
@@ -135,7 +138,7 @@ ngOnInit(): void {
 
   const escuelaId = Number(localStorage.getItem('escuelaId'));
 
-  this.evaluarPermisoFirma(!!escuelaId);
+  this.evaluarPermisoFirma();
 
   if (escuelaId) {
     this._articulosService.getArticulosPorEscuela(escuelaId).subscribe({
@@ -153,8 +156,9 @@ ngOnInit(): void {
   }
 }
 
-evaluarPermisoFirma(tieneEscuelaAsignada: boolean): void {
+evaluarPermisoFirma(): void {
   this.puedeFirmarPrestamos = false;
+  this.puedeDevolverPrestamos = false;
 
   const rolId = Number(localStorage.getItem('rolId'));
   if (!rolId) return;
@@ -162,10 +166,12 @@ evaluarPermisoFirma(tieneEscuelaAsignada: boolean): void {
   this._rolesService.getRolById(rolId).subscribe({
     next: (res: any) => {
       const nombreRol: string = (res?.data?.rol?.nombre ?? res?.data?.nombre ?? '').trim().toLowerCase();
-      const esAdmin = nombreRol === 'admin';
       const esSuperAdmin = nombreRol === 'superadmin';
+      // rolId === 1 es el administrador "clásico" (puede tener el nombre "Admin" o "Administrador").
+      const esAdmin = rolId === 1 || nombreRol === 'admin' || nombreRol === 'administrador';
 
-      this.puedeFirmarPrestamos = esSuperAdmin || (esAdmin && tieneEscuelaAsignada);
+      this.puedeFirmarPrestamos = esSuperAdmin || esAdmin;
+      this.puedeDevolverPrestamos = esSuperAdmin || esAdmin;
     },
     error: (err) => console.error('Error verificando rol para firma', err)
   });
@@ -333,7 +339,7 @@ verPDF(prestamo: any) {
     return;
   }
 
-  const url = `http://localhost:7000/${prestamo.rutaPdf}`;
+  const url = `http://192.168.50.108:8081/${prestamo.rutaPdf}`;
 
   Swal.fire({
     title: 'Vista del documento',
@@ -407,7 +413,7 @@ getFechaFirma(p: any): any {
 
 abrirModalFirma(p: any) {
   if (!this.puedeFirmarPrestamos) {
-    Swal.fire('No autorizado', 'Solo el personal con ubicación asignada a una escuela puede firmar préstamos', 'warning');
+    Swal.fire('No autorizado', 'Solo los administradores y superadministradores pueden firmar préstamos', 'warning');
     return;
   }
 
@@ -654,6 +660,11 @@ this._prestamosService.addPrestamo(dataParaEnviar).subscribe({
 });
 }
    marcarDevuelto(prestamo: any) {
+    if (!this.puedeDevolverPrestamos) {
+      Swal.fire('No autorizado', 'Solo los administradores y superadministradores pueden marcar devoluciones', 'warning');
+      return;
+    }
+
     Swal.fire({
       title: '¿Confirmar devolución?',
       text: `El equipo será marcado como devuelto`,

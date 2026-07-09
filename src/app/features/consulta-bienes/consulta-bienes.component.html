@@ -10,15 +10,15 @@
     <app-header></app-header>
 
     <div class="contenido-principal">
-      <div class="page-container">
+      <div class="card-inventario">
 
-        <div class="header-bienes">
-          <div class="header-titulo-wrapper">
+        <div class="header-inventario">
+          <div class="textos-inventario">
             <button class="menu-toggle" (click)="toggleMenu()">
               <i class="fa fa-bars"></i>
             </button>
 
-            <div class="titulos-header">
+            <div>
               <h2>Inventario y Consultas de Bienes</h2>
               <p>Consulta y filtra los bienes patrimoniales de toda la institución.</p>
             </div>
@@ -81,9 +81,20 @@
                 ESCUELA
                 <i *ngIf="filtrosLocked" class="fa fa-lock filtro-lock-icon" title="Filtro asignado a tu escuela"></i>
               </label>
-              <select [(ngModel)]="filtroEscuelaId" (change)="aplicarFiltro()" [disabled]="filtrosLocked" [class.filtro-bloqueado]="filtrosLocked">
+              <select [(ngModel)]="filtroEscuelaId" (change)="onEscuelaChange()" [disabled]="filtrosLocked" [class.filtro-bloqueado]="filtrosLocked">
                 <option [ngValue]="0">Todas las Escuelas</option>
                 <option *ngFor="let e of escuelasFiltradas" [ngValue]="e.id">{{ e.nombre }}</option>
+              </select>
+            </div>
+
+            <div class="filtro-campo">
+              <label>
+                UBICACIÓN
+                <i *ngIf="ubicacionFiltroLocked" class="fa fa-lock filtro-lock-icon" title="Filtro asignado a tu ubicación"></i>
+              </label>
+              <select [(ngModel)]="filtroUbicacionId" (change)="aplicarFiltro()" [disabled]="ubicacionFiltroLocked" [class.filtro-bloqueado]="ubicacionFiltroLocked">
+                <option [ngValue]="0" *ngIf="!ubicacionFiltroLocked">Todas las Ubicaciones</option>
+                <option *ngFor="let u of ubicacionesFiltradas" [ngValue]="u.id">{{ u.nombre }}</option>
               </select>
             </div>
 

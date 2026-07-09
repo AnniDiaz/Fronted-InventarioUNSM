@@ -7,21 +7,22 @@
     <app-header></app-header>
 
     <div class="contenido-principal">
-      <div class="card">
-        <div class="cont-tit">
-          <h2>Gestión de Roles</h2>
-          <div class="cont-btns">
-            <button class="btn-agregar" (click)="toggleFormulario()">
-              <i class="fa fa-plus"></i> Agregar Nuevo Rol
-            </button>
-
-            <div class="busqueda">
+      <div class="card-inventario">
+        <div class="header-inventario">
+          <div class="textos-inventario">
+            <div>
+              <h2>Gestión de Roles</h2>
+            </div>
+          </div>
+          <div class="acciones-top">
+            <div class="buscador-sutil">
+              <i class="fa fa-search"></i>
               <input type="text" placeholder="Buscar rol..."
                      [(ngModel)]="filtro" (input)="aplicarFiltro()">
-              <button class="btn-buscar">
-                <i class="fa fa-search"></i>
-              </button>
             </div>
+            <button class="btn-agregar-pill" (click)="toggleFormulario()">
+              <i class="fa fa-plus"></i> Agregar Nuevo Rol
+            </button>
           </div>
         </div>
 <div class="modal-overlay" *ngIf="mostrarFormulario">
@@ -215,10 +216,14 @@
         </table>
 
         <!-- Paginación -->
-        <div class="paginacion" *ngIf="totalPaginas > 1">
-          <button (click)="cambiarPagina(paginaActual - 1)" [disabled]="paginaActual === 1">Anterior</button>
-          <span>Página {{ paginaActual }} de {{ totalPaginas }}</span>
-          <button (click)="cambiarPagina(paginaActual + 1)" [disabled]="paginaActual === totalPaginas">Siguiente</button>
+        <div class="footer-paginacion" *ngIf="totalPaginas > 1">
+          <div class="pag-info">
+            Mostrando <strong>{{ registrosPaginados.length }}</strong> de <strong>{{ rolesFiltrados.length }}</strong> roles
+          </div>
+          <div class="pag-botones">
+            <button class="btn-pag-nav" [disabled]="paginaActual === 1" (click)="cambiarPagina(paginaActual - 1)">Anterior</button>
+            <button class="btn-pag-nav active" [disabled]="paginaActual === totalPaginas" (click)="cambiarPagina(paginaActual + 1)">Siguiente</button>
+          </div>
         </div>
 
       </div>

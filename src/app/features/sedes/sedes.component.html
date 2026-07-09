@@ -10,21 +10,21 @@
     <app-header></app-header>
 
     <div class="contenido-principal">
-      <div class="page-container">
+      <div class="card-inventario">
 
-        <div class="header-ubicaciones">
-          <div class="header-titulo-wrapper" style="display: flex; align-items: center; gap: 15px;">
+        <div class="header-inventario">
+          <div class="textos-inventario">
             <button class="menu-toggle" (click)="toggleMenu()">
               <i class="fa fa-bars"></i>
             </button>
 
-            <div class="titulos-header">
+            <div>
               <h2>Gestión de Sedes Universitarias</h2>
               <p>{{ sedesFiltradas.length }} registros encontrados</p>
             </div>
           </div>
 
-          <div class="header-acciones-derecha">
+          <div class="acciones-top">
             <div class="search-input-box-header">
               <i class="fa fa-search icon-search"></i>
               <input type="text" placeholder="Buscar por nombre..." [(ngModel)]="filtro" (input)="aplicarFiltro()">

@@ -2,113 +2,8 @@
    LAYOUT GENERAL
 ========================= */
 
-.container {
-  display: flex;
-  width: 100%;
-  min-height: 100vh;
-  background: #f8fafc;
-  position: relative;
-  font-family: 'Inter', sans-serif;
-}
-
-.main-section {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  height: 100vh;
+.card-inventario {
   overflow: hidden;
-}
-
-.contenido-principal {
-  flex: 1;
-}
-
-.page-container {
-  padding: 30px;
-  padding-bottom: 10px !important;
-}
-
-/* =========================
-   SIDEBAR OVERLAY
-========================= */
-
-.sidebar-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(4px);
-  z-index: 1040;
-}
-
-.container.menu-activo .sidebar-overlay {
-  display: block;
-}
-
-/* =========================
-   CARD PRINCIPAL
-========================= */
-
-.tabla-container {
-  background: white;
-  border-radius: 24px;
-  border: 1px solid #f1f5f9;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
-}
-
-/* =========================
-   HEADER
-========================= */
-
-.main-header-wrapper {
-  padding: 30px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 20px;
-}
-
-.titulos-header h2 {
-  margin: 0;
-  font-size: 28px;
-  font-weight: 800;
-  color: #0f172a;
-}
-
-.titulos-header p {
-  margin-top: 5px;
-  color: #64748b;
-  font-size: 14px;
-}
-
-.menu-toggle {
-  border: none;
-  background: transparent;
-  font-size: 22px;
-  cursor: pointer;
-  color: #0f172a;
-}
-
-.btn-principal {
-  border: none;
-  background: #00a468;
-  color: white;
-  padding: 13px 24px;
-  border-radius: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  transition: .25s;
-}
-
-.btn-principal:hover {
-  transform: translateY(-2px);
-  background: #00995f;
 }
 
 /* =========================
@@ -453,29 +348,6 @@ table {
 }
 
 
-.paginacion-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 15px;
-  padding: 15px;
-  margin-top: 10px;
-}
-
-.paginacion-container button {
-  border: none;
-  background: #00a468;
-  color: white;
-  padding: 8px 14px;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: 700;
-}
-
-.paginacion-container button:disabled {
-  background: #cbd5e1;
-  cursor: not-allowed;
-}
 @media (max-width: 768px) {
 
   .modal-modern {

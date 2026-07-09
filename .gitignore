@@ -40,3 +40,16 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+
+.env
+*.log
+
+# Backend .NET
+Inventario-UNSM/bin/
+Inventario-UNSM/obj/
+
+# Frontend Angular
+Fronted-InventarioUNSM/node_modules/
+Fronted-InventarioUNSM/dist/
+Fronted-InventarioUNSM/.angular/

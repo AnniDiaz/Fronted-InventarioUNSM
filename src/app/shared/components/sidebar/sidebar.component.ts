@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { LoginService } from '../../../core/services/login.service';
 import { EscuelaService } from '../../../core/services/escuela.service';
 import { RolesService } from '../../../core/services/roles.service';
+import { UbicacionService } from '../../../core/services/ubicacion.service';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
@@ -30,7 +31,8 @@ export class SidebarComponent implements OnInit {
     private loginService: LoginService,
     public router: Router,
     private escuelaService: EscuelaService,
-    private rolesService: RolesService
+    private rolesService: RolesService,
+    private ubicacionService: UbicacionService
   ) { }
 
   ngOnInit(): void {
@@ -43,14 +45,21 @@ export class SidebarComponent implements OnInit {
 
     if (!rolId) return;
 
-    // Carga rol y escuela en paralelo
+    // Carga rol, escuela y ubicación asignada en paralelo.
+    // Nota: se consulta siempre getEscuelaPorUsuario (administrador) aquí, incluso para
+    // el rol Técnico. Un técnico nunca es el "usuarioId" (administrador) de una escuela,
+    // así que esta llamada le devuelve vacío y el código cae a la rama de "ubicación fija
+    // asignada directamente" (ubicacionUsuario), que es el mecanismo del que dependen
+    // articulos/prestamos/traslados/mantenimiento/etc. para filtrar por técnico. No cambiar
+    // esto a getEscuelaPorTecnico sin auditar esos componentes: activar el filtrado por
+    // escuela para técnicos rompe esas pantallas si su ubicación fija no pertenece a la
+    // escuela que tienen asignada como técnico.
     forkJoin({
       rol: this.rolesService.getRolById(rolId).pipe(catchError(() => of(null))),
-      escuela: this.escuelaService.getEscuelaPorUsuario(usuarioId).pipe(catchError(() => of(null)))
-    }).subscribe(({ rol, escuela }: any) => {
-      const nombreRol = (
-        rol?.data?.rol?.nombre ?? rol?.data?.nombre ?? ''
-      ).toLowerCase().trim();
+      escuela: this.escuelaService.getEscuelaPorUsuario(usuarioId).pipe(catchError(() => of(null))),
+      ubicacionUsuario: this.ubicacionService.getUbicacionesPorUsuario(usuarioId).pipe(catchError(() => of(null)))
+    }).subscribe(({ rol, escuela, ubicacionUsuario }: any) => {
+      const nombreRol = this.normalizarTexto(rol?.data?.rol?.nombre ?? rol?.data?.nombre ?? '');
 
       this.esSuperAdmin = nombreRol === 'superadmin';
 
@@ -64,20 +73,37 @@ export class SidebarComponent implements OnInit {
         if (escuelaData?.id) {
           this.ubicacionNombre = escuelaData.nombre;
           this.ubicacionLogo = escuelaData.imagenUrl
-            ? `http://localhost:7000${escuelaData.imagenUrl}`
+            ? `http://192.168.50.108:8081${escuelaData.imagenUrl}`
             : '';
           localStorage.setItem('escuelaId', String(escuelaData.id));
           localStorage.setItem('escuelaNombre', escuelaData.nombre);
         } else {
-          this.ubicacionNombre = 'Sin asignar';
-          this.ubicacionLogo = '';
           localStorage.removeItem('escuelaId');
           localStorage.removeItem('escuelaNombre');
+
+          const ubicaciones = Array.isArray(ubicacionUsuario) ? ubicacionUsuario : ubicacionUsuario?.data ?? [];
+          if (ubicaciones.length > 0) {
+            this.ubicacionNombre = ubicaciones[0].nombre;
+            this.ubicacionLogo = '';
+            localStorage.setItem('ubicacionUsuarioId', String(ubicaciones[0].id));
+          } else {
+            this.ubicacionNombre = 'Sin asignar';
+            this.ubicacionLogo = '';
+            localStorage.removeItem('ubicacionUsuarioId');
+          }
         }
       }
     });
 
     this.cargarModulosPorRol(rolId);
+  }
+
+  private normalizarTexto(valor: string): string {
+    return (valor || '')
+      .toLowerCase()
+      .trim()
+      .normalize('NFD')
+      .replace(new RegExp('[\\u0300-\\u036f]', 'g'), '');
   }
 
   cargarModulosPorRol(rolId: number) {
@@ -99,17 +125,23 @@ export class SidebarComponent implements OnInit {
               subModulos: mod.subModulos || []
             }))
             .sort((a: any, b: any) => {
-              if (a.nombre === 'Dashboard') return -1;
-              if (b.nombre === 'Dashboard') return 1;
-                if (a.nombre === 'Gestion institucional') return -1;
-  if (b.nombre === 'Gestion   ') return 1;
-
-              return 0;
+              const prioridad = (nombre: string) => {
+                if (nombre === 'Dashboard') return 0;
+                if (nombre === 'Gestion institucional') return 1;
+                if (nombre === 'Reportes') return 3;
+                return 2;
+              };
+              return prioridad(a.nombre) - prioridad(b.nombre);
             });
+
+          // El guard de rutas (moduleGuard) lee esta clave para bloquear el acceso
+          // directo por URL a módulos que no están en el menú de este rol.
+          localStorage.setItem('modulos', JSON.stringify(this.modulos));
 
         } else {
           console.warn('Estructura de datos no reconocida:', res);
           this.modulos = [];
+          localStorage.setItem('modulos', JSON.stringify([]));
         }
       },
       error: (err) => console.error('Error cargando módulos por rol:', err)

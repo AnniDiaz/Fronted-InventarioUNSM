@@ -30,6 +30,7 @@ export class ArticuloFormComponent implements OnInit, OnDestroy {
   mostrarFormulario = false;
   filtro = '';
   filtroTipo = 'Todos';
+  filtroUbicacion: number | 'todos' = 'todos';
   orden = 'recientes';
 
   paginaActual = 1;
@@ -44,6 +45,7 @@ export class ArticuloFormComponent implements OnInit, OnDestroy {
   ubicaciones: any[] = [];
   camposDelTipo: any[] = [];
   ubicacionUsuarioId: number = 0;
+  tieneUbicacionFija = false;
   articulo: any = this.crearArticuloVacio();
   editando = false;
 ubicacionFiltroId: number | null = null;
@@ -131,6 +133,10 @@ ngOnDestroy(): void {
       filtrados = filtrados.filter(a => this.obtenerTipoArticulo(a.tipoArticuloId) === this.filtroTipo);
     }
 
+    if (this.filtroUbicacion !== 'todos') {
+      filtrados = filtrados.filter(a => Number(a.ubicacionId) === Number(this.filtroUbicacion));
+    }
+
     if (this.orden === 'recientes') {
       filtrados.sort((a, b) => new Date(b.fechaAdquision).getTime() - new Date(a.fechaAdquision).getTime());
     } else if (this.orden === 'antiguos') {
@@ -177,7 +183,7 @@ listarArticulos() {
 
       this.articulos = data.map((a: any) => {
         if (a.id) {
-          const urlQR = `http://localhost:4200/tipos-articulos/articulo/${a.id}`;
+          const urlQR = `http://192.168.50.108:4202/tipos-articulos/articulo/${a.id}`;
           a.qrCodeBase64 = this.generarQR(urlQR);
         }
         return a;
@@ -251,6 +257,17 @@ resolverUbicacionUsuario(usuarioId: number): void {
       const ubs = Array.isArray(resp) ? resp : resp?.data ?? [];
       if (ubs.length > 0) {
         this.ubicacionUsuarioId = Number(ubs[0].id);
+        this.tieneUbicacionFija = true;
+
+        // El usuario tiene una ubicación asignada directamente (ej: técnico) ->
+        // el filtro de ubicación parte preseleccionado en esa ubicación.
+        if (!this.ubicacionFiltroId) {
+          this.filtroUbicacion = this.ubicacionUsuarioId;
+          this.aplicarFiltro();
+        }
+
+        // Y el formulario de artículo también queda fijo en esa ubicación.
+        this.articulo.ubicacionId = this.ubicacionUsuarioId;
       } else if (this.ubicaciones.length > 0) {
         this.ubicacionUsuarioId = Number(this.ubicaciones[0].id);
       }
@@ -372,7 +389,7 @@ resolverUbicacionUsuario(usuarioId: number): void {
   guardar() {
     // 1. Configuraciones iniciales existentes
     if (this.articulo.id) {
-      const urlQR = `http://localhost:4200/tipos-articulos/articulo/${this.articulo.id}`;
+      const urlQR = `http://192.168.50.108:4202/tipos-articulos/articulo/${this.articulo.id}`;
       this.articulo.qrCodeBase64 = this.generarQR(urlQR);
     }
     if (!this.articulo.fechaAdquision) {
@@ -513,7 +530,7 @@ this.articuloService.cargarMasivaExcel(
       this.articulo.fechaAdquision = `${d.getFullYear()}-${mes}-${dia}`;
     }
     if (!this.articulo.qrCodeBase64 && this.articulo.id) {
-      const urlQR = `http://localhost:4200/tipos-articulos/articulo/${this.articulo.id}`;
+      const urlQR = `http://192.168.50.108:4202/tipos-articulos/articulo/${this.articulo.id}`;
       this.articulo.qrCodeBase64 = this.generarQR(urlQR);
     }
 
@@ -556,6 +573,14 @@ this.articuloService.cargarMasivaExcel(
           next: () => {
             Swal.fire('Eliminado', 'Artículo eliminado', 'success');
             this.listarArticulos();
+          },
+          error: (err) => {
+            const msg =
+              typeof err?.error === 'string'
+                ? err.error
+                : err?.error?.message || err?.error?.errors || 'No se pudo eliminar el artículo';
+
+            Swal.fire('Error', msg, 'error');
           }
         });
       }
@@ -565,6 +590,9 @@ this.articuloService.cargarMasivaExcel(
   resetForm() {
     this.editando = false;
     this.articulo = this.crearArticuloVacio();
+    if (this.tieneUbicacionFija) {
+      this.articulo.ubicacionId = this.ubicacionUsuarioId;
+    }
     this.camposDelTipo = [];
   }
 

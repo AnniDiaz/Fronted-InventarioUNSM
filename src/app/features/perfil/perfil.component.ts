@@ -40,16 +40,31 @@ export class PerfilComponent implements OnInit {
 
   cargarUsuario() {
     this.usuariosService.getUsuarioActual().subscribe({
-      next: (data: any) => {
-        this.usuario = data;
-        // Previsualización de la imagen
-        this.usuario.imagenPreview = data.imagenPath
-          ? `${data.imagenPath}`
-          : '/assets/perfil.png';
-        this.cargarRol();
+      next: (data: any) => this.setUsuario(data),
+      error: (err) => {
+        console.error('No se pudo obtener el usuario actual del backend, se usan los datos de la sesión guardados en el login:', err);
+
+        // El backend está rechazando esta petición puntual (ver consola: otros
+        // endpoints con el mismo token sí funcionan), pero el login ya guardó
+        // el usuario completo en localStorage con la misma forma que espera
+        // este componente. Se usa como respaldo para no dejar la pantalla en blanco.
+        const cache = this.loginService.getUser();
+        if (cache?.data) {
+          this.setUsuario(cache);
+        } else {
+          Swal.fire("Error", "No se pudo cargar el usuario", "error");
+        }
       },
-      error: () => Swal.fire("Error", "No se pudo cargar el usuario", "error"),
     });
+  }
+
+  private setUsuario(data: any) {
+    this.usuario = data;
+    // Previsualización de la imagen
+    this.usuario.imagenPreview = data.data?.imagenPath
+      ? `http://192.168.50.108:8081/${data.data.imagenPath}`
+      : '/assets/perfil.png';
+    this.cargarRol();
   }
 
   cargarRol() {
@@ -85,8 +100,8 @@ export class PerfilComponent implements OnInit {
 
   quitarImagen() {
     this.imagenSeleccionada = null;
-    this.usuario.imagenPreview = this.usuario.imagenPath
-      ? `http://localhost:7000/${this.usuario.imagenPath}`
+    this.usuario.imagenPreview = this.usuario.data?.imagenPath
+      ? `http://192.168.50.108:8081/${this.usuario.data.imagenPath}`
       : '/assets/perfil.png';
   }
 
@@ -98,12 +113,14 @@ export class PerfilComponent implements OnInit {
       next: (res: any) => {
         Swal.fire("¡Éxito!", "Imagen actualizada correctamente", "success");
 
+        const nuevaImagenPath = res.data?.imagenPath ?? res.imagenPath;
+
         // Actualizar la previsualización en PerfilComponent
-        this.usuario.imagenPreview = `http://localhost:7000/${res.imagenPath}`;
+        this.usuario.imagenPreview = `http://192.168.50.108:8081/${nuevaImagenPath}`;
+        this.usuario.data.imagenPath = nuevaImagenPath;
 
         // Actualizar el usuario en LoginService para que el Header se refresque
-        const usuarioActualizado = { ...this.usuario, imagenPath: res.imagenPath };
-        this.loginService.actualizarUsuario(usuarioActualizado);
+        this.loginService.actualizarUsuario(this.usuario);
 
         // Limpiar selección
         this.imagenSeleccionada = null;

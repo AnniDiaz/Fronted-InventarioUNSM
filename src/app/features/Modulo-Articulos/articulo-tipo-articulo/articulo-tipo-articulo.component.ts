@@ -22,6 +22,10 @@ export class ArticuloTipoArticuloComponent implements OnInit {
 
   articulos: any[] = [];
   articulosFiltrados: any[] = [];
+  registrosPaginados: any[] = [];
+  paginaActual: number = 1;
+  pageSize: number = 10;
+  totalPaginas: number = 1;
   filtro: string = '';
   tipoArticuloId!: number;
   nombreTipoArticulo: string = '';
@@ -134,6 +138,12 @@ get safeEncabezados(): string[] {
 
   return qr.toDataURL(); // 🔥 devuelve imagen completa
 }
+
+  getQRUrl(articulo: any): string {
+    const id = this.getValue(articulo, 'Id');
+    if (!id) return '';
+    return this.generarQR(`http://192.168.50.108:4202/tipos-articulos/articulo/${id}`);
+  }
 cargarArticulos(id: number) {
   console.log('🔥 ENTRANDO A cargarArticulos con ID:', id);
 
@@ -160,6 +170,9 @@ cargarArticulos(id: number) {
         this.encabezados = [];
         this.articulos = [];
         this.articulosFiltrados = [];
+        this.registrosPaginados = [];
+        this.totalPaginas = 1;
+        this.paginaActual = 1;
         return;
       }
 
@@ -205,6 +218,7 @@ cargarArticulos(id: number) {
       console.error('❌ ERROR AL OBTENER ARTICULOS:', err);
       this.articulos = [];
       this.articulosFiltrados = [];
+      this.registrosPaginados = [];
       this.encabezados = [];
     }
   });
@@ -222,6 +236,8 @@ setData(cleanedData: any[]) {
   this.encabezados = Object.keys(cleanedData[0] || {});
   this.articulos = [...cleanedData];
   this.articulosFiltrados = [...cleanedData];
+  this.paginaActual = 1;
+  this.actualizarPaginacion();
 }
 getHijosRecursivo(id: number, visitados = new Set<number>()): number[] {
   if (!id || visitados.has(id)) return [];
@@ -240,12 +256,28 @@ getHijosRecursivo(id: number, visitados = new Set<number>()): number[] {
   aplicarFiltro() {
     if (!this.filtro.trim()) {
       this.articulosFiltrados = this.articulos;
-      return;
+    } else {
+      const f = this.filtro.toLowerCase();
+      this.articulosFiltrados = this.articulos.filter(a =>
+        JSON.stringify(a).toLowerCase().includes(f)
+      );
     }
-    const f = this.filtro.toLowerCase();
-    this.articulosFiltrados = this.articulos.filter(a =>
-      JSON.stringify(a).toLowerCase().includes(f)
-    );
+    this.paginaActual = 1;
+    this.actualizarPaginacion();
+  }
+
+  actualizarPaginacion() {
+    this.totalPaginas = Math.max(1, Math.ceil(this.articulosFiltrados.length / this.pageSize));
+    if (this.paginaActual > this.totalPaginas) this.paginaActual = this.totalPaginas;
+
+    const inicio = (this.paginaActual - 1) * this.pageSize;
+    this.registrosPaginados = this.articulosFiltrados.slice(inicio, inicio + this.pageSize);
+  }
+
+  cambiarPagina(nueva: number) {
+    if (nueva < 1 || nueva > this.totalPaginas) return;
+    this.paginaActual = nueva;
+    this.actualizarPaginacion();
   }
 
   // =============================================
@@ -254,6 +286,9 @@ getHijosRecursivo(id: number, visitados = new Set<number>()): number[] {
   isQRCode(campo: string) { return campo?.toLowerCase().includes('qr'); }
   isEstado(campo: string) { return campo?.toLowerCase() === 'estado'; }
   isFecha(campo: string) { return campo.toLowerCase().includes('fecha'); }
+  isCodigo(campo: string) { return campo?.toLowerCase() === 'codigopatrimonial'; }
+  isValor(campo: string) { return campo?.toLowerCase() === 'valoradquisitivo'; }
+  isCondicion(campo: string) { return campo?.toLowerCase() === 'condicion'; }
   isNumero(campo: string) {
     const posibles = ['valor', 'precio', 'cantidad', 'stock', 'vida', 'util', 'id'];
     return posibles.some(p => campo.toLowerCase().includes(p));
@@ -273,6 +308,7 @@ getValue(articulo: any, campo: string): any {
   return value;
 }
 columnasOcultas = new Set([
+  'Id',
   'TipoArticuloId',
   'UbicacionId',
   'Estado'
@@ -345,7 +381,7 @@ guardarArticulo() {
     valor: this.formulario[c.nombreCampo]?.toString().trim() || ''
   }));
 
-  const articuloRequest = {
+  const articuloRequest: any = {
     codigoPatrimonial: this.formulario['CodigoPatrimonial'],
     nombre: this.formulario['Nombre'],
     fechaAdquision: this.formulario['FechaAdquision'],
@@ -358,6 +394,33 @@ guardarArticulo() {
     tiempoVidaUtil: Number(this.formulario['TiempoVidaUtil']),
     camposValores
   };
+
+  if (this.modoFormulario === 'editar') {
+    articuloRequest.id = Number(this.formulario['Id'] ?? this.formulario['id']);
+
+    this.articuloService.updateArticuloConCampos(articuloRequest).subscribe({
+      next: () => {
+        Swal.fire({
+          icon: 'success',
+          title: 'Artículo actualizado',
+          text: 'El artículo se actualizó exitosamente.',
+          showConfirmButton: false,
+          timer: 2000
+        });
+
+        this.mostrarFormulario = false;
+        this.cargarArticulos(this.tipoArticuloId);
+      },
+      error: () => {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo actualizar el artículo.',
+        });
+      }
+    });
+    return;
+  }
 
   this.articuloService.addArticuloConCampos(articuloRequest).subscribe({
     next: () => {

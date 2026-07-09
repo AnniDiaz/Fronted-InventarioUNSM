@@ -15,22 +15,19 @@
 
         <div class="contenido-principal">
 
-            <div class="page-container">
-
-                <div class="tabla-container">
+            <div class="card-inventario">
 
                     <!-- HEADER -->
-                    <div class="main-header-wrapper">
+                    <div class="header-inventario">
 
-                        <div class="header-titulo-wrapper"
-                             style="display:flex;align-items:center;gap:15px;">
+                        <div class="textos-inventario">
 
                             <button class="menu-toggle"
                                     (click)="toggleMenu()">
                                 <i class="fa fa-bars"></i>
                             </button>
 
-                            <div class="titulos-header">
+                            <div>
                                 <h2>Solicitantes</h2>
                                 <p>
                                     Gestión de personas autorizadas para solicitar equipos.
@@ -39,14 +36,16 @@
 
                         </div>
 
-                        <button
-                            class="btn-principal"
-                            (click)="toggleFormulario()">
+                        <div class="acciones-top">
+                            <button
+                                class="btn-agregar-pill"
+                                (click)="toggleFormulario()">
 
-                            <i class="fa fa-user-plus"></i>
-                            Registrar Solicitante
+                                <i class="fa fa-user-plus"></i>
+                                Registrar Solicitante
 
-                        </button>
+                            </button>
+                        </div>
 
                     </div>
 
@@ -131,25 +130,23 @@
 
                     </div>
 
-                </div>
+                    <!-- PAGINACIÓN -->
+                    <div class="footer-paginacion">
+                        <div class="pag-info">
+                            Página {{ paginaActual }} de {{ totalPaginas }}
+                        </div>
+                        <div class="pag-botones">
+                            <button class="btn-pag-nav" [disabled]="paginaActual === 1" (click)="paginaAnterior()">
+                                Anterior
+                            </button>
+                            <button class="btn-pag-nav active" [disabled]="paginaActual === totalPaginas" (click)="paginaSiguiente()">
+                                Siguiente
+                            </button>
+                        </div>
+                    </div>
 
             </div>
-<!-- PAGINACIÓN -->
-<div class="paginacion-container">
 
-    <button (click)="paginaAnterior()" [disabled]="paginaActual === 1">
-        Anterior
-    </button>
-
-    <span>
-        Página {{ paginaActual }} de {{ totalPaginas }}
-    </span>
-
-    <button (click)="paginaSiguiente()" [disabled]="paginaActual === totalPaginas">
-        Siguiente
-    </button>
-
-</div>
         </div>
 
     </div>

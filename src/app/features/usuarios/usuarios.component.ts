@@ -93,7 +93,7 @@ cargarUsuarios() {
         email: u.email || '',
         username: u.username || '',
         rolId: u.rolId,
-        imagenPath: u.imagenUrl || null,
+        imagenPath: u.imagenPath || null,
 
         // 🔥 CRUCE CON ROLES
         rolNombre: this.roles.find(r => r.id === u.rolId)?.nombre || 'Sin rol'
@@ -250,7 +250,7 @@ aplicarFiltro() {
     password: '',
     rolId: usuario.rolId,
     imagen: null,
-    imagenPreview: usuario.imagenPath ?  usuario.imagenPath : null,
+    imagenPreview: usuario.imagenPath ? 'http://192.168.50.108:8081/' + usuario.imagenPath : null,
     imagenPath: usuario.imagenPath
   };
 

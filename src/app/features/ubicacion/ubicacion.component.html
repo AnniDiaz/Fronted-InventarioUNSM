@@ -10,23 +10,25 @@
     <app-header></app-header>
 
     <div class="contenido-principal">
-      <div class="page-container">
+      <div class="card-inventario">
 
-        <div class="header-ubicaciones">
-          <div class="header-titulo-wrapper" style="display: flex; align-items: center; gap: 15px;">
+        <div class="header-inventario">
+          <div class="textos-inventario">
             <button class="menu-toggle" (click)="toggleMenu()">
               <i class="fa fa-bars"></i>
             </button>
 
-            <div class="titulos-header">
+            <div>
               <h2>Ubicaciones</h2>
               <p>Gestión de espacios y laboratorios de la facultad.</p>
             </div>
           </div>
 
-          <button class="btn-agregar-pill" (click)="toggleFormulario()">
-            <i class="fa fa-plus"></i> Nueva Ubicación
-          </button>
+          <div class="acciones-top">
+            <button class="btn-agregar-pill" (click)="toggleFormulario()">
+              <i class="fa fa-plus"></i> Nueva Ubicación
+            </button>
+          </div>
         </div>
 
         <div class="search-filter-barra">
@@ -39,6 +41,14 @@
             <select [(ngModel)]="filtroTipo" (change)="aplicarFiltro()">
               <option value="todos">Todos los tipos</option>
               <option *ngFor="let t of tiposUbicacion || []" [value]="t.id">{{ t.nombre }}</option>
+            </select>
+            <i class="fa fa-chevron-down select-arrow"></i>
+          </div>
+
+          <div class="filter-select-box">
+            <select [(ngModel)]="filtroEscuela" (change)="aplicarFiltro()">
+              <option value="todos">Todas las escuelas</option>
+              <option *ngFor="let e of escuelas || []" [value]="e.id">{{ e.nombre }}</option>
             </select>
             <i class="fa fa-chevron-down select-arrow"></i>
           </div>
@@ -170,12 +180,15 @@
 
             <div class="card-stats">
               <div class="stat-box">
-                <span class="stat-lb">TIPO DE UBICACIÓN</span>
-                <span class="stat-vl" style="color: #64748b;">{{ obtenerTipo(u.tipoUbicacionId) }}</span>
+                <span class="stat-lb"><i class="fa fa-th-large"></i> Tipo</span>
+                <span class="stat-vl" [title]="obtenerTipo(u.tipoUbicacionId)">{{ obtenerTipo(u.tipoUbicacionId) }}</span>
+              </div>
 
-              <div class="stat-box">
-                <span class="stat-lb"><i class="fa fa-graduation-cap"></i> ESCUELA</span>
-                <span class="stat-vl" style="color: #04945d; font-size: 13px;">{{ obtenerEscuela(u.escuelaId) }}</span>
+              <div class="stat-divider"></div>
+
+              <div class="stat-box right">
+                <span class="stat-lb"><i class="fa fa-graduation-cap"></i> Escuela</span>
+                <span class="stat-vl verde" [title]="obtenerEscuela(u.escuelaId)">{{ obtenerEscuela(u.escuelaId) }}</span>
               </div>
             </div>
 

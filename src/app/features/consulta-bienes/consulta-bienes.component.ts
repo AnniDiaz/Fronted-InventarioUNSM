@@ -35,14 +35,18 @@ export class ConsultaBienesComponent implements OnInit {
   filtroSedeId = 0;
   filtroFacultadId = 0;
   filtroEscuelaId = 0;
-  filtroEstado = 'Todos';
+  filtroUbicacionId = 0;
+  filtroEstado = 'Bueno';
   filtroFecha = '';
+
+  ubicacionFiltroLocked = false;
 
   sedes: any[] = [];
   facultades: any[] = [];
   escuelas: any[] = [];
   facultadesFiltradas: any[] = [];
   escuelasFiltradas: any[] = [];
+  ubicacionesFiltradas: any[] = [];
 
   tipos: any[] = [];
   ubicaciones: any[] = [];
@@ -100,6 +104,7 @@ export class ConsultaBienesComponent implements OnInit {
 
         this.facultadesFiltradas = [...this.facultades];
         this.escuelasFiltradas = [...this.escuelas];
+        this.ubicacionesFiltradas = [...this.ubicaciones];
 
         this.bienes = this.aArray(res.articulos).map((a: any) => this.enriquecerBien(a));
 
@@ -136,9 +141,19 @@ export class ConsultaBienesComponent implements OnInit {
 
   aplicarFiltroUsuario() {
     const escuelaId = Number(localStorage.getItem('escuelaId'));
+    const ubicacionUsuarioId = Number(localStorage.getItem('ubicacionUsuarioId'));
+
+    // Técnico con ubicación puntual asignada: se bloquea TODA la jerarquía
+    // (Sede/Facultad/Escuela/Ubicación) a los valores de esa ubicación.
+    if (ubicacionUsuarioId) {
+      this.fijarUbicacionUsuario(ubicacionUsuarioId);
+      this.aplicarFiltro();
+      return;
+    }
 
     if (!escuelaId) {
       this.filtrosLocked = false;
+      this.ubicacionesFiltradas = [...this.ubicaciones];
       this.aplicarFiltro();
       return;
     }
@@ -160,29 +175,73 @@ export class ConsultaBienesComponent implements OnInit {
       : [...this.escuelas];
 
     this.filtrosLocked = true;
+    this.actualizarUbicacionesFiltradas();
     this.aplicarFiltro();
+  }
+
+  private fijarUbicacionUsuario(ubicacionUsuarioId: number) {
+    const ubicacion = this.ubicaciones.find(u => Number(u.id) === ubicacionUsuarioId);
+
+    this.filtroUbicacionId = ubicacionUsuarioId;
+    this.ubicacionesFiltradas = ubicacion ? [ubicacion] : [];
+    this.ubicacionFiltroLocked = true;
+
+    const escuela = ubicacion ? this.escuelas.find(e => Number(e.id) === Number(ubicacion.escuelaId)) : null;
+    const facultad = escuela ? this.facultades.find(f => Number(f.id) === Number(escuela.facultadId)) : null;
+    const sede = facultad ? this.sedes.find(s => Number(s.id) === Number(facultad.sedeId)) : null;
+
+    this.filtroSedeId = sede ? Number(sede.id) : 0;
+    this.filtroFacultadId = facultad ? Number(facultad.id) : 0;
+    this.filtroEscuelaId = escuela ? Number(escuela.id) : 0;
+
+    this.facultadesFiltradas = sede
+      ? this.facultades.filter(f => Number(f.sedeId) === Number(sede.id))
+      : [...this.facultades];
+
+    this.escuelasFiltradas = facultad
+      ? this.escuelas.filter(e => Number(e.facultadId) === Number(facultad.id))
+      : [...this.escuelas];
+
+    this.filtrosLocked = true;
+  }
+
+  actualizarUbicacionesFiltradas() {
+    this.ubicacionesFiltradas = this.filtroEscuelaId
+      ? this.ubicaciones.filter(u => Number(u.escuelaId) === Number(this.filtroEscuelaId))
+      : [...this.ubicaciones];
   }
 
   onSedeChange() {
     this.filtroFacultadId = 0;
     this.filtroEscuelaId = 0;
+    this.filtroUbicacionId = 0;
 
     this.facultadesFiltradas = this.filtroSedeId
       ? this.facultades.filter(f => f.sedeId === Number(this.filtroSedeId))
       : [...this.facultades];
 
     this.escuelasFiltradas = [...this.escuelas];
+    this.ubicacionesFiltradas = [...this.ubicaciones];
 
     this.aplicarFiltro();
   }
 
   onFacultadChange() {
     this.filtroEscuelaId = 0;
+    this.filtroUbicacionId = 0;
 
     this.escuelasFiltradas = this.filtroFacultadId
       ? this.escuelas.filter(e => e.facultadId === Number(this.filtroFacultadId))
       : [...this.escuelas];
 
+    this.ubicacionesFiltradas = [...this.ubicaciones];
+
+    this.aplicarFiltro();
+  }
+
+  onEscuelaChange() {
+    this.filtroUbicacionId = 0;
+    this.actualizarUbicacionesFiltradas();
     this.aplicarFiltro();
   }
 
@@ -198,12 +257,13 @@ export class ConsultaBienesComponent implements OnInit {
       const coincideSede = !this.filtroSedeId || b.sedeId === Number(this.filtroSedeId);
       const coincideFacultad = !this.filtroFacultadId || b.facultadId === Number(this.filtroFacultadId);
       const coincideEscuela = !this.filtroEscuelaId || b.escuelaId === Number(this.filtroEscuelaId);
+      const coincideUbicacion = !this.filtroUbicacionId || b.ubicacionId === Number(this.filtroUbicacionId);
       const coincideEstado = this.filtroEstado === 'Todos' || b.condicion === this.filtroEstado;
 
       const coincideFecha = !this.filtroFecha ||
         (b.fechaAdquision && b.fechaAdquision.substring(0, 10) === this.filtroFecha);
 
-      return coincideTexto && coincideSede && coincideFacultad && coincideEscuela && coincideEstado && coincideFecha;
+      return coincideTexto && coincideSede && coincideFacultad && coincideEscuela && coincideUbicacion && coincideEstado && coincideFecha;
     });
 
     this.paginaActual = 1;

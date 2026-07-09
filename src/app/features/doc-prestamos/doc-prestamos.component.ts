@@ -18,6 +18,8 @@ import html2canvas from 'html2canvas';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
 import { UbicacionService } from '../../core/services/ubicacion.service';
+import { EscuelaService } from '../../core/services/escuela.service';
+import { SearchableSelectComponent, OpcionSelect } from '../../shared/components/searchable-select/searchable-select.component';
 @Component({
   selector: 'app-doc-prestamos',
   standalone: true,
@@ -31,7 +33,8 @@ imports: [
   MatOptionModule,
   MatIconModule,
   SidebarComponent,
-  HeaderComponent
+  HeaderComponent,
+  SearchableSelectComponent
 ],
   templateUrl: './doc-prestamos.component.html',
   styleUrls: ['./doc-prestamos.component.css']
@@ -58,7 +61,8 @@ nuevoSolicitante = {
     private solicitanteService: SolicitantesService,
       private prestamoService: PrestamosService,
         private router: Router,
-          private ubicService: UbicacionService
+          private ubicService: UbicacionService,
+          private escuelaService: EscuelaService
 
 
 
@@ -66,6 +70,14 @@ nuevoSolicitante = {
 
   articulos: any[] = [];
 articuloId: number = 0;  equipo = '';
+
+get opcionesArticulos(): OpcionSelect[] {
+  return this.articulos.map(a => ({
+    value: a.id,
+    label: `${a.nombre} - ${a.codigoPatrimonial || 'Sin código'}`
+  }));
+}
+
 ubicacionUsuarioId: number = 0;
 ubicacionUsuarioNombre: string = '';
 escuelaNombreUsuario: string = '';
@@ -137,12 +149,19 @@ cargarPorEscuela(): void {
   const escuelaId = Number(localStorage.getItem('escuelaId'));
 
   if (!escuelaId) {
-    // superadmin o usuario sin escuela asignada: cargar todo
-    this.articuloService.getArticulosConCampos().subscribe({
-      next: (res: any) => {
-        this.articulos = Array.isArray(res) ? res : res?.data ?? [];
-      },
-      error: () => Swal.fire('Error', 'No se pudieron cargar los artículos', 'error')
+    // superadmin o usuario sin escuela asignada (ej. técnico con ubicación propia)
+    this.cargarUbicacionUsuarioInfo(() => {
+      this.articuloService.getArticulosConCampos().subscribe({
+        next: (res: any) => {
+          const data = Array.isArray(res) ? res : res?.data ?? [];
+
+          // Técnico con ubicación fija: solo ve los artículos de esa ubicación.
+          this.articulos = this.ubicacionUsuarioId
+            ? data.filter((a: any) => Number(a.ubicacionId) === this.ubicacionUsuarioId)
+            : data;
+        },
+        error: () => Swal.fire('Error', 'No se pudieron cargar los artículos', 'error')
+      });
     });
     return;
   }
@@ -231,21 +250,44 @@ cargarUbicaciones(): void {
 
 }
 
-cargarUbicacionUsuarioInfo(): void {
+cargarUbicacionUsuarioInfo(onResuelto?: () => void): void {
   const usuario = JSON.parse(localStorage.getItem('user') || '{}');
   const usuarioId = usuario?.data?.id || usuario?.id || usuario?.usuarioId;
 
-  if (!usuarioId) return;
+  if (!usuarioId) {
+    onResuelto?.();
+    return;
+  }
 
   this.ubicService.getUbicacionesPorUsuario(usuarioId).subscribe({
     next: (resp: any) => {
       const ubicacionesUsuario = Array.isArray(resp) ? resp : resp?.data ?? [];
-      if (ubicacionesUsuario.length === 0) return;
 
-      this.ubicacionUsuarioId = Number(ubicacionesUsuario[0].id);
-      this.ubicacionUsuarioNombre = ubicacionesUsuario[0].nombre ?? '';
+      if (ubicacionesUsuario.length === 0) {
+        onResuelto?.();
+        return;
+      }
+
+      const ubicacion = ubicacionesUsuario[0];
+      this.ubicacionUsuarioId = Number(ubicacion.id);
+      this.ubicacionUsuarioNombre = ubicacion.nombre ?? '';
+
+      if (ubicacion.escuelaId) {
+        this.escuelaService.getEscuelaById(ubicacion.escuelaId).subscribe({
+          next: (res: any) => {
+            const escuela = res?.data ?? res;
+            if (escuela?.nombre) this.escuelaNombreUsuario = escuela.nombre;
+          },
+          error: (err) => console.error(err)
+        });
+      }
+
+      onResuelto?.();
     },
-    error: (err) => console.error(err)
+    error: (err) => {
+      console.error(err);
+      onResuelto?.();
+    }
   });
 }
 

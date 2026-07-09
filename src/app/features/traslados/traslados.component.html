@@ -10,26 +10,26 @@
     <app-header></app-header>
 
     <div class="contenido-principal">
-      <div class="page-container">
+      <div class="card-inventario">
 
-        <div class="tabla-container">
+        <div class="header-inventario">
+          <div class="textos-inventario">
+            <button class="menu-toggle" (click)="toggleMenu()">
+              <i class="fa fa-bars"></i>
+            </button>
 
-          <div class="main-header-wrapper">
-            <div class="header-titulo-wrapper" style="display: flex; align-items: center; gap: 15px;">
-              <button class="menu-toggle" (click)="toggleMenu()">
-                <i class="fa fa-bars"></i>
-              </button>
-
-              <div class="titulos-header">
-                <h2 style="margin: 0;">Traslados de Activos</h2>
-                <p style="margin: 0;">Historial y registro de movimientos entre ubicaciones.</p>
-              </div>
+            <div>
+              <h2>Traslados de Activos</h2>
+              <p>Historial y registro de movimientos entre ubicaciones.</p>
             </div>
+          </div>
 
-            <button class="btn-principal" (click)="toggleFormulario()">
+          <div class="acciones-top">
+            <button class="btn-agregar-pill" (click)="toggleFormulario()">
               <i class="fa fa-exchange-alt"></i> Registrar Traslado
             </button>
           </div>
+        </div>
 
           <div class="tabla-header-tools">
             <div class="search-box">
@@ -138,9 +138,7 @@
       *ngFor="let a of articulosFiltrados"
       (click)="seleccionarArticulo(a)">
 
-      <strong>{{ a.codigoPatrimonial }} </strong>
-      <br>
-
+      <strong>{{ a.codigoPatrimonial || 'Sin código' }}</strong>
       <small>{{ a.nombre }}</small>
 
     </div>
@@ -182,4 +180,3 @@
       </div>
     </div>
   </div>
-</div>

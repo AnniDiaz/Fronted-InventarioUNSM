@@ -67,15 +67,53 @@ ngOnInit(): void {
   if (this.esAdministrador()) {
     this.cargarArticulosSinFiltro();
   } else {
-    this.cargarPorEscuela();
+    // Primero se revisa si el usuario tiene una ubicación fija asignada
+    // directamente (ej. practicante o técnico): en ese caso solo debe ver
+    // los artículos de ESA ubicación puntual, sin importar si además
+    // pertenece a una escuela.
+    this.resolverUbicacionUsuario();
   }
+}
+
+resolverUbicacionUsuario(): void {
+  const usuario = JSON.parse(localStorage.getItem('user') || '{}');
+  const usuarioId = usuario?.data?.id || usuario?.id || usuario?.usuarioId;
+
+  if (!usuarioId) {
+    this.cargarPorEscuela();
+    return;
+  }
+
+  this.ubicacionService.getUbicacionesPorUsuario(usuarioId).subscribe({
+    next: (resp: any) => {
+      const ubicacionesUsuario = Array.isArray(resp) ? resp : resp?.data ?? [];
+
+      if (ubicacionesUsuario.length > 0) {
+        // Ubicación fija asignada directamente al usuario: se filtra
+        // solo a esa ubicación puntual (no a su jerarquía de hijas).
+        const ubicacionId = Number(ubicacionesUsuario[0].id);
+        this.idsUbicacionesPermitidas = [ubicacionId];
+        this.cargarArticulosParaSelect();
+        return;
+      }
+
+      // Sin ubicación fija propia: se filtra por la escuela asignada (si tiene).
+      this.cargarPorEscuela();
+    },
+    error: (err) => {
+      console.error(err);
+      this.cargarPorEscuela();
+    }
+  });
 }
 
 cargarPorEscuela(): void {
   const escuelaId = Number(localStorage.getItem('escuelaId'));
 
   if (!escuelaId) {
-    this.cargarUbicaciones();
+    this.articulosDisponibles = [];
+    this.articulosFiltradosSelect = [];
+    this.cargarMantenimientos();
     return;
   }
 
@@ -92,64 +130,6 @@ cargarPorEscuela(): void {
 
 esAdministrador(): boolean {
   return Number(localStorage.getItem('rolId')) === 1;
-}
-cargarUbicaciones(): void {
-
-  const usuario = JSON.parse(localStorage.getItem('user') || '{}');
-
-  const usuarioId =
-    usuario?.data?.id ||
-    usuario?.id ||
-    usuario?.usuarioId;
-
-  if (!usuarioId) {
-    console.error('No se encontró usuario');
-    return;
-  }
-
-  this.ubicacionService.getUbicacionesPorUsuario(usuarioId).subscribe({
-    next: (resp: any) => {
-
-      const ubicacionesUsuario = Array.isArray(resp)
-        ? resp
-        : resp?.data ?? [];
-
-      if (ubicacionesUsuario.length === 0) {
-        this.articulosDisponibles = [];
-        return;
-      }
-
-      const ubicacionPadreId = Number(ubicacionesUsuario[0].id);
-
-      this.ubicacionService.getUbicacionesPorPadre(ubicacionPadreId).subscribe({
-        next: (res: any) => {
-
-          this.listaUbicaciones = Array.isArray(res)
-            ? res
-            : res?.data ?? [];
-
-          this.idsUbicacionesPermitidas = [
-            ubicacionPadreId,
-            ...this.listaUbicaciones.map((u: any) => Number(u.id))
-          ];
-
-          console.log('IDS PERMITIDOS:', this.idsUbicacionesPermitidas);
-
-          // SOLO CARGAMOS ARTÍCULOS
-          // LOS MANTENIMIENTOS SE CARGARÁN DESPUÉS
-          this.cargarArticulosParaSelect();
-
-        },
-        error: (err) => {
-          console.error(err);
-        }
-      });
-
-    },
-    error: (err) => {
-      console.error(err);
-    }
-  });
 }
 cargarArticulosSinFiltro(): void {
   this._articuloService.getArticulosConCampos().subscribe({

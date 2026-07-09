@@ -85,7 +85,7 @@ El archivo `src/app/core/interceptors/auth-interceptor.ts` agrega automáticamen
 La URL base para las peticiones al API se define en `src/app/shared/components/helper.ts`:
 
 ```ts
-let baseUrl = 'http://localhost:7000/api'
+let baseUrl = 'http://192.168.50.108:8081/api'
 export default baseUrl;
 ```
 
@@ -121,7 +121,7 @@ npm start
 3. Abrir en el navegador:
 
 ```text
-http://localhost:4200
+http://192.168.50.108:4202
 ```
 
 ## 📦 Comandos útiles
@@ -148,7 +148,7 @@ http://localhost:4200
 ## 💡 Notas adicionales
 
 - El proyecto es una aplicación SPA (Single Page Application) con routing basado en Angular Router.
-- El backend debe estar disponible en `http://localhost:7000/api` para que el frontend funcione correctamente.
+- El backend debe estar disponible en `http://192.168.50.108:8081/api` para que el frontend funcione correctamente.
 - Se recomienda revisar las rutas del backend y las entidades correspondientes para completar la integración de cada módulo.
 
 ---

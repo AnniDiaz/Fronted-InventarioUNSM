@@ -1,4 +1,4 @@
-<div class="dashboard-layout" [class.menu-activo]="menuAbierto">
+<div class="container" [class.menu-activo]="menuAbierto">
 
   <div class="sidebar-overlay" (click)="toggleMenu()"></div>
 
@@ -6,83 +6,85 @@
     <app-sidebar></app-sidebar>
   </div>
 
-  <div class="main-content">
+  <div class="main-section">
     <app-header></app-header>
 
-    <div class="page-content">
+    <div class="contenido-principal">
+      <div class="card-inventario">
 
-      <div class="page-header">
-        <div class="header-titulo-wrapper" style="display: flex; align-items: center; gap: 15px;">
-          <button class="menu-toggle" (click)="toggleMenu()">
-            <i class="fa fa-bars"></i>
-          </button>
+        <div class="header-inventario">
+          <div class="textos-inventario">
+            <button class="menu-toggle" (click)="toggleMenu()">
+              <i class="fa fa-bars"></i>
+            </button>
 
-          <div class="header-titles">
-            <h2 style="margin: 0;">Tipos de Ubicación</h2>
-            <p style="margin: 4px 0 0;">Clasifica los diferentes espacios de la facultad.</p>
-          </div>
-        </div>
-
-        <div class="header-actions">
-          <div class="search-container">
-            <i class="fa fa-search"></i>
-            <input type="text" placeholder="Buscar ubicación..." [(ngModel)]="filtro" (input)="aplicarFiltro()">
-          </div>
-          <button class="btn-primary" (click)="toggleFormulario()">
-            <i class="fa fa-plus"></i> Nuevo Tipo de Ubicación
-          </button>
-        </div>
-      </div>
-
-      <div class="cards-grid">
-        <div class="type-card" *ngFor="let tipo of registrosPaginados">
-
-          <div class="card-top">
-            <div class="icon-box ubicacion-icon">
-              <i class="fa fa-map-marker-alt"></i>
+            <div>
+              <h2>Tipos de Ubicación</h2>
+              <p>Clasifica los diferentes espacios de la facultad.</p>
             </div>
           </div>
 
-          <div class="card-body" (click)="verUbicacion(tipo)">
-            <h3>{{ tipo.nombre }}</h3>
-            <p>{{ tipo.descripcion }}</p>
-          </div>
-
-          <div class="card-footer">
-            <div class="actions">
-              <button class="btn-icon ver" (click)="verUbicaciones(tipo.id)" title="Ver Detalle">
-                <i class="fa fa-eye"></i>
-              </button>
-              <button class="btn-icon edit" (click)="editarUbicacion(tipo)" title="Editar">
-                <i class="fa fa-pencil"></i>
-              </button>
-              <button class="btn-icon delete" (click)="eliminarUbicacion(tipo.id)" title="Eliminar">
-                <i class="fa fa-trash"></i>
-              </button>
+          <div class="acciones-top">
+            <div class="buscador-sutil">
+              <i class="fa fa-search"></i>
+              <input type="text" placeholder="Buscar ubicación..." [(ngModel)]="filtro" (input)="aplicarFiltro()">
             </div>
+            <button class="btn-agregar-pill" (click)="toggleFormulario()">
+              <i class="fa fa-plus"></i> Nuevo Tipo de Ubicación
+            </button>
           </div>
-
         </div>
-      </div>
 
-      <div class="empty-state" *ngIf="registrosPaginados.length === 0">
-        <i class="fa fa-map-signs"></i>
-        <p>No se encontraron tipos de ubicación.</p>
-      </div>
+        <div class="cards-grid">
+          <div class="type-card" *ngFor="let tipo of registrosPaginados">
 
-      <div class="footer-paginacion">
-        <div class="pag-info">
-          Mostrando <strong>{{ registrosPaginados.length }}</strong> de <strong>{{ ubicacionesFiltradas.length
-            }}</strong> tipos
+            <div class="card-top">
+              <div class="icon-box ubicacion-icon">
+                <i class="fa fa-map-marker-alt"></i>
+              </div>
+            </div>
+
+            <div class="card-body" (click)="verUbicacion(tipo)">
+              <h3>{{ tipo.nombre }}</h3>
+              <p>{{ tipo.descripcion }}</p>
+            </div>
+
+            <div class="card-footer">
+              <div class="actions">
+                <button class="btn-icon ver" (click)="verUbicaciones(tipo.id)" title="Ver Detalle">
+                  <i class="fa fa-eye"></i>
+                </button>
+                <button class="btn-icon edit" (click)="editarUbicacion(tipo)" title="Editar">
+                  <i class="fa fa-pencil"></i>
+                </button>
+                <button class="btn-icon delete" (click)="eliminarUbicacion(tipo.id)" title="Eliminar">
+                  <i class="fa fa-trash"></i>
+                </button>
+              </div>
+            </div>
+
+          </div>
         </div>
-        <div class="pag-botones">
-          <button class="btn-pag-nav" [disabled]="paginaActual === 1"
-            (click)="cambiarPagina(paginaActual - 1)">Anterior</button>
-          <button class="btn-pag-nav active" [disabled]="paginaActual === totalPaginas"
-            (click)="cambiarPagina(paginaActual + 1)">Siguiente</button>
-        </div>
-      </div>
 
+        <div class="empty-state" *ngIf="registrosPaginados.length === 0">
+          <i class="fa fa-map-signs"></i>
+          <p>No se encontraron tipos de ubicación.</p>
+        </div>
+
+        <div class="footer-paginacion">
+          <div class="pag-info">
+            Mostrando <strong>{{ registrosPaginados.length }}</strong> de <strong>{{ ubicacionesFiltradas.length
+              }}</strong> tipos
+          </div>
+          <div class="pag-botones">
+            <button class="btn-pag-nav" [disabled]="paginaActual === 1"
+              (click)="cambiarPagina(paginaActual - 1)">Anterior</button>
+            <button class="btn-pag-nav active" [disabled]="paginaActual === totalPaginas"
+              (click)="cambiarPagina(paginaActual + 1)">Siguiente</button>
+          </div>
+        </div>
+
+      </div>
     </div>
   </div>
 

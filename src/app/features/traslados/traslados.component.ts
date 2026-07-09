@@ -142,18 +142,12 @@ cargarArticulos(): void {
         ? resp
         : resp?.data ?? [];
 
-      const idsUbicaciones = [
-        this.ubicacionUsuarioId,
-        ...this.listaUbicaciones.map(u => Number(u.id))
-      ];
-
-      console.log('✅ IDS UBICACIONES PERMITIDAS:', idsUbicaciones);
-
+      // Solo artículos que están físicamente en la ubicación asignada al usuario.
       this.listaArticulos = data.filter((a: any) =>
-        idsUbicaciones.includes(Number(a.ubicacionId))
+        Number(a.ubicacionId) === this.ubicacionUsuarioId
       );
 
-      console.log('📦 ARTÍCULOS FILTRADOS:', this.listaArticulos);
+      this.articulosFiltrados = [...this.listaArticulos];
     },
     error: () => {
       console.error('Error cargando artículos');
@@ -381,5 +375,8 @@ const payload = {
       destino: '',
       observaciones: ''
     };
+    this.articuloBusqueda = '';
+    this.mostrarListaArticulos = false;
+    this.articulosFiltrados = [...this.listaArticulos];
   }
 }

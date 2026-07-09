@@ -9,24 +9,25 @@
     <app-header></app-header>
 
     <div class="contenido-principal">
-      <div class="page-container">
-        <div class="tabla-container">
+      <div class="card-inventario">
 
-          <div class="main-header-wrapper">
-            <div class="header-titulo-wrapper">
-              <button class="menu-toggle" (click)="toggleMenu()">
-                <i class="fa fa-bars"></i>
-              </button>
-              <div class="titulos-header">
-                <h2>Gestión de Mantenimiento</h2>
-                <p>Seguimiento y programación de servicios técnicos.</p>
-              </div>
+        <div class="header-inventario">
+          <div class="textos-inventario">
+            <button class="menu-toggle" (click)="toggleMenu()">
+              <i class="fa fa-bars"></i>
+            </button>
+            <div>
+              <h2>Gestión de Mantenimiento</h2>
+              <p>Seguimiento y programación de servicios técnicos.</p>
             </div>
+          </div>
 
-            <button class="btn-principal" (click)="toggleFormulario()">
+          <div class="acciones-top">
+            <button class="btn-agregar-pill" (click)="toggleFormulario()">
               <i class="fa fa-wrench"></i> {{ editando ? 'Editando Registro' : 'Programar Mantenimiento' }}
             </button>
           </div>
+        </div>
 
           <div class="tabla-header-tools">
             <div class="search-box">
@@ -205,4 +206,3 @@
       </div>
     </div>
   </div>
-</div>

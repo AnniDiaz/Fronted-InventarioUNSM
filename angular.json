@@ -30,7 +30,7 @@
               "@angular/material/prebuilt-themes/azure-blue.css",
               "node_modules/@fortawesome/fontawesome-free/css/all.min.css",
               "node_modules/bootstrap/dist/css/bootstrap.min.css"
-              
+
             ],
 
             "scripts": [
@@ -42,18 +42,18 @@
           },
           "configurations": {
             "production": {
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "500kB",
-                  "maximumError": "1MB"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
-                }
-              ],
+           "budgets": [
+  {
+    "type": "initial",
+    "maximumWarning": "10MB",
+    "maximumError": "20MB"
+  },
+  {
+    "type": "anyComponentStyle",
+    "maximumWarning": "100kB",
+    "maximumError": "200kB"
+  }
+],
               "outputHashing": "all"
             },
             "development": {

@@ -10,28 +10,25 @@
         <app-header></app-header>
 
         <div class="contenido-principal">
-            <div class="page-container">
-                <div class="tabla-container">
+                <div class="card-inventario">
 
                     <!-- HEADER -->
-                    <div class="main-header-wrapper">
-                        <div class="header-titulo-wrapper" style="display: flex; align-items: center; gap: 15px;">
-                            <button class="menu-toggle" (click)="toggleMenu()">
-                                <i class="fa fa-bars"></i>
-                            </button>
-                            <div class="titulos-header">
-                                <h2 style="margin: 0;">Préstamos de Equipos</h2>
-                                <p style="margin: 0;">Control y seguimiento de activos prestados a personal.</p>
+                    <div class="header-inventario">
+                        <div class="textos-inventario">
+                            <div>
+                                <h2>Préstamos de Equipos</h2>
+                                <p>Control y seguimiento de activos prestados a personal.</p>
                             </div>
                         </div>
+                        <div class="acciones-top">
 <a
-    class="btn-principal"
+    class="btn-agregar-pill"
 
     routerLink="/prestamos/generar-documento">
 
-    <i class="fa fa-handshake"></i>
     Registrar Préstamo
 </a>
+                        </div>
                     </div>
 
                     <!-- TABLA -->
@@ -99,13 +96,28 @@
       </button>
 
 
-      <button class="btn-icon btn-return" *ngIf="p.estadoPrestamo" (click)="marcarDevuelto(p)">
+      <button class="btn-icon btn-return" *ngIf="p.estadoPrestamo"
+        [disabled]="!puedeDevolverPrestamos"
+        [title]="puedeDevolverPrestamos ? 'Marcar como devuelto' : 'Solo administradores y superadmin pueden marcar devoluciones'"
+        (click)="marcarDevuelto(p)">
         <i class="fa fa-rotate-left"></i>
       </button>
     </td>
   </tr>
 </tbody>
                         </table>
+                    </div>
+
+                    <div class="footer-paginacion">
+                        <div class="pag-info">
+                            Mostrando <strong>{{ registrosPaginados.length }}</strong> de <strong>{{ prestamosFiltrados.length }}</strong> préstamos
+                        </div>
+                        <div class="pag-botones">
+                            <button class="btn-pag-nav" [disabled]="paginaActual === 1"
+                                (click)="cambiarPagina(paginaActual - 1)">Anterior</button>
+                            <button class="btn-pag-nav active" [disabled]="paginaActual === totalPaginas"
+                                (click)="cambiarPagina(paginaActual + 1)">Siguiente</button>
+                        </div>
                     </div>
 
                 </div>
@@ -218,7 +230,6 @@
                     </div>
                 </div>
 
-            </div>
         </div>
     </div>
 </div>

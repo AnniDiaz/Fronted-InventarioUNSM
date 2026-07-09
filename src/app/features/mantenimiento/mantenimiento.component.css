@@ -1,79 +1,5 @@
-.container {
-  display: flex;
-  min-height: 100vh;
-  background-color: #f8fafc;
-}
-
-.barra-lateral {
-  width: 280px;
-  flex-shrink: 0;
-}
-
-.main-section {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.contenido-principal {
-  flex-grow: 1;
-  padding: 30px;
-  overflow-y: auto;
-}
-
-.page-container {
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-.tabla-container {
-  background: white;
-  border-radius: 24px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-  padding: 35px;
+.card-inventario {
   margin-bottom: 30px;
-}
-
-.main-header-wrapper {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 40px;
-}
-
-.titulos-header h2 {
-  font-size: 28px;
-  font-weight: 800;
-  color: #0f172a;
-  margin: 0;
-}
-
-.titulos-header p {
-  color: #64748b;
-  margin: 5px 0 0;
-  font-size: 15px;
-}
-
-.btn-principal {
-  background: #00a468;
-  color: white;
-  border: none;
-  padding: 14px 28px;
-  border-radius: 16px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  cursor: pointer;
-  transition: all 0.3s;
-  box-shadow: 0 10px 15px -3px rgba(0, 164, 104, 0.2);
-}
-
-.btn-principal:hover {
-  background: #008f5a;
-  transform: translateY(-2px);
-  box-shadow: 0 20px 25px -5px rgba(0, 164, 104, 0.3);
 }
 
 .tabla-header-tools {
@@ -240,46 +166,6 @@
 
 .btn-action-done i {
   margin-right: 5px;
-}
-
-.footer-paginacion {
-  padding: 20px 30px 25px 30px;
-  border-top: 1px solid #f1f5f9;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.pag-info {
-  font-size: 14px;
-  color: #64748b;
-}
-
-.pag-botones {
-  display: flex;
-  gap: 8px;
-}
-
-.btn-pag-nav {
-  padding: 8px 16px;
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #64748b;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.btn-pag-nav:hover:not(:disabled) {
-  background: #f8fafc;
-}
-
-.btn-pag-nav.active {
-  background: #0f172a;
-  color: white;
-  border-color: #0f172a;
 }
 
 /* --- MODAL CORREGIDO --- */

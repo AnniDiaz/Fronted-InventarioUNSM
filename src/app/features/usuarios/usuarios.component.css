@@ -1,80 +1,3 @@
-/* =========================
-   TITULO + BOTONES
-========================= */
-.cont-tit {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  justify-content: space-between;
-  align-items: center;
-  background: #fff;
-  border-radius: 12px;
-  padding: 15px 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  margin-bottom: 25px;
-}
-
-.cont-tit h2 {
-  font-size: 20px;
-  font-weight: 600;
-  color: #151b25;
-}
-
-.cont-btns {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  flex-wrap: wrap;
-  margin-left: auto;
-}
-
-.btn-agregar {
-  background: #28a745;
-  color: white;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-weight: 500;
-  border: none;
-  cursor: pointer;
-  transition: 0.3s ease;
-}
-
-.btn-agregar:hover {
-  background: #218838;
-  transform: scale(1.03);
-}
-
-.busqueda {
-  display: flex;
-  align-items: center;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  overflow: hidden;
-  background: #fff;
-  width: 220px;
-}
-
-.busqueda input {
-  flex: 1;
-  padding: 8px 10px;
-  border: none;
-  outline: none;
-  font-size: 14px;
-}
-
-.btn-buscar {
-  padding: 8px 12px;
-  background: #007bff;
-  color: white;
-  border: none;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.btn-buscar:hover {
-  background: #0056b3;
-}
-
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -136,15 +59,12 @@
 
 /* HEADER */
 .modal-header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
   background: #fff;
   border-bottom: 1px solid #eef2f7;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: -10px;
+  padding-bottom: 12px;
 }
 
 

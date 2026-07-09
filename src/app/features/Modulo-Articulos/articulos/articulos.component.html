@@ -50,14 +50,24 @@
               {{ t.nombre }}
             </button>
           </div>
-          <div class="sort-box">
-            <span>ORDENAR POR: </span>
-            <select [(ngModel)]="orden" (change)="aplicarFiltro()">
-              <option value="recientes">Más recientes</option>
-              <option value="antiguos">Más antiguos</option>
-              <option value="nombre_asc">Nombre (A-Z)</option>
-              <option value="nombre_desc">Nombre (Z-A)</option>
-            </select>
+          <div class="filtros-derecha">
+            <div class="sort-box">
+              <span>UBICACIÓN: </span>
+              <select [(ngModel)]="filtroUbicacion" (change)="aplicarFiltro()" [disabled]="tieneUbicacionFija">
+                <option value="todos" *ngIf="!tieneUbicacionFija">Todas</option>
+                <option *ngFor="let u of ubicaciones" [value]="u.id">{{ u.nombre }}</option>
+              </select>
+            </div>
+
+            <div class="sort-box">
+              <span>ORDENAR POR: </span>
+              <select [(ngModel)]="orden" (change)="aplicarFiltro()">
+                <option value="recientes">Más recientes</option>
+                <option value="antiguos">Más antiguos</option>
+                <option value="nombre_asc">Nombre (A-Z)</option>
+                <option value="nombre_desc">Nombre (Z-A)</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -91,7 +101,7 @@
                   <label for="ubicacion">Ubicación</label>
                   <app-searchable-select id="ubicacion" name="ubicacionId"
                     [opciones]="opcionesUbicaciones" placeholder="Seleccione ubicación"
-                    [(ngModel)]="articulo.ubicacionId" required>
+                    [(ngModel)]="articulo.ubicacionId" required [disabled]="tieneUbicacionFija">
                   </app-searchable-select>
                 </div>
 

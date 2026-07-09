@@ -7,33 +7,33 @@
     <app-header></app-header>
 
     <div class="contenido-principal">
-      <div class="card">
-        <div class="cont-tit">
-          <div class="block">
-             <h2>Permisos</h2>
-
-            <p>Administra los permisos del sistema, controlando el acceso para cada usuario.</p>
+      <div class="card-inventario">
+        <div class="header-inventario">
+          <div class="textos-inventario">
+            <div>
+              <h2>Permisos</h2>
+              <p>Administra los permisos del sistema, controlando el acceso para cada usuario.</p>
+            </div>
           </div>
 
-          <div class="cont-btns">
-            <button class="btn-agregar" (click)="toggleFormulario()">
+          <div class="acciones-top">
+            <div class="buscador-sutil">
+              <i class="fa fa-search"></i>
+
+              <input
+                type="text"
+                placeholder="Buscar permisos..."
+                [(ngModel)]="filtro"
+                (input)="aplicarFiltro()"
+              >
+
+              <button *ngIf="filtro" class="btn-clear" (click)="filtro=''; aplicarFiltro()">
+                <i class="fa fa-times"></i>
+              </button>
+            </div>
+            <button class="btn-agregar-pill" (click)="toggleFormulario()">
               <i class="fa fa-plus"></i> Agregar Permiso
             </button>
-
-<div class="busqueda">
-  <i class="fa fa-search icono"></i>
-
-  <input
-    type="text"
-    placeholder="Buscar permisos..."
-    [(ngModel)]="filtro"
-    (input)="aplicarFiltro()"
-  >
-
-  <button *ngIf="filtro" class="btn-clear" (click)="filtro=''; aplicarFiltro()">
-    <i class="fa fa-times"></i>
-  </button>
-</div>
           </div>
         </div>
 
@@ -123,10 +123,14 @@
         </table>
 
         <!-- PAGINACIÓN -->
-        <div class="paginacion" *ngIf="totalPaginas > 1">
-          <button (click)="cambiarPagina(paginaActual - 1)" [disabled]="paginaActual === 1">Anterior</button>
-          <span>Página {{ paginaActual }} de {{ totalPaginas }}</span>
-          <button (click)="cambiarPagina(paginaActual + 1)" [disabled]="paginaActual === totalPaginas">Siguiente</button>
+        <div class="footer-paginacion" *ngIf="totalPaginas > 1">
+          <div class="pag-info">
+            Mostrando <strong>{{ permisosPaginados.length }}</strong> de <strong>{{ permisosFiltrados.length }}</strong> permisos
+          </div>
+          <div class="pag-botones">
+            <button class="btn-pag-nav" [disabled]="paginaActual === 1" (click)="cambiarPagina(paginaActual - 1)">Anterior</button>
+            <button class="btn-pag-nav active" [disabled]="paginaActual === totalPaginas" (click)="cambiarPagina(paginaActual + 1)">Siguiente</button>
+          </div>
         </div>
 
       </div>

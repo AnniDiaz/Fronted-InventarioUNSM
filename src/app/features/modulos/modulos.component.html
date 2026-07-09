@@ -7,26 +7,27 @@
     <app-header></app-header>
 
     <div class="contenido-principal">
-      <div class="card">
+      <div class="card-inventario">
 
         <!-- HEADER -->
-        <div class="cont-tit">
-          <div class="block">
-            <h2>Módulos del Sistema</h2>
-            <p>Gestiona los modulos principales del sistema y sus submodulos</p>
+        <div class="header-inventario">
+          <div class="textos-inventario">
+            <div>
+              <h2>Módulos del Sistema</h2>
+              <p>Gestiona los modulos principales del sistema y sus submodulos</p>
+            </div>
           </div>
 
-          <div class="cont-btns">
-            <button class="btn-agregar" (click)="toggleFormulario()">
-              <i class="fa fa-plus"></i> Nuevo Módulo
-            </button>
-
-            <div class="busqueda">
+          <div class="acciones-top">
+            <div class="buscador-sutil">
+              <i class="fa fa-search"></i>
               <input type="text" placeholder="Buscar módulo..."
                      [(ngModel)]="filtro"
                      (input)="aplicarFiltro()">
-              <i class="fa fa-search"></i>
             </div>
+            <button class="btn-agregar-pill" (click)="toggleFormulario()">
+              <i class="fa fa-plus"></i> Nuevo Módulo
+            </button>
           </div>
         </div>
 
@@ -96,14 +97,16 @@
         </div>
 
         <!-- PAGINACIÓN -->
-        <div class="paginacion" *ngIf="totalPaginas > 1">
-          <button (click)="cambiarPagina(paginaActual - 1)"
-                  [disabled]="paginaActual === 1">Anterior</button>
-
-          <span>Página {{ paginaActual }} de {{ totalPaginas }}</span>
-
-          <button (click)="cambiarPagina(paginaActual + 1)"
-                  [disabled]="paginaActual === totalPaginas">Siguiente</button>
+        <div class="footer-paginacion" *ngIf="totalPaginas > 1">
+          <div class="pag-info">
+            Mostrando <strong>{{ modulosPaginados.length }}</strong> de <strong>{{ modulosFiltrados.length }}</strong> módulos
+          </div>
+          <div class="pag-botones">
+            <button class="btn-pag-nav" [disabled]="paginaActual === 1"
+                    (click)="cambiarPagina(paginaActual - 1)">Anterior</button>
+            <button class="btn-pag-nav active" [disabled]="paginaActual === totalPaginas"
+                    (click)="cambiarPagina(paginaActual + 1)">Siguiente</button>
+          </div>
         </div>
 
       </div>

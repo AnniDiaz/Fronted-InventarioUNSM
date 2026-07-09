@@ -71,6 +71,11 @@ public getUser(): any | null {
   public logout(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('modulos');
+    localStorage.removeItem('rolId');
+    localStorage.removeItem('escuelaId');
+    localStorage.removeItem('escuelaNombre');
+    localStorage.removeItem('ubicacionUsuarioId');
     this.usuarioSubject.next(null); // Notifica que no hay usuario
   }
 

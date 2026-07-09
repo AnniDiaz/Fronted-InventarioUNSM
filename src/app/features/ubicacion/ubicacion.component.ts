@@ -23,6 +23,7 @@ export class UbicacionComponent implements OnInit {
 
   filtro: string = '';
   filtroTipo: number | string = 'todos';
+  filtroEscuela: number | string = 'todos';
   ubicaciones: any[] = [];
   tiposUbicacion: any[] = [];
   ubicacionesFiltradas: any[] = [];
@@ -296,6 +297,11 @@ cargarTiposUbicacion(): Promise<void> {
     if (this.filtroTipo !== 'todos') {
       const tId = Number(this.filtroTipo);
       docs = docs.filter(u => u.tipoUbicacionId === tId);
+    }
+
+    if (this.filtroEscuela !== 'todos') {
+      const eId = Number(this.filtroEscuela);
+      docs = docs.filter(u => Number(u.escuelaId) === eId);
     }
 
     this.ubicacionesFiltradas = docs;

@@ -1,93 +1,4 @@
-/* 🟩 Encabezado */
-.cont-tit {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  background: #fff;
-  border-radius: 12px;
-
-  padding: 15px 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  margin-bottom: 25px;
-}
-
-.cont-tit h2 {
-  font-weight: 700;
-  color: #151b25;
-}
-
-.cont-btns {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  flex-wrap: wrap;
-  margin-left: auto;
-}
-
-.btn-agregar {
-  order: 2;
-}
-
-.busqueda {
-  order: 1;
-}
-
-.btn-agregar {
-  background: #28a745;
-  color: white;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-weight: 500;
-  border: none;
-  cursor: pointer;
-  transition: 0.3s ease;
-}
-
-.btn-agregar:hover {
-  background: #218838;
-  transform: scale(1.03);
-}
-
-.busqueda {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #f1f5f9;
-  border-radius: 12px;
-  padding: 6px 10px;
-  width: 260px;
-  transition: all 0.25s ease;
-  border: 1px solid transparent;
-}
-
-/* EFECTO FOCUS */
-.busqueda:focus-within {
-  background: #fff;
-  border: 1px solid green;
-  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
-}
-
-/* INPUT */
-.busqueda input {
-  flex: 1;
-  border: none;
-  padding: 4px;
-  outline: none;
-  background: transparent;
-  font-size: 14px;
-  color: #1f2937;
-}
-
-/* ICONO */
-.icono {
-  color: #9ca3af;
-  font-size: 14px;
-}
-
-/* BOTON LIMPIAR */
+/* Buscador: botón limpiar (no cubierto por el global .buscador-sutil) */
 .btn-clear {
   background: #e5e7eb;
   border: none;
@@ -100,18 +11,13 @@
   justify-content: center;
   font-size: 12px;
   transition: 0.2s;
+  margin-left: 4px;
 }
 
 .btn-clear:hover {
   background: #d1d5db;
 }
 
-/* RESPONSIVE */
-@media (max-width: 768px) {
-  .busqueda {
-    width: 100%;
-  }
-}
 /* Modal */
 .modal-overlay {
   position: fixed;
@@ -131,7 +37,7 @@
   box-shadow: 0 6px 20px rgba(0,0,0,0.2);
   animation: aparecer 0.3s ease;
 }
-.busqueda input::placeholder {
+.buscador-sutil input::placeholder {
   transition: 0.3s;
 }
 .sin-datos {
@@ -150,7 +56,7 @@
   margin-bottom: 8px;
   color: #9ca3af;
 }
-.busqueda:focus-within input::placeholder {
+.buscador-sutil:focus-within input::placeholder {
   opacity: 0.5;
   transform: translateX(5px);
 }
@@ -286,34 +192,6 @@
 
 .btn-editar:hover { background: #d4ac0d; transform: scale(1.05); }
 .btn-eliminar:hover { background: #c0392b; transform: scale(1.05); }
-
-/* 🩵 Paginación */
-.paginacion {
-  margin-top: 25px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 15px;
-}
-
-.paginacion button {
-  background-color: #28a745;
-  color: white;
-  border: none;
-  padding: 8px 15px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.paginacion button:hover {
-  background-color: #218838;
-}
-
-.paginacion button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
 
 /*Responsive */
 @media (max-width: 700px) {

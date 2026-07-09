@@ -314,6 +314,7 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+  text-decoration: none;
   transition: transform 0.2s, background 0.2s;
   box-shadow: 0 4px 12px rgba(0, 164, 104, 0.2);
 }

@@ -6,6 +6,7 @@ import { SidebarComponent } from '../../shared/components/sidebar/sidebar.compon
 import { EscuelaService } from '../../core/services/escuela.service';
 import { FacultadService } from '../../core/services/facultad.service';
 import { UsuariosService } from '../../core/services/usuarios.service';
+import { RolesService } from '../../core/services/roles.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -34,9 +35,12 @@ export class EscuelasComponent implements OnInit {
   menuAbiertoId: number | null = null;
 
   mostrarModalUsuario = false;
+  mostrarModalTecnico = false;
   escuelaSeleccionada: any = null;
   usuarioSeleccionadoId: number = 0;
+  tecnicoSeleccionadoId: number = 0;
   usuarios: any[] = [];
+  roles: any[] = [];
 
   imagenFile: File | null = null;
   imagenPreview: string | ArrayBuffer | null = null;
@@ -51,13 +55,15 @@ export class EscuelasComponent implements OnInit {
   constructor(
     private escuelaService: EscuelaService,
     private facultadService: FacultadService,
-    private usuariosService: UsuariosService
+    private usuariosService: UsuariosService,
+    private rolesService: RolesService
   ) { }
 
   ngOnInit(): void {
     this.cargarFacultades();
     this.cargarEscuelas();
     this.cargarUsuarios();
+    this.cargarRoles();
   }
 
   toggleMenu() {
@@ -201,7 +207,7 @@ export class EscuelasComponent implements OnInit {
     this.editando = true;
     this.mostrarFormulario = true;
     this.imagenFile = null;
-    this.imagenPreview = e.imagenUrl ? 'http://localhost:7000' + e.imagenUrl : null;
+    this.imagenPreview = e.imagenUrl ? 'http://192.168.50.108:8081' + e.imagenUrl : null;
   }
 
   eliminarEscuela(id: number) {
@@ -244,6 +250,47 @@ export class EscuelasComponent implements OnInit {
     });
   }
 
+  cargarRoles() {
+    this.rolesService.getRoles().subscribe({
+      next: (res: any) => {
+        const data = res?.data ?? res;
+        this.roles = Array.isArray(data) ? data : [];
+      },
+      error: () => { this.roles = []; }
+    });
+  }
+
+  private normalizarTexto(valor: string): string {
+    return (valor || '')
+      .toLowerCase()
+      .trim()
+      .normalize('NFD')
+      .replace(new RegExp('[\\u0300-\\u036f]', 'g'), '');
+  }
+
+  private idsDeRol(nombreRol: string): number[] {
+    const objetivo = this.normalizarTexto(nombreRol);
+    return this.roles
+      .filter(r => this.normalizarTexto(r.nombre) === objetivo)
+      .map(r => r.id);
+  }
+
+  get usuariosAdministradores() {
+    const ids = this.idsDeRol('administrador');
+    return this.usuarios.filter(u => ids.includes(u.rolId));
+  }
+
+  get usuariosTecnicos() {
+    const ids = this.idsDeRol('tecnico');
+    return this.usuarios.filter(u => ids.includes(u.rolId));
+  }
+
+  obtenerNombreUsuario(usuarioId: number | null | undefined): string {
+    if (!usuarioId) return 'Sin asignar';
+    const u = this.usuarios.find(u => u.id === usuarioId);
+    return u ? `${u.nombre} ${u.apellido}` : 'Sin asignar';
+  }
+
   abrirModalUsuario(e: any) {
     this.escuelaSeleccionada = e;
     this.mostrarModalUsuario = true;
@@ -278,6 +325,45 @@ export class EscuelasComponent implements OnInit {
       },
       error: (err) => {
         const msg = err?.error?.message || 'No se pudo asignar el usuario';
+        Swal.fire('Error', msg, 'error');
+      }
+    });
+  }
+
+  abrirModalTecnico(e: any) {
+    this.escuelaSeleccionada = e;
+    this.mostrarModalTecnico = true;
+    this.menuAbiertoId = null;
+
+    this.escuelaService.getEscuelaById(e.id).subscribe({
+      next: (res: any) => {
+        const detalle = res?.data ?? res;
+        this.tecnicoSeleccionadoId = detalle?.tecnicoId ?? 0;
+      },
+      error: () => { this.tecnicoSeleccionadoId = 0; }
+    });
+  }
+
+  cerrarModalTecnico() {
+    this.mostrarModalTecnico = false;
+    this.escuelaSeleccionada = null;
+    this.tecnicoSeleccionadoId = 0;
+  }
+
+  guardarAsignacionTecnico() {
+    if (!this.tecnicoSeleccionadoId) {
+      Swal.fire('Error', 'Seleccione un técnico', 'warning');
+      return;
+    }
+
+    this.escuelaService.asignarTecnico(this.escuelaSeleccionada.id, this.tecnicoSeleccionadoId).subscribe({
+      next: () => {
+        Swal.fire('OK', 'Técnico asignado correctamente', 'success');
+        this.cerrarModalTecnico();
+        this.cargarEscuelas();
+      },
+      error: (err) => {
+        const msg = err?.error?.message || 'No se pudo asignar el técnico';
         Swal.fire('Error', msg, 'error');
       }
     });

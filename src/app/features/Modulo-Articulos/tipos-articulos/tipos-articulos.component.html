@@ -40,7 +40,7 @@
 
             <div class="card-top">
               <div class="tipo-icon-box" (click)="verArticulosTipoArticulo(articulo)">
-                <img *ngIf="articulo.imagenPath" [src]="'http://localhost:7000' + articulo.imagenPath" alt="Imagen">
+                <img *ngIf="articulo.imagenPath" [src]="'http://192.168.50.108:8081' + articulo.imagenPath" alt="Imagen">
                 <i *ngIf="!articulo.imagenPath" class="fa fa-cube"></i>
               </div>
               <span class="tipo-badge">{{ obtenerPrefijo(articulo.nombre) }}</span>

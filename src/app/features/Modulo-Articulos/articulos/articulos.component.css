@@ -70,6 +70,13 @@
   font-size: 16px;
 }
 
+.filtros-derecha {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
 .sort-box {
   display: flex;
   align-items: center;
@@ -78,6 +85,18 @@
   font-weight: 700;
   color: #94a3b8;
   text-transform: uppercase;
+}
+
+.sort-box + .sort-box {
+  padding-left: 20px;
+  border-left: 1px solid #e2e8f0;
+}
+
+.sort-box select:disabled {
+  color: #1e293b;
+  cursor: not-allowed;
+  opacity: 1;
+  -webkit-text-fill-color: #1e293b;
 }
 
 .sort-box select {

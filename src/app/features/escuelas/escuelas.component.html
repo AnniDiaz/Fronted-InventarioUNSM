@@ -10,21 +10,21 @@
     <app-header></app-header>
 
     <div class="contenido-principal">
-      <div class="page-container">
+      <div class="card-inventario">
 
-        <div class="header-ubicaciones">
-          <div class="header-titulo-wrapper" style="display: flex; align-items: center; gap: 15px;">
+        <div class="header-inventario">
+          <div class="textos-inventario">
             <button class="menu-toggle" (click)="toggleMenu()">
               <i class="fa fa-bars"></i>
             </button>
 
-            <div class="titulos-header">
+            <div>
               <h2>Gestión de Escuelas</h2>
               <p>{{ escuelasFiltradas.length }} registros encontrados</p>
             </div>
           </div>
 
-          <div class="header-acciones-derecha">
+          <div class="acciones-top">
             <div class="search-input-box-header">
               <i class="fa fa-search icon-search"></i>
               <input type="text" placeholder="Buscar por nombre o facultad..." [(ngModel)]="filtro" (input)="aplicarFiltro()">
@@ -107,7 +107,7 @@
             <div class="card-top">
               <img
                 *ngIf="e.imagenUrl"
-                [src]="'http://localhost:7000' + e.imagenUrl"
+                [src]="'http://192.168.50.108:8081' + e.imagenUrl"
                 class="img-escuela"
                 alt="Escuela">
 
@@ -126,7 +126,11 @@
                   </button>
 
                   <button class="op-edit" (click)="abrirModalUsuario(e)">
-                    <i class="fa fa-user"></i> Asignar Usuario
+                    <i class="fa fa-user"></i> Asignar Administrador
+                  </button>
+
+                  <button class="op-edit" (click)="abrirModalTecnico(e)">
+                    <i class="fa fa-user-gear"></i> Asignar Técnico
                   </button>
 
                   <button class="op-delete" (click)="eliminarEscuela(e.id)">
@@ -139,6 +143,8 @@
             <div class="card-titulos">
               <h3 class="ubi-name">{{ e.nombre }}</h3>
               <p class="ubi-desc"><i class="fa fa-building"></i> {{ obtenerNombreFacultad(e.facultadId) }}</p>
+              <p class="ubi-desc"><i class="fa fa-user"></i> Administrador: {{ obtenerNombreUsuario(e.usuarioId) }}</p>
+              <p class="ubi-desc"><i class="fa fa-user-gear"></i> Técnico: {{ obtenerNombreUsuario(e.tecnicoId) }}</p>
             </div>
 
           </div>
@@ -169,32 +175,96 @@
 
 <!-- MODAL ASIGNAR USUARIO -->
 <div class="modal-overlay" *ngIf="mostrarModalUsuario">
-  <div class="modal-modern">
+  <div class="modal-modern modal-asignar-usuario">
 
     <div class="modal-header">
-      <h3>Asignar Usuario</h3>
+      <div class="modal-header-titulo">
+
+        <div>
+          <h3>Asignar Usuario</h3>
+          <span class="modal-header-subt">Vincula un responsable a esta escuela</span>
+        </div>
+      </div>
       <button class="btn-cerrar" (click)="cerrarModalUsuario()">&times;</button>
     </div>
 
     <div class="modal-body">
-      <p style="margin-bottom:10px;">
-        Escuela: <b>{{ escuelaSeleccionada?.nombre }}</b>
-      </p>
 
-      <label>Seleccionar usuario</label>
-      <select [(ngModel)]="usuarioSeleccionadoId">
-        <option [ngValue]="0">-- Seleccione usuario --</option>
-        <option *ngFor="let u of usuarios" [ngValue]="u.id">
-          {{ u.nombre }} {{ u.apellido }}
-        </option>
-      </select>
+      <div class="escuela-info-card">
+        <div class="escuela-info-icon">
+          <i class="fa fa-graduation-cap"></i>
+        </div>
+        <div>
+          <span class="escuela-info-label">Escuela seleccionada</span>
+          <strong class="escuela-info-nombre">{{ escuelaSeleccionada?.nombre }}</strong>
+        </div>
+      </div>
+
+      <div class="form-group-full">
+        <label><i class="fa fa-user campo-icono"></i> Seleccionar administrador</label>
+        <select [(ngModel)]="usuarioSeleccionadoId">
+          <option [ngValue]="0">-- Seleccione usuario --</option>
+          <option *ngFor="let u of usuariosAdministradores" [ngValue]="u.id">
+            {{ u.nombre }} {{ u.apellido }}
+          </option>
+        </select>
+      </div>
     </div>
 
     <div class="modal-footer-modern1">
-      <button class="btn-guardar-md" (click)="guardarAsignacionUsuario()">
-        Asignar
+      <button class="btn-guardar-md" [disabled]="!usuarioSeleccionadoId" (click)="guardarAsignacionUsuario()">
+        <i class="fa fa-check"></i> Asignar
       </button>
       <button class="btn-cancelar-md" (click)="cerrarModalUsuario()">
+        Cancelar
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL ASIGNAR TÉCNICO -->
+<div class="modal-overlay" *ngIf="mostrarModalTecnico">
+  <div class="modal-modern modal-asignar-usuario">
+
+    <div class="modal-header">
+      <div class="modal-header-titulo">
+        <div>
+          <h3>Asignar Técnico</h3>
+          <span class="modal-header-subt">Vincula un técnico a esta escuela</span>
+        </div>
+      </div>
+      <button class="btn-cerrar" (click)="cerrarModalTecnico()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+
+      <div class="escuela-info-card">
+        <div class="escuela-info-icon">
+          <i class="fa fa-graduation-cap"></i>
+        </div>
+        <div>
+          <span class="escuela-info-label">Escuela seleccionada</span>
+          <strong class="escuela-info-nombre">{{ escuelaSeleccionada?.nombre }}</strong>
+        </div>
+      </div>
+
+      <div class="form-group-full">
+        <label><i class="fa fa-user-gear campo-icono"></i> Seleccionar técnico</label>
+        <select [(ngModel)]="tecnicoSeleccionadoId">
+          <option [ngValue]="0">-- Seleccione técnico --</option>
+          <option *ngFor="let u of usuariosTecnicos" [ngValue]="u.id">
+            {{ u.nombre }} {{ u.apellido }}
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <div class="modal-footer-modern1">
+      <button class="btn-guardar-md" [disabled]="!tecnicoSeleccionadoId" (click)="guardarAsignacionTecnico()">
+        <i class="fa fa-check"></i> Asignar
+      </button>
+      <button class="btn-cancelar-md" (click)="cerrarModalTecnico()">
         Cancelar
       </button>
     </div>

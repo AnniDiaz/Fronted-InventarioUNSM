@@ -1,99 +1,12 @@
 /* --- Layout & Base --- */
-.container {
-  display: flex;
-  width: 100%;
-  min-height: 100vh;
-  background: #f8fafc;
-  position: relative;
-  font-family: 'Inter', sans-serif;
-}
-
-.sidebar-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(4px);
-  z-index: 1040;
-}
-
-.container.menu-activo .sidebar-overlay {
-  display: block;
-}
 .text-right{
   display: flex;
   flex-direction: row !important;
 }
-.main-section {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  height: 100vh;
-  overflow: hidden;
-}
 
-.contenido-principal {
-  flex: 1;
-  overflow-y: auto;
-}
-
-.page-container {
-  padding: 30px;
-
-}
-
-.tabla-container {
-  background: white;
-  border-radius: 24px;
-  padding-bottom: 30px !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+.card-inventario {
   border: 1px solid #f1f5f9;
   overflow: hidden;
-}
-
-/* Header Wrapper */
-.main-header-wrapper {
-  padding: 30px 30px 20px 30px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 20px;
-}
-
-.titulos-header h2 {
-  font-size: 26px;
-  font-weight: 800;
-  color: #0f172a;
-  margin: 0;
-  letter-spacing: -0.5px;
-}
-
-.titulos-header p {
-  color: #64748b;
-  margin: 5px 0 0;
-  font-size: 14px;
-}
-
-.btn-principal {
-  background: #00a468;
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-  transition: 0.2s ease;
-}
-
-.btn-principal:hover {
-  transform: translateY(-2px);
-  background: #00a468ec;
 }
 
 /* --- FILTROS --- */
@@ -242,14 +155,6 @@
 .btn-action-devuelto:hover {
   background: #1e293b;
   transform: translateY(-1px);
-}
-
-.footer-paginacion {
-  padding: 20px 30px 25px 30px;
-  border-top: 1px solid #f1f5f9;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 }
 
 /* Modal */
@@ -415,7 +320,7 @@
 }
 
 @media (max-width: 768px) {
-  .main-header-wrapper {
+  .header-inventario {
     flex-direction: column;
     align-items: flex-start;
   }
@@ -495,6 +400,13 @@
   transition: 0.2s;
   font-size: 14px;
   color: white;
+}
+
+.btn-icon:disabled {
+  background: #cbd5e1 !important;
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none !important;
 }
 
 /* PDF */

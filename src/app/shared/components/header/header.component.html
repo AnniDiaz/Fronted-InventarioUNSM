@@ -20,13 +20,48 @@
     </div>
 
     <!-- Campana de notificaciones -->
-    <div class="notificacion">
-      <i class="fa-regular fa-bell"></i>
-      <span class="badge"></span>
+    <div class="notificacion-wrapper">
+      <div class="notificacion" (click)="toggleNotificaciones($event)">
+        <i class="fa-regular fa-bell"></i>
+        <span class="badge-count" *ngIf="countNoLeidas > 0">{{ countNoLeidas > 99 ? '99+' : countNoLeidas }}</span>
+      </div>
+
+      <div class="panel-notificaciones" *ngIf="panelNotificacionesAbierto" (click)="$event.stopPropagation()">
+        <div class="panel-notificaciones-header">
+          <h4>Notificaciones</h4>
+          <button class="btn-marcar-todas" *ngIf="countNoLeidas > 0" (click)="marcarTodasComoLeidas($event)">
+            Marcar todas como leídas
+          </button>
+        </div>
+
+        <div class="panel-notificaciones-body">
+          <div class="notif-loading" *ngIf="cargandoNotificaciones">
+            <i class="fa fa-spinner fa-spin"></i> Cargando...
+          </div>
+
+          <div class="notif-vacio" *ngIf="!cargandoNotificaciones && notificaciones.length === 0">
+            <i class="fa-regular fa-bell-slash"></i>
+            <p>No tienes notificaciones</p>
+          </div>
+
+          <div
+            class="notif-item"
+            *ngFor="let n of notificaciones"
+            [class.no-leida]="!n.leido"
+            (click)="irANotificacion(n)">
+            <span class="notif-dot" *ngIf="!n.leido"></span>
+            <div class="notif-contenido">
+              <strong class="notif-titulo">{{ n.titulo }}</strong>
+              <p class="notif-mensaje">{{ n.mensaje }}</p>
+              <span class="notif-fecha">{{ tiempoRelativo(n.fechaCreacion) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Ayuda -->
-    <div class="icono-accion" title="Ayuda">
+    <div class="icono-accion" (click)="mostrarAyuda()" title="Ayuda">
       <i class="fa-regular fa-circle-question"></i>
     </div>
 
@@ -52,7 +87,7 @@
 
   <div class="avatar-container">
     <img
-      [src]="usuarioActual?.data?.imagenUrl || 'assets/perfil.png'"
+      [src]="usuarioActual?.data?.imagenPath ? 'http://192.168.50.108:8081/' + usuarioActual.data.imagenPath : 'assets/perfil.png'"
       alt="Perfil">
   </div>
 
