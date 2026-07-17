@@ -33,6 +33,7 @@ export class UbicacionComponent implements OnInit {
 usuarioActual: any = null;
 ubicacionUsuario: any = null;
 ubicacionesPadre: any[] = [];
+escuelaBloqueada = false;
 
   mostrarFormulario = false;
   editando = false;
@@ -79,6 +80,13 @@ ngOnInit(): void {
 
   this.cargarEscuelas();
 
+  const escuelaId = Number(localStorage.getItem('escuelaId'));
+
+  if (escuelaId) {
+    this.filtroEscuela = escuelaId;
+    this.escuelaBloqueada = true;
+  }
+
   if (this.esAdministrador()) {
 
     this.cargarTodasLasUbicaciones();
@@ -90,8 +98,6 @@ ngOnInit(): void {
 
   this.cargarTiposUbicacion();
   this.cargarUsuarios();
-
-  const escuelaId = Number(localStorage.getItem('escuelaId'));
 
   if (escuelaId) {
 
