@@ -224,6 +224,7 @@
 
 .modal-footer-btns {
   display: grid;
+  padding: 0px 30px 0px 30px;
   grid-template-columns: 1fr 1fr;
   gap: 15px;
   margin-bottom: 15px;
@@ -250,6 +251,304 @@
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 8px 20px rgba(0, 164, 104, 0.2);
+}
+
+/* --- ACCIONES (PDF / SUBIR) --- */
+.btn-icon {
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  margin: 0 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s;
+  font-size: 14px;
+  color: white;
+}
+
+.btn-icon:disabled {
+  background: #cbd5e1 !important;
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none !important;
+}
+
+.btn-pdf {
+  background: #2563eb;
+}
+
+.btn-pdf:hover {
+  background: #1d4ed8;
+  transform: translateY(-2px);
+}
+
+.btn-upload {
+  background: #16a34a;
+}
+
+.btn-upload:hover {
+  background: #15803d;
+  transform: translateY(-2px);
+}
+
+/* --- FIRMA --- */
+.firma-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.firma-icono {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f0fdf4;
+  color: #16a34a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.firma-texto {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+
+.firma-texto strong {
+  font-size: 13px;
+  color: #0f172a;
+}
+
+.firma-texto small {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.btn-firmar {
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #a7f3d0;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: 0.2s;
+}
+
+.btn-firmar:hover {
+  background: #dcfce7;
+  transform: translateY(-1px);
+}
+
+.firma-no-autorizado {
+  font-size: 12px;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.modal-header-firma {
+  background: #f8fafc;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.modal-header-titulo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.modal-header-icono-firma {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #00c27a, #00a468);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 6px 16px rgba(0, 164, 104, 0.3);
+}
+
+.modal-header-firma h3 {
+  margin: 0 0 2px 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.modal-header-subt {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.firma-resumen-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #f8fafc;
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+
+.firma-resumen-fila {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #334155;
+  font-weight: 600;
+}
+
+.firma-resumen-fila i {
+  width: 18px;
+  color: #94a3b8;
+  text-align: center;
+}
+
+.firmante-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f0fdf4;
+  border: 1px solid #a7f3d0;
+  border-radius: 16px;
+  padding: 12px 16px;
+}
+
+.firmante-avatar {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00c27a, #00a468);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.firmante-datos {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.firmante-datos small {
+  font-size: 11px;
+  color: #15803d;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.firmante-datos strong {
+  font-size: 14px;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.firmante-badge {
+  flex-shrink: 0;
+  background: #16a34a;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.firma-input-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: #94a3b8;
+  margin-top: 6px;
+}
+
+.modal-firma .modal-footer-btns {
+  grid-template-columns: 1fr 1.4fr;
+}
+
+/* --- DOCUMENTO OCULTO (plantilla capturada como PDF) --- */
+.documento-oculto {
+  position: fixed;
+  top: 0;
+  left: -9999px;
+  z-index: -1;
+}
+
+.hoja-acta {
+  width: 794px;
+  padding: 60px;
+  background: #ffffff;
+  box-sizing: border-box;
+  font-family: 'Times New Roman', Times, serif;
+  color: #1e293b;
+  position: relative;
+}
+
+.marca-agua-acta {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-30deg);
+  font-size: 90px;
+  font-weight: 800;
+  color: rgba(0, 164, 104, 0.08);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.titulo-acta {
+  text-align: center;
+  font-size: 20px;
+  letter-spacing: 1px;
+  margin-bottom: 25px;
+}
+
+.tabla-acta {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 25px 0;
+}
+
+.tabla-acta td {
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  font-size: 14px;
+  vertical-align: top;
+}
+
+.tabla-acta td:first-child {
+  width: 220px;
+  background: #f8fafc;
+}
+
+.firma-doc-acta {
+  margin-top: 60px;
+  text-align: center;
+  font-size: 12px;
+  color: #64748b;
 }
 
 /* --- RESPONSIVE ESPECÍFICO DE ESTA PANTALLA --- */

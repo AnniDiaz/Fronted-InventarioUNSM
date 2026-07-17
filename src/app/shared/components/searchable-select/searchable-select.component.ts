@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, HostListener, Input, forwardRef } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostListener, Input, OnChanges, SimpleChanges, forwardRef } from '@angular/core';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 export interface OpcionSelect {
@@ -13,6 +13,7 @@ export interface OpcionSelect {
   imports: [CommonModule, FormsModule],
   templateUrl: './searchable-select.component.html',
   styleUrls: ['./searchable-select.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -21,7 +22,7 @@ export interface OpcionSelect {
     }
   ]
 })
-export class SearchableSelectComponent implements ControlValueAccessor {
+export class SearchableSelectComponent implements ControlValueAccessor, OnChanges {
   @Input() opciones: OpcionSelect[] = [];
   @Input() placeholder = 'Seleccione...';
   @Input() disabled = false;
@@ -29,28 +30,48 @@ export class SearchableSelectComponent implements ControlValueAccessor {
   abierto = false;
   filtro = '';
   valor: any = null;
+  textoMostrado = '';
+  opcionesFiltradas: OpcionSelect[] = [];
 
   private onChange: (value: any) => void = () => {};
   private onTouched: () => void = () => {};
 
-  constructor(private elRef: ElementRef) {}
+  constructor(private elRef: ElementRef, private cdr: ChangeDetectorRef) {}
 
-  get opcionesFiltradas(): OpcionSelect[] {
-    if (!this.filtro.trim()) return this.opciones;
-    const termino = this.filtro.toLowerCase().trim();
-    return this.opciones.filter(o => o.label.toLowerCase().includes(termino));
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['opciones']) {
+      this.actualizarFiltro();
+      this.actualizarTextoMostrado();
+    }
   }
 
-  get textoMostrado(): string {
-    if (this.abierto) return this.filtro;
+  trackByValue(index: number, op: OpcionSelect): any {
+    return op.value;
+  }
+
+  private actualizarFiltro(): void {
+    const termino = this.filtro.trim().toLowerCase();
+    this.opcionesFiltradas = termino
+      ? this.opciones.filter(o => o.label.toLowerCase().includes(termino))
+      : this.opciones;
+  }
+
+  private actualizarTextoMostrado(): void {
+    if (this.abierto) {
+      this.textoMostrado = this.filtro;
+      return;
+    }
     const seleccionado = this.opciones.find(o => o.value === this.valor);
-    return seleccionado ? seleccionado.label : '';
+    this.textoMostrado = seleccionado ? seleccionado.label : '';
   }
 
   abrir(): void {
     if (this.disabled) return;
     this.abierto = true;
     this.filtro = '';
+    this.actualizarFiltro();
+    this.actualizarTextoMostrado();
+    this.cdr.markForCheck();
   }
 
   seleccionar(op: OpcionSelect): void {
@@ -59,11 +80,16 @@ export class SearchableSelectComponent implements ControlValueAccessor {
     this.onTouched();
     this.abierto = false;
     this.filtro = '';
+    this.actualizarTextoMostrado();
+    this.cdr.markForCheck();
   }
 
   onInput(valor: string): void {
     this.filtro = valor;
     this.abierto = true;
+    this.actualizarFiltro();
+    this.actualizarTextoMostrado();
+    this.cdr.markForCheck();
   }
 
   @HostListener('document:click', ['$event'])
@@ -71,11 +97,15 @@ export class SearchableSelectComponent implements ControlValueAccessor {
     if (!this.elRef.nativeElement.contains(event.target)) {
       this.abierto = false;
       this.filtro = '';
+      this.actualizarTextoMostrado();
+      this.cdr.markForCheck();
     }
   }
 
   writeValue(value: any): void {
     this.valor = value;
+    this.actualizarTextoMostrado();
+    this.cdr.markForCheck();
   }
 
   registerOnChange(fn: any): void {
@@ -88,5 +118,6 @@ export class SearchableSelectComponent implements ControlValueAccessor {
 
   setDisabledState(isDisabled: boolean): void {
     this.disabled = isDisabled;
+    this.cdr.markForCheck();
   }
 }

@@ -14,7 +14,7 @@
   <div class="searchable-select-panel" *ngIf="abierto">
     <div
       class="searchable-select-opcion"
-      *ngFor="let op of opcionesFiltradas"
+      *ngFor="let op of opcionesFiltradas; trackBy: trackByValue"
       [class.activa]="op.value === valor"
       (mousedown)="seleccionar(op)"
     >

@@ -68,11 +68,16 @@ nuevoSolicitante = {
 
   ) {}
 
-  articulos: any[] = [];
+  private _articulos: any[] = [];
 articuloId: number = 0;  equipo = '';
+opcionesArticulos: OpcionSelect[] = [];
 
-get opcionesArticulos(): OpcionSelect[] {
-  return this.articulos.map(a => ({
+get articulos(): any[] {
+  return this._articulos;
+}
+set articulos(value: any[]) {
+  this._articulos = value;
+  this.opcionesArticulos = this._articulos.map(a => ({
     value: a.id,
     label: `${a.nombre} - ${a.codigoPatrimonial || 'Sin código'}`
   }));

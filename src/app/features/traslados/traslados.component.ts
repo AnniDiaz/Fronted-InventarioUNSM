@@ -1,19 +1,23 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HeaderComponent } from '../../shared/components/header/header.component';
 import { SidebarComponent } from '../../shared/components/sidebar/sidebar.component';
+import { SearchableSelectComponent, OpcionSelect } from '../../shared/components/searchable-select/searchable-select.component';
 import Swal from 'sweetalert2';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 // Servicios
 import { TrasladosService } from '../../core/services/traslados.service';
 import { ArticuloService } from '../../core/services/articulos.service';
 import { UbicacionService } from '../../core/services/ubicacion.service';
+import { RolesService } from '../../core/services/roles.service';
 
 @Component({
   selector: 'app-traslados',
   standalone: true,
-  imports: [HeaderComponent, SidebarComponent, FormsModule, CommonModule],
+  imports: [HeaderComponent, SidebarComponent, FormsModule, CommonModule, SearchableSelectComponent],
   templateUrl: './traslados.component.html',
   styleUrls: ['./traslados.component.css']
 })
@@ -25,9 +29,22 @@ export class TrasladosComponent implements OnInit {
   filtroTexto: string = '';
   filtroFecha: string = '';
 ubicacionUsuarioId: number = 0;
+  usuarioActual: any;
+
+  // --- Firma de traslados ---
+  puedeFirmarTraslados = false;
+  mostrarModalFirma = false;
+  trasladoSeleccionadoFirma: any = null;
+  nombreFirmante = '';
+  firmandoTraslado = false;
+  generandoDocumento = false;
+
+  @ViewChild('documentoPdfTraslado') documentoPdfTraslado!: ElementRef;
+
   traslados: any[] = [];
   listaArticulos: any[] = [];
   listaUbicaciones: any[] = [];
+  opcionesUbicaciones: OpcionSelect[] = [];
 articuloBusqueda: string = '';
 articulosFiltrados: any[] = [];
 mostrarListaArticulos = false;
@@ -44,15 +61,37 @@ mostrarListaArticulos = false;
   constructor(
     private trasladoService: TrasladosService,
     private articuloService: ArticuloService,
-    private ubicacionService: UbicacionService
+    private ubicacionService: UbicacionService,
+    private rolesService: RolesService
   ) { }
 
   ngOnInit(): void {
+    this.usuarioActual = JSON.parse(localStorage.getItem('user') || '{}');
+    this.evaluarPermisoFirma();
     this.cargarDatosIniciales();
   }
 
   esAdministrador(): boolean {
     return Number(localStorage.getItem('rolId')) === 1;
+  }
+
+  evaluarPermisoFirma(): void {
+    this.puedeFirmarTraslados = false;
+
+    const rolId = Number(localStorage.getItem('rolId'));
+    if (!rolId) return;
+
+    this.rolesService.getRolById(rolId).subscribe({
+      next: (res: any) => {
+        const nombreRol: string = (res?.data?.rol?.nombre ?? res?.data?.nombre ?? '').trim().toLowerCase();
+        const esSuperAdmin = nombreRol === 'superadmin';
+        // rolId === 1 es el administrador "clásico" (puede tener el nombre "Admin" o "Administrador").
+        const esAdmin = rolId === 1 || nombreRol === 'admin' || nombreRol === 'administrador';
+
+        this.puedeFirmarTraslados = esSuperAdmin || esAdmin;
+      },
+      error: (err) => console.error('Error verificando rol para firma', err)
+    });
   }
 cargarPorEscuela(): void {
   const escuelaId = Number(localStorage.getItem('escuelaId'));
@@ -65,6 +104,7 @@ cargarPorEscuela(): void {
   this.ubicacionService.getUbicacionesPorEscuela(escuelaId).subscribe({
     next: (res: any) => {
       this.listaUbicaciones = Array.isArray(res) ? res : res?.data ?? [];
+      this.actualizarOpcionesUbicaciones();
 
       this.articuloService.getArticulosPorEscuela(escuelaId).subscribe({
         next: (r: any) => {
@@ -175,6 +215,7 @@ cargarUbicaciones(): void {
 
       if (ubicacionesUsuario.length === 0) {
         this.listaUbicaciones = [];
+        this.actualizarOpcionesUbicaciones();
         this.listaArticulos = [];
         return;
       }
@@ -188,9 +229,8 @@ cargarUbicaciones(): void {
           this.listaUbicaciones = Array.isArray(res)
             ? res
             : res?.data ?? [];
+          this.actualizarOpcionesUbicaciones();
 
-          console.log('🏢 UBICACIÓN PADRE:', this.ubicacionUsuarioId);
-          console.log('🏢 UBICACIONES HIJAS:', this.listaUbicaciones);
 
           this.cargarArticulos();
           this.cargarTraslados();
@@ -212,6 +252,7 @@ cargarUbicaciones(): void {
       next: (res: any) => {
         const data = Array.isArray(res) ? res : res?.data ?? [];
         this.listaUbicaciones = data;
+        this.actualizarOpcionesUbicaciones();
         this.cargarArticulosSinFiltro();
         this.cargarTrasladosSinFiltro();
       },
@@ -316,12 +357,24 @@ onArticuloChange(articuloId: any): void {
     }
   });
 }
+  private actualizarOpcionesUbicaciones(): void {
+    this.opcionesUbicaciones = this.listaUbicaciones.map(u => ({ value: u.id, label: u.nombre }));
+  }
+
   // ✅ FIX: evitar error find cuando no es array
   getNombreUbicacion(id: any): string {
     if (!Array.isArray(this.listaUbicaciones)) return 'Cargando...';
 
     const ubicacion = this.listaUbicaciones.find(u => u.id == id);
     return ubicacion ? ubicacion.nombre : 'Seleccione un artículo...';
+  }
+
+  get articuloSeleccionadoTraslado(): any {
+    return this.listaArticulos.find(a => a.id == this.nuevoTraslado.articulo);
+  }
+
+  get hoy(): Date {
+    return new Date();
   }
 
   guardarTraslado(): void {
@@ -341,10 +394,61 @@ const payload = {
   usuarioId: usuarioId
 };
     this.trasladoService.realizarTraslado(payload).subscribe({
-      next: () => {
-        Swal.fire('¡Éxito!', 'Traslado registrado correctamente', 'success');
-        this.cargarTraslados();
-        this.toggleFormulario();
+      next: async (res: any) => {
+        console.log('📥 Respuesta al registrar traslado:', res);
+
+        const trasladoCreado = res?.data ?? res;
+        let trasladoId =
+          trasladoCreado?.id ?? trasladoCreado?.Id ??
+          trasladoCreado?.trasladoId ?? trasladoCreado?.TrasladoId ?? null;
+
+        if (!trasladoId) {
+          // El backend no devolvió el id en la respuesta del POST:
+          // se busca el traslado recién creado en el listado.
+          trasladoId = await this.resolverTrasladoIdRecienCreado(payload);
+        }
+
+        if (!trasladoId) {
+          console.warn('⚠️ No se pudo determinar el id del traslado creado; no se generará el documento.');
+          Swal.fire('Traslado registrado', 'El traslado se registró, pero no se pudo generar el documento automáticamente', 'warning');
+          this.cargarTraslados();
+          this.toggleFormulario();
+          return;
+        }
+
+        this.generandoDocumento = true;
+
+        try {
+          // Se captura el documento ANTES de limpiar el formulario, ya que la
+          // plantilla oculta se alimenta de los datos actuales de nuevoTraslado.
+          const pdfBlob = await this.generarPDFBlobTraslado();
+
+          const formData = new FormData();
+          formData.append('TrasladoId', String(trasladoId));
+          formData.append('File', pdfBlob, 'traslado.pdf');
+
+          this.trasladoService.uploadPDF(formData).subscribe({
+            next: () => {
+              this.generandoDocumento = false;
+              Swal.fire('¡Éxito!', 'Traslado registrado y documento generado correctamente', 'success');
+              this.cargarTraslados();
+              this.toggleFormulario();
+            },
+            error: (err) => {
+              this.generandoDocumento = false;
+              console.error('Error al subir el documento generado:', err);
+              Swal.fire('Traslado registrado', 'El traslado se registró, pero no se pudo generar el documento automáticamente', 'warning');
+              this.cargarTraslados();
+              this.toggleFormulario();
+            }
+          });
+        } catch (err) {
+          this.generandoDocumento = false;
+          console.error('Error al generar el PDF del traslado:', err);
+          Swal.fire('Traslado registrado', 'El traslado se registró, pero no se pudo generar el documento automáticamente', 'warning');
+          this.cargarTraslados();
+          this.toggleFormulario();
+        }
       },
       error: (err) => Swal.fire('Error', err.error || 'No se pudo registrar', 'error')
     });
@@ -378,5 +482,173 @@ const payload = {
     this.articuloBusqueda = '';
     this.mostrarListaArticulos = false;
     this.articulosFiltrados = [...this.listaArticulos];
+  }
+
+  // =========================
+  // DOCUMENTO PDF Y FIRMA
+  // =========================
+
+  estaFirmado(t: any): boolean {
+    return !!(t?.firmadoPor || t?.FirmadoPor);
+  }
+
+  getFirmadoPor(t: any): string {
+    return t?.firmadoPor || t?.FirmadoPor || '';
+  }
+
+  getFechaFirma(t: any): any {
+    return t?.fechaFirma || t?.FechaFirma || null;
+  }
+
+  tieneRutaPdf(t: any): boolean {
+    return !!(t?.rutaPdf || t?.RutaPdf);
+  }
+
+  verPDF(t: any): void {
+    const ruta = t?.rutaPdf || t?.RutaPdf;
+
+    if (!ruta) {
+      Swal.fire('Error', 'No hay PDF disponible', 'error');
+      return;
+    }
+
+    const url = `http://192.168.50.108:8081/${ruta}`;
+
+    Swal.fire({
+      title: 'Vista del documento',
+      html: `
+        <iframe
+          src="${url}"
+          width="100%"
+          height="500px"
+          style="border:none;">
+        </iframe>
+      `,
+      width: '800px',
+      showCloseButton: true,
+      showConfirmButton: false
+    });
+  }
+
+  private resolverTrasladoIdRecienCreado(payload: any): Promise<number | null> {
+    return new Promise((resolve) => {
+      this.trasladoService.getTraslados().subscribe({
+        next: (resp: any) => {
+          const data = Array.isArray(resp) ? resp : resp?.data ?? [];
+
+          const candidatos = data.filter((t: any) =>
+            Number(t.articuloId) === Number(payload.articuloId) &&
+            Number(t.ubicacionOrigenId) === Number(payload.ubicacionOrigenId) &&
+            Number(t.ubicacionDestinoId) === Number(payload.ubicacionDestinoId)
+          );
+
+          if (!candidatos.length) {
+            resolve(null);
+            return;
+          }
+
+          const masReciente = candidatos.reduce((a: any, b: any) =>
+            Number(b.id) > Number(a.id) ? b : a
+          );
+
+          resolve(masReciente?.id ?? null);
+        },
+        error: () => resolve(null)
+      });
+    });
+  }
+
+  async generarPDFBlobTraslado(): Promise<Blob> {
+    const element = this.documentoPdfTraslado.nativeElement;
+    const canvas = await html2canvas(element, { scale: 2 });
+
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+
+    return pdf.output('blob');
+  }
+
+  abrirModalFirma(t: any): void {
+    if (!this.puedeFirmarTraslados) {
+      Swal.fire('No autorizado', 'Solo los administradores y superadministradores pueden firmar traslados', 'warning');
+      return;
+    }
+
+    if (!this.tieneRutaPdf(t)) {
+      Swal.fire('Atención', 'Primero debes subir el documento PDF del traslado', 'warning');
+      return;
+    }
+
+    this.trasladoSeleccionadoFirma = t;
+    this.nombreFirmante = this.obtenerNombreUsuarioActual();
+    this.mostrarModalFirma = true;
+  }
+
+  obtenerNombreUsuarioActual(): string {
+    const datos = this.usuarioActual?.data ?? this.usuarioActual;
+    if (!datos) return '';
+    return `${datos.nombre ?? ''} ${datos.apellido ?? ''}`.trim();
+  }
+
+  cerrarModalFirma(): void {
+    this.mostrarModalFirma = false;
+    this.trasladoSeleccionadoFirma = null;
+    this.nombreFirmante = '';
+  }
+
+  confirmarFirma(): void {
+    if (!this.nombreFirmante.trim()) {
+      Swal.fire('Validación', 'Ingrese el nombre del firmante', 'warning');
+      return;
+    }
+
+    const traslado = this.trasladoSeleccionadoFirma;
+    if (!traslado) return;
+
+    this.firmandoTraslado = true;
+
+    this.trasladoService.firmarTraslado(traslado.id, this.nombreFirmante.trim()).subscribe({
+      next: (res: any) => {
+        this.firmandoTraslado = false;
+
+        const actualizado = res?.data ?? res;
+
+        traslado.firmadoPor =
+          actualizado?.firmadoPor ?? actualizado?.FirmadoPor ?? this.nombreFirmante.trim();
+        traslado.fechaFirma =
+          actualizado?.fechaFirma ?? actualizado?.FechaFirma ?? new Date().toISOString();
+
+        Swal.fire('Firmado', 'El traslado fue firmado correctamente', 'success');
+        this.cerrarModalFirma();
+      },
+      error: (err) => {
+        this.firmandoTraslado = false;
+
+        console.error('Error al firmar traslado:', err);
+
+        const errores = err?.error?.errors;
+        const erroresTexto = errores && typeof errores === 'object'
+          ? Object.values(errores).flat().join(' | ')
+          : null;
+
+        const msg =
+          err?.error?.detail ||
+          err?.error?.message ||
+          err?.error?.Message ||
+          erroresTexto ||
+          (typeof errores === 'string' ? errores : null) ||
+          (err?.error?.title && err.error.title !== 'Bad Request' ? err.error.title : null) ||
+          (typeof err?.error === 'string' ? err.error : null) ||
+          `No se pudo firmar el traslado (HTTP ${err?.status ?? '400'})`;
+
+        Swal.fire('Error', String(msg), 'error');
+      }
+    });
   }
 }

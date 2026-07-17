@@ -52,11 +52,13 @@
                   <th class="col-articulo-header">ARTÍCULO</th>
                   <th>MOVIMIENTO</th>
                   <th>ESTADO</th>
+                  <th>FIRMA</th>
+                  <th class="text-right">ACCIONES</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngIf="registrosPaginados.length === 0">
-                  <td colspan="5" class="empty-state">
+                  <td colspan="6" class="empty-state">
                     <i class="fa fa-exchange-alt"></i>
                     <p>No hay traslados registrados</p>
                     <span>Los movimientos aparecerán aquí al filtrar o registrar.</span>
@@ -86,6 +88,36 @@
                   </td>
                   <td>
                     <span class="badge badge-completado">COMPLETADO</span>
+                  </td>
+
+                  <td>
+                    <div class="firma-info" *ngIf="estaFirmado(t); else sinFirmarTraslado">
+                      <i class="fa fa-signature firma-icono"></i>
+                      <div class="firma-texto">
+                        <strong>{{ getFirmadoPor(t) }}</strong>
+                        <small>{{ getFechaFirma(t) | date:'dd/MM/yyyy HH:mm' }}</small>
+                      </div>
+                    </div>
+
+                    <ng-template #sinFirmarTraslado>
+                      <button
+                        class="btn-firmar"
+                        *ngIf="puedeFirmarTraslados && tieneRutaPdf(t)"
+                        (click)="abrirModalFirma(t)">
+                        <i class="fa fa-pen-nib"></i> Firmar
+                      </button>
+
+                      <span class="firma-no-autorizado" *ngIf="!puedeFirmarTraslados || !tieneRutaPdf(t)">
+                        {{ tieneRutaPdf(t) ? 'Sin firmar' : 'Sin documento' }}
+                      </span>
+                    </ng-template>
+                  </td>
+
+                  <td class="text-right">
+                    <button class="btn-icon btn-pdf" title="Ver PDF" [disabled]="!tieneRutaPdf(t)"
+                      (click)="verPDF(t)">
+                      <i class="fa fa-file-pdf"></i>
+                    </button>
                   </td>
                 </tr>
               </tbody>
@@ -156,10 +188,13 @@
                 </div>
                 <div class="form-group">
                   <label>DESTINO</label>
-                  <select [(ngModel)]="nuevoTraslado.destino" name="destino" required>
-<option value="" disabled>Seleccionar destino...</option>
-                    <option *ngFor="let u of listaUbicaciones" [value]="u.id">{{ u.nombre }}</option>
-                  </select>
+                  <app-searchable-select
+                    name="destino"
+                    [opciones]="opcionesUbicaciones"
+                    placeholder="Seleccionar destino..."
+                    [(ngModel)]="nuevoTraslado.destino"
+                    required>
+                  </app-searchable-select>
                 </div>
               </div>
 
@@ -171,7 +206,9 @@
 
               <div class="modal-footer-btns">
                 <button type="button" class="btn-cancelar" (click)="toggleFormulario()">Cancelar</button>
-                <button type="submit" class="btn-registrar" [disabled]="f.invalid">Efectuar Traslado</button>
+                <button type="submit" class="btn-registrar" [disabled]="f.invalid || generandoDocumento">
+                  {{ generandoDocumento ? 'Generando documento...' : 'Efectuar Traslado' }}
+                </button>
               </div>
             </form>
           </div>
@@ -180,3 +217,119 @@
       </div>
     </div>
   </div>
+
+<!-- MODAL: FIRMAR TRASLADO -->
+<div class="modal-overlay" *ngIf="mostrarModalFirma">
+  <div class="modal-modern modal-firma">
+
+    <div class="modal-header modal-header-firma">
+      <div class="modal-header-titulo">
+        <div class="modal-header-icono-firma">
+          <i class="fa fa-pen-nib"></i>
+        </div>
+        <div>
+          <h3>Firmar Traslado</h3>
+          <span class="modal-header-subt">Confirma tu identidad para autorizar el documento</span>
+        </div>
+      </div>
+      <button class="btn-cerrar" (click)="cerrarModalFirma()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="firma-resumen-card">
+        <div class="firma-resumen-fila">
+          <i class="fa fa-laptop"></i>
+          <span>{{ trasladoSeleccionadoFirma?.articulo?.nombre }}</span>
+        </div>
+        <div class="firma-resumen-fila">
+          <i class="fa fa-long-arrow-alt-right"></i>
+          <span>{{ trasladoSeleccionadoFirma?.ubicacionOrigen?.nombre }} → {{ trasladoSeleccionadoFirma?.ubicacionDestino?.nombre }}</span>
+        </div>
+      </div>
+
+      <div class="firmante-card">
+        <div class="firmante-avatar">
+          <i class="fa fa-user-shield"></i>
+        </div>
+        <div class="firmante-datos">
+          <small>Firmando como</small>
+          <strong>{{ nombreFirmante || 'Usuario actual' }}</strong>
+        </div>
+        <span class="firmante-badge"><i class="fa fa-check-circle"></i> Admin</span>
+      </div>
+
+      <div class="form-group">
+        <label>NOMBRE DEL FIRMANTE</label>
+        <input
+          type="text"
+          [(ngModel)]="nombreFirmante"
+          name="nombreFirmante"
+          placeholder="Ej: Juan Pérez"
+          (keyup.enter)="confirmarFirma()">
+        <span class="firma-input-hint">
+          <i class="fa fa-info-circle"></i> Puedes editarlo si la firma corresponde a otra persona
+        </span>
+      </div>
+    </div>
+
+    <div class="modal-footer-btns">
+      <button type="button" class="btn-cancelar" (click)="cerrarModalFirma()">
+        Cancelar
+      </button>
+
+      <button
+        type="button"
+        class="btn-registrar"
+        [disabled]="firmandoTraslado"
+        (click)="confirmarFirma()">
+        <i class="fa fa-check"></i> {{ firmandoTraslado ? 'Firmando...' : 'Confirmar Firma' }}
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- PLANTILLA OCULTA: se captura como PDF al registrar el traslado -->
+<div class="documento-oculto">
+  <div class="hoja-acta" #documentoPdfTraslado>
+    <div class="marca-agua-acta">UNSM</div>
+
+    <h2 class="titulo-acta">ACTA DE TRASLADO DE ACTIVO</h2>
+
+    <p>
+      Mediante el presente documento se deja constancia del traslado del siguiente bien
+      patrimonial, conforme a los datos registrados en el sistema de inventario.
+    </p>
+
+    <table class="tabla-acta">
+      <tr>
+        <td><strong>Artículo</strong></td>
+        <td>{{ articuloSeleccionadoTraslado?.codigoPatrimonial }} - {{ articuloSeleccionadoTraslado?.nombre }}</td>
+      </tr>
+      <tr>
+        <td><strong>Ubicación de origen</strong></td>
+        <td>{{ getNombreUbicacion(nuevoTraslado.origen) }}</td>
+      </tr>
+      <tr>
+        <td><strong>Ubicación de destino</strong></td>
+        <td>{{ getNombreUbicacion(nuevoTraslado.destino) }}</td>
+      </tr>
+      <tr>
+        <td><strong>Fecha</strong></td>
+        <td>{{ hoy | date:'dd/MM/yyyy HH:mm' }}</td>
+      </tr>
+      <tr>
+        <td><strong>Motivo / Observaciones</strong></td>
+        <td>{{ nuevoTraslado.observaciones || 'Sin observaciones' }}</td>
+      </tr>
+      <tr>
+        <td><strong>Responsable del registro</strong></td>
+        <td>{{ obtenerNombreUsuarioActual() }}</td>
+      </tr>
+    </table>
+
+    <div class="firma-doc-acta">
+      <p>Documento generado electrónicamente por el sistema de inventario.</p>
+    </div>
+  </div>
+</div>

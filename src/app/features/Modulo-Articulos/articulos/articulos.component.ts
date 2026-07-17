@@ -7,6 +7,7 @@ import { CamposArticuloService } from '../../../core/services/campos-articulo.se
 import { TipoArticuloService } from '../../../core/services/tipo-articulos.service';
 import { UbicacionService } from '../../../core/services/ubicacion.service';
 import { ClasificacionDepreciacionService } from '../../../core/services/clasificacion-depreciacion.service';
+import { RolesService } from '../../../core/services/roles.service';
 import { HeaderComponent } from '../../../shared/components/header/header.component';
 import { SidebarComponent } from '../../../shared/components/sidebar/sidebar.component';
 import { SearchableSelectComponent, OpcionSelect } from '../../../shared/components/searchable-select/searchable-select.component';
@@ -41,21 +42,58 @@ export class ArticuloFormComponent implements OnInit, OnDestroy {
   articulosFiltrados: any[] = [];
   registrosPaginados: any[] = [];
 
-  tipos: any[] = [];
-  ubicaciones: any[] = [];
+  private _tipos: any[] = [];
+  private _ubicaciones: any[] = [];
+  private _clasificaciones: any[] = [];
+  opcionesTipos: OpcionSelect[] = [];
+  opcionesUbicaciones: OpcionSelect[] = [];
+  opcionesClasificaciones: OpcionSelect[] = [{ value: null, label: 'Sin clasificación' }];
+  readonly opcionesCondicion: OpcionSelect[] = [
+    { value: 'Bueno', label: 'Bueno' },
+    { value: 'Regular', label: 'Regular' },
+    { value: 'Malo', label: 'Malo' }
+  ];
+
+  get tipos(): any[] {
+    return this._tipos;
+  }
+  set tipos(value: any[]) {
+    this._tipos = value;
+    this.opcionesTipos = this._tipos.map(t => ({ value: t.id, label: t.nombre }));
+  }
+
+  get ubicaciones(): any[] {
+    return this._ubicaciones;
+  }
+  set ubicaciones(value: any[]) {
+    this._ubicaciones = value;
+    this.opcionesUbicaciones = this._ubicaciones.map(u => ({ value: u.id, label: u.nombre }));
+  }
+
+  get clasificaciones(): any[] {
+    return this._clasificaciones;
+  }
+  set clasificaciones(value: any[]) {
+    this._clasificaciones = value;
+    this.opcionesClasificaciones = [
+      { value: null, label: 'Sin clasificación' },
+      ...this._clasificaciones.map(c => ({ value: c.id, label: c.nombre }))
+    ];
+  }
+
   camposDelTipo: any[] = [];
   ubicacionUsuarioId: number = 0;
   tieneUbicacionFija = false;
   articulo: any = this.crearArticuloVacio();
   editando = false;
 ubicacionFiltroId: number | null = null;
-  clasificaciones: any[] = [];
   constructor(
     private articuloService: ArticuloService,
     private campoService: CamposArticuloService,
     private tipoService: TipoArticuloService,
     private ubicService: UbicacionService,
     private clasificacionService: ClasificacionDepreciacionService,
+    private rolesService: RolesService,
     private route: ActivatedRoute,
     private sidebarState: SidebarStateService
   ) { }
@@ -252,10 +290,26 @@ resolverUbicacionUsuario(usuarioId: number): void {
     if (this.ubicaciones.length > 0) this.ubicacionUsuarioId = Number(this.ubicaciones[0].id);
     return;
   }
+
+  const rolId = Number(localStorage.getItem('rolId'));
+
+  // El superadmin nunca debe quedar con el filtro de ubicación bloqueado,
+  // aunque el backend le devuelva alguna ubicación asignada directamente.
+  this.rolesService.getRolById(rolId).subscribe({
+    next: (res: any) => {
+      const nombreRol = (res?.data?.rol?.nombre ?? res?.data?.nombre ?? '').trim().toLowerCase();
+      const esSuperAdmin = nombreRol === 'superadmin';
+      this.cargarUbicacionFijaUsuario(usuarioId, esSuperAdmin);
+    },
+    error: () => this.cargarUbicacionFijaUsuario(usuarioId, false)
+  });
+}
+
+private cargarUbicacionFijaUsuario(usuarioId: number, esSuperAdmin: boolean): void {
   this.ubicService.getUbicacionesPorUsuario(usuarioId).subscribe({
     next: (resp: any) => {
       const ubs = Array.isArray(resp) ? resp : resp?.data ?? [];
-      if (ubs.length > 0) {
+      if (ubs.length > 0 && !esSuperAdmin) {
         this.ubicacionUsuarioId = Number(ubs[0].id);
         this.tieneUbicacionFija = true;
 
@@ -265,9 +319,6 @@ resolverUbicacionUsuario(usuarioId: number): void {
           this.filtroUbicacion = this.ubicacionUsuarioId;
           this.aplicarFiltro();
         }
-
-        // Y el formulario de artículo también queda fijo en esa ubicación.
-        this.articulo.ubicacionId = this.ubicacionUsuarioId;
       } else if (this.ubicaciones.length > 0) {
         this.ubicacionUsuarioId = Number(this.ubicaciones[0].id);
       }
@@ -297,29 +348,6 @@ resolverUbicacionUsuario(usuarioId: number): void {
   // ---------------------------
   // OPCIONES PARA LOS SELECT CON BÚSQUEDA
   // ---------------------------
-  get opcionesTipos(): OpcionSelect[] {
-    return this.tipos.map(t => ({ value: t.id, label: t.nombre }));
-  }
-
-  get opcionesClasificaciones(): OpcionSelect[] {
-    return [
-      { value: null, label: 'Sin clasificación' },
-      ...this.clasificaciones.map(c => ({ value: c.id, label: c.nombre }))
-    ];
-  }
-
-  get opcionesUbicaciones(): OpcionSelect[] {
-    return this.ubicaciones.map(u => ({ value: u.id, label: u.nombre }));
-  }
-
-  get opcionesCondicion(): OpcionSelect[] {
-    return [
-      { value: 'Bueno', label: 'Bueno' },
-      { value: 'Regular', label: 'Regular' },
-      { value: 'Malo', label: 'Malo' }
-    ];
-  }
-
   opcionesDeCampo(campo: any): OpcionSelect[] {
     return (campo.opciones || []).map((op: string) => ({ value: op, label: op }));
   }
@@ -590,9 +618,6 @@ this.articuloService.cargarMasivaExcel(
   resetForm() {
     this.editando = false;
     this.articulo = this.crearArticuloVacio();
-    if (this.tieneUbicacionFija) {
-      this.articulo.ubicacionId = this.ubicacionUsuarioId;
-    }
     this.camposDelTipo = [];
   }
 
