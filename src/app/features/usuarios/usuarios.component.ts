@@ -250,7 +250,7 @@ aplicarFiltro() {
     password: '',
     rolId: usuario.rolId,
     imagen: null,
-    imagenPreview: usuario.imagenPath ? 'http://192.168.50.108:8081/' + usuario.imagenPath : null,
+    imagenPreview: usuario.imagenPath ? 'http://https://inventarioti.unsm.edu.pe/8:8081/' + usuario.imagenPath : null,
     imagenPath: usuario.imagenPath
   };
 

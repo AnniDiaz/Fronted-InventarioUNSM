@@ -339,7 +339,7 @@ verPDF(prestamo: any) {
     return;
   }
 
-  const url = `http://192.168.50.108:8081/${prestamo.rutaPdf}`;
+  const url = `http://https://inventarioti.unsm.edu.pe/8:8081/${prestamo.rutaPdf}`;
 
   Swal.fire({
     title: 'Vista del documento',

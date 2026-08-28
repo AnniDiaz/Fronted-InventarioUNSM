@@ -73,7 +73,7 @@ export class SidebarComponent implements OnInit {
         if (escuelaData?.id) {
           this.ubicacionNombre = escuelaData.nombre;
           this.ubicacionLogo = escuelaData.imagenUrl
-            ? `http://192.168.50.108:8081${escuelaData.imagenUrl}`
+            ? `http://https://inventarioti.unsm.edu.pe/8:8081${escuelaData.imagenUrl}`
             : '';
           localStorage.setItem('escuelaId', String(escuelaData.id));
           localStorage.setItem('escuelaNombre', escuelaData.nombre);

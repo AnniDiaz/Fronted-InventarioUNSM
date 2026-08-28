@@ -9,6 +9,10 @@ import { ReportesService } from '../../../core/services/reportes.service';
 import { UbicacionService } from '../../../core/services/ubicacion.service';
 import { ArticuloService } from '../../../core/services/articulos.service';
 import { TrasladosService } from '../../../core/services/traslados.service';
+import { EscuelaService } from '../../../core/services/escuela.service';
+import { LoginService } from '../../../core/services/login.service';
+import { catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 const centerTextPlugin: any = {
   id: 'centerText',
   beforeDraw: function (chart: any) {
@@ -74,7 +78,9 @@ ubicacionId?: number;
     private ubicacionService: UbicacionService,
     private articuloService: ArticuloService,
     private trasladoService: TrasladosService,
-    private sidebarState: SidebarStateService
+    private sidebarState: SidebarStateService,
+    private escuelaService: EscuelaService,
+    private loginService: LoginService
   ) { }
 
 ngOnInit() {
@@ -101,24 +107,17 @@ ngOnInit() {
 
 // Ubicaciones permitidas para el usuario logueado: prioriza las ubicaciones
 // de su escuela (más confiable) y solo recurre al árbol padre/hijos por
-// usuario si no hay escuela asignada en localStorage.
+// usuario si no tiene escuela asignada.
+// No se lee 'escuelaId' de localStorage aquí: el sidebar la escribe de forma
+// asíncrona (misma carrera que esta consulta) y en la primera carga tras el
+// login puede no existir todavía, causando que el dashboard se muestre sin
+// filtrar. En su lugar se resuelve la escuela directamente contra el backend.
 private obtenerUbicacionesPermitidas(): Promise<number[]> {
   return new Promise((resolve) => {
 
-    const escuelaId = Number(localStorage.getItem('escuelaId'));
-
-    if (escuelaId) {
-      this.ubicacionService.getUbicacionesPorEscuela(escuelaId).subscribe({
-        next: (res: any) => {
-          const ubicacionesEscuela = Array.isArray(res) ? res : res?.data ?? [];
-          resolve(ubicacionesEscuela.map((u: any) => Number(u.id)));
-        },
-        error: () => resolve([])
-      });
-      return;
-    }
-
-    const usuario = JSON.parse(localStorage.getItem('user') || '{}');
+    const usuario =
+      this.loginService.getUser() ||
+      JSON.parse(localStorage.getItem('user') || '{}');
 
     const usuarioId =
       usuario?.data?.id ||
@@ -130,32 +129,61 @@ private obtenerUbicacionesPermitidas(): Promise<number[]> {
       return;
     }
 
-    this.ubicacionService.getUbicacionesPorUsuario(usuarioId).subscribe({
-      next: (res: any) => {
+    this.escuelaService.getEscuelaPorUsuario(usuarioId).pipe(
+      catchError(() => of(null))
+    ).subscribe((escuelaRes: any) => {
 
-        const ubicacionesUsuario = Array.isArray(res) ? res : res?.data ?? [];
+      const escuelaData = escuelaRes?.data ?? escuelaRes;
+      const escuelaId = Number(escuelaData?.id);
 
-        if (ubicacionesUsuario.length === 0) {
-          resolve([]);
-          return;
-        }
+      // Se cachea aquí (y no se espera a que el sidebar la escriba de forma
+      // asíncrona) para que el chequeo de "escuela sin ubicaciones" de
+      // ngOnInit disponga del valor apenas se resuelva esta promesa.
+      if (escuelaId) {
+        localStorage.setItem('escuelaId', String(escuelaId));
+      } else {
+        localStorage.removeItem('escuelaId');
+      }
 
-        const padreId = ubicacionesUsuario[0].id;
-
-        this.ubicacionService.getUbicacionesPorPadre(padreId).subscribe({
-          next: (res2: any) => {
-
-            const ubicacionesHijas = Array.isArray(res2) ? res2 : res2?.data ?? [];
-
-            resolve([
-              padreId,
-              ...ubicacionesHijas.map((u: any) => Number(u.id))
-            ]);
+      if (escuelaId) {
+        this.ubicacionService.getUbicacionesPorEscuela(escuelaId).subscribe({
+          next: (res: any) => {
+            const ubicacionesEscuela = Array.isArray(res) ? res : res?.data ?? [];
+            resolve(ubicacionesEscuela.map((u: any) => Number(u.id)));
           },
-          error: () => resolve([padreId])
+          error: () => resolve([])
         });
-      },
-      error: () => resolve([])
+        return;
+      }
+
+      this.ubicacionService.getUbicacionesPorUsuario(usuarioId).subscribe({
+        next: (res: any) => {
+
+          const ubicacionesUsuario = Array.isArray(res) ? res : res?.data ?? [];
+
+          if (ubicacionesUsuario.length === 0) {
+            resolve([]);
+            return;
+          }
+
+          const padreId = ubicacionesUsuario[0].id;
+
+          this.ubicacionService.getUbicacionesPorPadre(padreId).subscribe({
+            next: (res2: any) => {
+
+              const ubicacionesHijas = Array.isArray(res2) ? res2 : res2?.data ?? [];
+
+              resolve([
+                padreId,
+                ...ubicacionesHijas.map((u: any) => Number(u.id))
+              ]);
+            },
+            error: () => resolve([padreId])
+          });
+        },
+        error: () => resolve([])
+      });
+
     });
   });
 }

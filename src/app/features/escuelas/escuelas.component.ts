@@ -207,7 +207,7 @@ export class EscuelasComponent implements OnInit {
     this.editando = true;
     this.mostrarFormulario = true;
     this.imagenFile = null;
-    this.imagenPreview = e.imagenUrl ? 'http://192.168.50.108:8081' + e.imagenUrl : null;
+    this.imagenPreview = e.imagenUrl ? 'https://inventarioti.unsm.edu.pe/' + e.imagenUrl : null;
   }
 
   eliminarEscuela(id: number) {

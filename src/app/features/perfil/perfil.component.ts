@@ -62,7 +62,7 @@ export class PerfilComponent implements OnInit {
     this.usuario = data;
     // Previsualización de la imagen
     this.usuario.imagenPreview = data.data?.imagenPath
-      ? `http://192.168.50.108:8081/${data.data.imagenPath}`
+      ? `http://https://inventarioti.unsm.edu.pe/8:8081/${data.data.imagenPath}`
       : '/assets/perfil.png';
     this.cargarRol();
   }
@@ -101,7 +101,7 @@ export class PerfilComponent implements OnInit {
   quitarImagen() {
     this.imagenSeleccionada = null;
     this.usuario.imagenPreview = this.usuario.data?.imagenPath
-      ? `http://192.168.50.108:8081/${this.usuario.data.imagenPath}`
+      ? `http://https://inventarioti.unsm.edu.pe/8:8081/${this.usuario.data.imagenPath}`
       : '/assets/perfil.png';
   }
 
@@ -116,7 +116,7 @@ export class PerfilComponent implements OnInit {
         const nuevaImagenPath = res.data?.imagenPath ?? res.imagenPath;
 
         // Actualizar la previsualización en PerfilComponent
-        this.usuario.imagenPreview = `http://192.168.50.108:8081/${nuevaImagenPath}`;
+        this.usuario.imagenPreview = `http://https://inventarioti.unsm.edu.pe/8:8081/${nuevaImagenPath}`;
         this.usuario.data.imagenPath = nuevaImagenPath;
 
         // Actualizar el usuario en LoginService para que el Header se refresque

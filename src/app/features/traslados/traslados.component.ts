@@ -512,7 +512,7 @@ const payload = {
       return;
     }
 
-    const url = `http://192.168.50.108:8081/${ruta}`;
+    const url = `http://https://inventarioti.unsm.edu.pe/8:8081/${ruta}`;
 
     Swal.fire({
       title: 'Vista del documento',

@@ -221,7 +221,7 @@ listarArticulos() {
 
       this.articulos = data.map((a: any) => {
         if (a.id) {
-          const urlQR = `http://192.168.50.108:4202/tipos-articulos/articulo/${a.id}`;
+          const urlQR = `http://https://inventarioti.unsm.edu.pe/8:4202/tipos-articulos/articulo/${a.id}`;
           a.qrCodeBase64 = this.generarQR(urlQR);
         }
         return a;
@@ -417,7 +417,7 @@ private cargarUbicacionFijaUsuario(usuarioId: number, esSuperAdmin: boolean): vo
   guardar() {
     // 1. Configuraciones iniciales existentes
     if (this.articulo.id) {
-      const urlQR = `http://192.168.50.108:4202/tipos-articulos/articulo/${this.articulo.id}`;
+      const urlQR = `http://https://inventarioti.unsm.edu.pe/8:4202/tipos-articulos/articulo/${this.articulo.id}`;
       this.articulo.qrCodeBase64 = this.generarQR(urlQR);
     }
     if (!this.articulo.fechaAdquision) {
@@ -558,7 +558,7 @@ this.articuloService.cargarMasivaExcel(
       this.articulo.fechaAdquision = `${d.getFullYear()}-${mes}-${dia}`;
     }
     if (!this.articulo.qrCodeBase64 && this.articulo.id) {
-      const urlQR = `http://192.168.50.108:4202/tipos-articulos/articulo/${this.articulo.id}`;
+      const urlQR = `http://https://inventarioti.unsm.edu.pe/8:4202/tipos-articulos/articulo/${this.articulo.id}`;
       this.articulo.qrCodeBase64 = this.generarQR(urlQR);
     }
 

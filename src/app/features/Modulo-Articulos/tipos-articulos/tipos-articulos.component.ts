@@ -185,7 +185,7 @@ Swal.fire(
       descripcion: data.descripcion,
       estado: data.estado,
       imagen: null,
-      imagenPreview: data.imagenPath ? `http://192.168.50.108:8081${data.imagenPath}` : null,
+      imagenPreview: data.imagenPath ? `http://https://inventarioti.unsm.edu.pe/8:8081${data.imagenPath}` : null,
       imagenPath: data.imagenPath
     };
   }

@@ -142,7 +142,7 @@ get safeEncabezados(): string[] {
   getQRUrl(articulo: any): string {
     const id = this.getValue(articulo, 'Id');
     if (!id) return '';
-    return this.generarQR(`http://192.168.50.108:4202/tipos-articulos/articulo/${id}`);
+    return this.generarQR(`http://https://inventarioti.unsm.edu.pe/8:4202/tipos-articulos/articulo/${id}`);
   }
 cargarArticulos(id: number) {
   console.log('🔥 ENTRANDO A cargarArticulos con ID:', id);
